@@ -1,18 +1,27 @@
 <template>
-  <h1 class="text-3xl font-bold underline">Hola Mundo</h1>
-  <div class="grid grid-cols-3 gap-4 bg-red-400">
-    <Button label="Prueba"/>
-    <Button label="Prueba"/>
-    <Button label="Prueba"/>
-  </div>
-  <h2>Nombres</h2>
-  <div v-for="name in state.data" class="bg-blue-100 mb-2">
-    {{name}}
+  <div class="flex flex-col items-center justify-center min-h-screen">
+    <h1 class="font-bold text-2xl mb-20">Bienvenido, usuario!</h1>
+    <div class="grid grid-cols-4 gap-4">
+      <template v-for="menu in menus">
+        <MenuShortcutCard :menu="menu"/>
+      </template>
+    </div>
   </div>
 </template>
 <script setup lang="ts">
-const {state, asyncStatus, status} = useQuery({
-  key: ['test1'],
-  query: () => $api('/names')
-})
+import MenuShortcutCard from '~/components/cards/MenuShortcutCard.vue';
+
+const menus = [
+  {
+    title: 'Administracion',
+    description: 'Administracion General del Hospital',
+    route: '/admin',
+  },
+  {
+    title: 'Farmacia',
+    description: 'Administracion de Farmacia',
+    route: '/farmacia',
+  },
+]
 </script>
+
