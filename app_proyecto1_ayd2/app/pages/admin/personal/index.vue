@@ -1,24 +1,27 @@
 <template>
   <div class="m-6">
-    <DataTable :value="state.data as any[]" tableStyle="min-width: 50rem" stripedRows :loading="asyncStatus == 'loading'">
+    <DataTable :value="state.data as any[]" tableStyle="min-width: 50rem" stripedRows
+      :loading="asyncStatus == 'loading'">
       <template #header>
-          <div class="flex flex-wrap items-center justify-between gap-2">
-    <span class="text-xl font-bold">Usuarios</span>
-              <Button icon="pi pi-plus" rounded raised />
-          </div>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="text-xl font-bold">Usuarios</span>
+          <router-link to="/admin/personal/crear">
+            <Button icon="pi pi-plus" rounded raised />
+          </router-link>
+        </div>
       </template>
       <Column field="id" header="ID"></Column>
       <Column field="name" header="Nombre"></Column>
       <Column field="area" header="Area">
         <template #body="slotProps">
-          <Tag :value="slotProps.data.area"/>
+          <Tag :value="slotProps.data.area" />
         </template>
       </Column>
       <Column header="Acciones">
         <template #body="slotProps">
-          <Button label="Ver" severity="info" rounded text>
-            <RouterLink :to="`/admin/personal/${slotProps.data.id}`">Ver</RouterLink>
-          </Button>
+            <RouterLink :to="`/admin/personal/${slotProps.data.id}`">
+              <Button label="Ver" severity="info" rounded text/>
+            </RouterLink>
           <Button label="Deshabilitar" severity="danger" rounded text />
         </template>
       </Column>

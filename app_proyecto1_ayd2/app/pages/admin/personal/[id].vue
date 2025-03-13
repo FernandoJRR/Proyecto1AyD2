@@ -1,6 +1,8 @@
 <template>
   <div class="m-6 ml-12">
-    <Button text><i class="pi pi-arrow-left"/><router-link to="/admin/personal">Ver Todos</router-link></Button>
+    <router-link to="/admin/personal">
+      <Button label="Ver Todos" icon="pi pi-arrow-left" text/>
+    </router-link>
     <div v-if="state.status === 'pending'" class="flex flex-col">
       Cargando...
     </div>
