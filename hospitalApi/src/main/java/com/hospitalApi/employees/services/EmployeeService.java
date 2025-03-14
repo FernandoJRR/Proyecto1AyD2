@@ -11,7 +11,6 @@ import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
-import com.hospitalApi.users.services.UserService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
