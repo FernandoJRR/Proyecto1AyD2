@@ -1,0 +1,14 @@
+package com.hospitalApi.employees.mappers;
+
+import org.mapstruct.Mapper;
+
+import com.hospitalApi.employees.dtos.CreateEmployeeRequestDTO;
+import com.hospitalApi.employees.dtos.EmployeeResponseDTO;
+import com.hospitalApi.employees.models.Employee;
+
+@Mapper(componentModel = "spring")
+public interface EmployeeMapper {
+    public Employee fromCreateEmployeeRequestDtoToEmployee(CreateEmployeeRequestDTO dto);
+
+    public EmployeeResponseDTO fromEmployeeToResponse(Employee employee);
+}
