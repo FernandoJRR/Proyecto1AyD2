@@ -8,7 +8,12 @@ import com.hospitalApi.users.models.User;
 
 public interface ForEmployeesPort {
 
-    public Employee createEmployee(Employee newEmployee, EmployeeType employeeType, User newUser)
-            throws DuplicatedEntryException, NotFoundException;
+        public Employee createEmployee(Employee newEmployee, EmployeeType employeeType, User newUser)
+                        throws DuplicatedEntryException, NotFoundException;
+
+        public Employee updateEmployee(String currentId, Employee newData, EmployeeType employeeType)
+                        throws NotFoundException;
+
+        public Employee findEmployeeById(String employeeId) throws NotFoundException;
 
 }

@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import com.hospitalApi.shared.exceptions.BadCredentialsException;
 import com.hospitalApi.shared.exceptions.BadRequestException;
@@ -59,11 +60,25 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
         String menssage = "";
-        // Recorre los errores de validación y los almacena en un mapa
+        // recorre los errores de validación y agregarlos al mensaje de respuesta
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             menssage = menssage + String.format("- %s \n", error.getDefaultMessage());
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(menssage.trim());
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<?> handleHandlerMethodValidationException(HandlerMethodValidationException ex) {
+        StringBuilder mensaje = new StringBuilder();
+
+        // recorre los errores de validación y agregarlos al mensaje de respuesta
+        ex.getAllValidationResults().forEach(result -> {
+            result.getResolvableErrors().forEach(error -> {
+                mensaje.append("- ").append(error.getDefaultMessage()).append("\n");
+            });
+        });
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensaje.toString().trim());
     }
 
     @ExceptionHandler(Exception.class)
