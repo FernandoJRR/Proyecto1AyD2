@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import com.hospitalApi.shared.models.Auditor;
-import com.hospitalApi.usuarios.models.User;
+import com.hospitalApi.users.models.User;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -18,6 +18,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
@@ -26,6 +27,7 @@ import lombok.NoArgsConstructor;
  */
 @Entity(name = "employee")
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public class Employee extends Auditor {
 
@@ -35,9 +37,9 @@ public class Employee extends Auditor {
     private String lastName;
     @Column(scale = 2)
     private BigDecimal salary;
-    @Column(precision = 5, scale = 2)
+    @Column(precision = 5, scale = 2, nullable = true)
     private BigDecimal igssPercentage;
-    @Column(precision = 5, scale = 2)
+    @Column(precision = 5, scale = 2, nullable = true)
     private BigDecimal irtraPercentage;
 
     /**

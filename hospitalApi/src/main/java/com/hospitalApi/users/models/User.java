@@ -3,7 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 
-package com.hospitalApi.usuarios.models;
+package com.hospitalApi.users.models;
 
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.shared.models.Auditor;

@@ -28,4 +28,8 @@ public class EmployeeType extends Auditor {
         this.name = name;
     }
 
+    public EmployeeType(String id) {
+        super(id);
+    }
+
 }
