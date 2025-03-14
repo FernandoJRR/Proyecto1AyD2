@@ -1,6 +1,5 @@
 package com.hospitalApi.shared.config;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 

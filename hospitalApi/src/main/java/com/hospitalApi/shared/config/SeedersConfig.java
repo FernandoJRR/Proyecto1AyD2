@@ -1,7 +1,5 @@
 package com.hospitalApi.shared.config;
 
-import java.util.UUID;
-
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -45,14 +43,12 @@ public class SeedersConfig implements CommandLineRunner {
 
         // creamos un nuevo empleado
         Employee newEmployee = new Employee(null, null, null, null, null, null,
-        newEmployeeType, newUser);
+                newEmployeeType, newUser);
 
         newUser.setEmployee(newEmployee);
 
-        
-
-        Employee savedEmployee = employeeRepository.save(newEmployee);
-        User savedUser = userRepository.save(newUser);
+        employeeRepository.save(newEmployee);
+        userRepository.save(newUser);
 
     }
 

@@ -3,7 +3,6 @@ package com.hospitalApi.employees.dtos;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Column;
 import lombok.Value;
 
 @Value

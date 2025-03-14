@@ -1,18 +1,18 @@
 package com.hospitalApi.employees.models;
 
 import java.util.List;
-import java.util.UUID;
-
 import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 public class EmployeeType extends Auditor {
 
