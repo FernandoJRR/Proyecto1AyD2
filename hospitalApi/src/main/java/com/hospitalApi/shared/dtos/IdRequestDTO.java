@@ -1,11 +1,13 @@
 package com.hospitalApi.shared.dtos;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.Value;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Value
+@NoArgsConstructor
+@Getter
 public class IdRequestDTO {
 
     @NotBlank(message = "El id no puede estar vacio.")
-    String id;
+    private String id;
 }
