@@ -1,5 +1,7 @@
 package com.hospitalApi.employees.services;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.hospitalApi.employees.models.EmployeeType;
@@ -20,5 +22,9 @@ public class EmployeeTypeService implements ForEmployeeTypePort {
 
     public boolean existsEmployeeTypeById(EmployeeType employeeType) {
         return employeeTypeRepository.existsById(employeeType.getId());
+    }
+
+    public List<EmployeeType> findAllEmployeesTypes() {
+        return employeeTypeRepository.findAll();
     }
 }
