@@ -8,6 +8,8 @@ package com.hospitalApi.employees.models;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 import com.hospitalApi.shared.models.Auditor;
 import com.hospitalApi.users.models.User;
 
@@ -28,6 +30,7 @@ import lombok.NoArgsConstructor;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
+@DynamicUpdate
 public class Employee extends Auditor {
 
     @Column(length = 100)

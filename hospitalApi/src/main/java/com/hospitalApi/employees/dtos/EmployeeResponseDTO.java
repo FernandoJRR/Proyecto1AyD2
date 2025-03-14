@@ -8,6 +8,8 @@ import lombok.Value;
 @Value
 public class EmployeeResponseDTO {
 
+    String id;
+    
     String firstName;
 
     String lastName;
