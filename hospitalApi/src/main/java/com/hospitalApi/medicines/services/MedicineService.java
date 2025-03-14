@@ -1,5 +1,7 @@
 package com.hospitalApi.medicines.services;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.hospitalApi.medicines.models.Medicine;
@@ -10,25 +12,38 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class MedicineService {
-    
+public class MedicineService implements ForMedicinePort {
+
     private final MedicineRepository medicineRepository;
-    private final ForMedicinePort forMedicinePort;
-    
 
+    @Override
     public Medicine createMedicine(Medicine medicine) {
-        return forMedicinePort.createMedicine(medicine);
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'createMedicine'");
     }
 
+    @Override
     public Medicine updateMedicine(Long id, Medicine medicine) {
-        return forMedicinePort.updateMedicine(id, medicine);
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateMedicine'");
     }
 
+    @Override
     public Medicine getMedicine(Long id) {
-        return forMedicinePort.getMedicine(id);
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getMedicine'");
     }
 
+    @Override
     public boolean deleteMedicine(Long id) {
-        return forMedicinePort.deleteMedicine(id);
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'deleteMedicine'");
     }
+
+    @Override
+    public List<Medicine> getAllMedicines() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getAllMedicines'");
+    }
+
 }
