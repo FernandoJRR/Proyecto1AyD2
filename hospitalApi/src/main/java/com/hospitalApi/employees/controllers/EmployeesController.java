@@ -46,7 +46,7 @@ public class EmployeesController {
             @ApiResponse(responseCode = "409", description = "Conflicto - Username duplicado", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "404", description = "No encontrado - Tipo de empleado no existe", content = @Content(mediaType = "application/json"))
     })
-    @PostMapping("/create-employee")
+    @PostMapping
     public ResponseEntity<EmployeeResponseDTO> createEmployee(
             @RequestBody @Valid CreateEmployeeRequestDTO request) throws DuplicatedEntryException, NotFoundException {
         // extraer los parametros para la creacion del employee
