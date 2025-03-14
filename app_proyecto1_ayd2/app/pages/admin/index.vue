@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-4 gap-4">
+  <div class="grid grid-cols-4 gap-4 m-8">
     <template v-for="menu in menus">
       <MenuShortcutCard :menu="menu"/>
     </template>
