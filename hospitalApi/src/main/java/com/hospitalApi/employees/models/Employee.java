@@ -49,7 +49,6 @@ public class Employee extends Auditor {
     private LocalDateTime resignDate;
 
     @ManyToOne
-    @JoinColumn(name = "employee_type_id")
     private EmployeeType employeeType;
 
     @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
@@ -73,6 +72,18 @@ public class Employee extends Auditor {
         this.igssPercentage = igssPercentage;
         this.irtraPercentage = irtraPercentage;
         this.resignDate = resignDate;
+    }
+
+    public Employee(String firstName, String lastName, BigDecimal salary, BigDecimal igssPercentage,
+            BigDecimal irtraPercentage, LocalDateTime resignDate, EmployeeType employeeType, User user) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.salary = salary;
+        this.igssPercentage = igssPercentage;
+        this.irtraPercentage = irtraPercentage;
+        this.resignDate = resignDate;
+        this.employeeType = employeeType;
+        this.user = user;
     }
 
 }

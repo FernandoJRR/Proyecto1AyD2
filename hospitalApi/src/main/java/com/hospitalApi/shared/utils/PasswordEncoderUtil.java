@@ -3,33 +3,18 @@ package com.hospitalApi.shared.utils;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
  * Adaptador para la encriptación de contraseñas utilizando BCrypt.
  *
- * <p>
- * BCrypt genera un hash seguro para cada contraseña con un valor de "salting" y
- * un factor de costo configurable. Esto protege contra ataques de fuerza bruta
- * y rainbow tables.
- * </p>
- *
- * <h3>Responsabilidades:</h3>
- * <ul>
- * <li>Encriptar contraseñas con BCrypt.</li>
- * <li>Verificar contraseñas en formato hash seguro.</li>
- * </ul>
- *
- * 
- * @author Luis Monterroso
- * @see PasswordEncoderPort
- * @see BCryptPasswordEncoder
  */
 @RequiredArgsConstructor
 @Component
 public class PasswordEncoderUtil {
 
-    private final BCryptPasswordEncoder encoder;
+    private final PasswordEncoder encoder;
 
     /**
      * Genera un hash seguro para la contraseña en texto plano proporcionada.

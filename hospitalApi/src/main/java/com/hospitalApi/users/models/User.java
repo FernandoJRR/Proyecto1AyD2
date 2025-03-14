@@ -16,10 +16,6 @@ import jakarta.persistence.OneToOne;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- *
- * @author Luis Monterroso
- */
 
 @Entity(name = "user")
 @Data
@@ -32,12 +28,11 @@ public class User extends Auditor {
     @Column(length = 255)
     private String password;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "employee_id", referencedColumnName = "id", nullable = true)
+    @OneToOne
+    @JoinColumn(name = "employee_id")
     private Employee employee;
 
     public User(String username, String password) {
-        super();
         this.username = username;
         this.password = password;
     }

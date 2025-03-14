@@ -1,6 +1,7 @@
 package com.hospitalApi.employees.models;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.hospitalApi.shared.models.Auditor;
 
@@ -20,7 +21,8 @@ public class EmployeeType extends Auditor {
     /**
      * Un tipo de empleado puede estar asignado a varios empleados
      */
-    @OneToMany(mappedBy = "employeeType")
+    @OneToMany(mappedBy = "employeeType") // utilizado para no crear una tabla en la bd y Spring sepa como inicializar
+                                          // este atributo
     private List<Employee> employees;
 
     public EmployeeType(String id, String name) {
@@ -28,8 +30,7 @@ public class EmployeeType extends Auditor {
         this.name = name;
     }
 
-    public EmployeeType(String id) {
-        super(id);
+    public EmployeeType(String name) {
+        this.name = name;
     }
-
 }

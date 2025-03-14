@@ -1,7 +1,6 @@
 package com.hospitalApi.shared.utils;
 
 import jakarta.validation.ConstraintViolationException;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -22,9 +21,8 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicatedEntryException.class)
-    public ResponseEntity<?> handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(""
-                + "Ya existe un registro con los datos proporcionados.");
+    public ResponseEntity<?> handleDataIntegrityViolationException(DuplicatedEntryException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -50,16 +48,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+    /**
+     * Cubre las excepciones que se lanzan cuando @Valid no es cumplido y las
+     * validaciones no
+     * pasan.
+     * 
+     * @param ex
+     * @return
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        StringBuilder menssage = new StringBuilder("");
-
+        String menssage = "";
         // Recorre los errores de validación y los almacena en un mapa
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            menssage.append("- ").append(error.getDefaultMessage()).append("\n");
+            menssage = menssage + String.format("- %s \n", error.getDefaultMessage());
         }
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(menssage.toString().trim());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(menssage.trim());
     }
 
     @ExceptionHandler(Exception.class)

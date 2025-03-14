@@ -21,7 +21,7 @@ public class UserService implements ForUsers {
     @Transactional(rollbackOn = Exception.class)
     public User createUser(User newUser) throws DuplicatedEntryException {
         // verificamos si el nombre de usuario existe ya en l bd
-        if (userRepository.existByUsername(newUser.getUsername())) {
+        if (userRepository.existsByUsername(newUser.getUsername())) {
             throw new DuplicatedEntryException(
                     "Ya existe un usuario con el mismo nombre de usuario.");
         }

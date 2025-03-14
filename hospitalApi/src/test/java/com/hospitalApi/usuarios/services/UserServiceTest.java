@@ -39,7 +39,7 @@ public class UserServiceTest {
     @Test
     public void createUserWithExistingUsername() {
         // configuramos el mock para que lance una excepción al intentar crearlo
-        when(userRepository.existByUsername(user.getUsername())).thenReturn(true);
+        when(userRepository.existsByUsername(user.getUsername())).thenReturn(true);
 
         // verificamos que la excepción se lanza correctamente
         assertThrows(DuplicatedEntryException.class, () -> {
@@ -54,7 +54,7 @@ public class UserServiceTest {
     public void createUser() {
         // configuramos el mock para que lance false al hacerse la veriicacion de
         // existencia
-        when(userRepository.existByUsername(user.getUsername())).thenReturn(false);
+        when(userRepository.existsByUsername(user.getUsername())).thenReturn(false);
         // verificamos que el metodo save se haya ejecutado
         verify(userRepository, times(1)).save(user);
     }

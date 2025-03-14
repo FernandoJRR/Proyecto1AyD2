@@ -30,7 +30,6 @@ public class CreateEmployeeRequestDTO {
     @Digits(integer = 10, fraction = 2, message = "El salario debe tener máximo 10 dígitos enteros y 2 decimales")
     BigDecimal salary;
 
-    @NotNull(message = "El porcentaje de IGSS es obligatorio")
     @DecimalMin(value = "0.00", inclusive = true, message = "El porcentaje de IGSS no puede ser negativo")
     @DecimalMax(value = "100.00", inclusive = true, message = "El porcentaje de IGSS no puede ser mayor a 100")
     @Digits(integer = 3, fraction = 2, message = "El porcentaje de IGSS debe tener hasta 3 dígitos enteros y 2 decimales")

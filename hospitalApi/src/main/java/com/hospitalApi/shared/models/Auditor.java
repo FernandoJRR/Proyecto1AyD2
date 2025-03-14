@@ -2,6 +2,7 @@ package com.hospitalApi.shared.models;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
