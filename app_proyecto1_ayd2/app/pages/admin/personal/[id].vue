@@ -15,17 +15,17 @@
           {{ state.data.id }}
         </div>
         -
-        <h1 class="text-xl font-semibold">{{ state.data.name }}</h1>
-        <Tag :value="state.data.area"/>
+        <h1 class="text-xl font-semibold">{{ `${state.data.firstName} ${state.data.lastName}` }}</h1>
+        <Tag :value="state.data.id"/>
       </div>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import type { Usuario } from '~/lib/api/admin/usuarios';
+import type { Employee } from '~/lib/api/admin/employee';
 
 const { state } = useQuery({
   key: ['usuario'],
-  query: () => $api<Usuario>(`/names/${useRoute().params.id}`)
+  query: () => $api<Employee>(`/names/${useRoute().params.id}`)
 })
 </script>

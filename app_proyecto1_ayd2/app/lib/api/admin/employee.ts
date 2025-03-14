@@ -10,10 +10,6 @@ export interface Employee extends Entity {
   irtraPercentage: number
 }
 
-export interface EmployeeType extends Entity {
-  name: string
-}
-
 
 export interface UserPayload {
   username: string
@@ -25,16 +21,10 @@ export interface EmployeePayload {
   firstName: string
   lastName: string
   salary: number
-  iggsPercentage: number
-  irtraPercentage: number
+  iggsPercentage: number | null
+  irtraPercentage: number | null
   employeeTypeId: { id: string }
   createUserRequestDTO: UserPayload
-}
-
-export async function getAllEmployeeTypes(params?: {}) {
-  return await $api<EmployeeType[]>(`${CURRENT_EMPLOYEE_URI}/employee-types`, {
-    params
-  })
 }
 
 export const createEmployee = async (data: EmployeePayload) => {

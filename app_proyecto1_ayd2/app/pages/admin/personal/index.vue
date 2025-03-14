@@ -31,10 +31,10 @@
 </template>
 <script setup lang="ts">
 import { RouterLink } from 'vue-router';
-import type { Usuario } from '~/lib/api/admin/usuarios';
+import type { Employee } from '~/lib/api/admin/employee';
 
 const { state, asyncStatus } = useQuery({
   key: ['usuarios'],
-  query: () => $api<Usuario[]>('/names')
+  query: () => $api<Employee[]>('/names')
 })
 </script>

@@ -107,7 +107,8 @@ import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { FloatLabel, InputNumber, Password, ToggleSwitch } from 'primevue';
 import { toast } from 'vue-sonner';
 import { z } from 'zod';
-import { createEmployee, getAllEmployeeTypes, type EmployeePayload } from '~/lib/api/admin/usuarios';
+import { createEmployee, type EmployeePayload } from '~/lib/api/admin/employee';
+import { getAllEmployeeTypes } from '~/lib/api/admin/employee-type';
 
 const initialValues = reactive({
   firstName: '',
@@ -144,6 +145,8 @@ const resolver = ref(zodResolver(
       z.literal(null)
     ]).optional(),
 
+    type: z.string(),
+
     username: z.string().min(8, 'Debes ingresar un username con al menos 8 caracteres'),
     password: z.string().min(8, 'Debes ingresar un password con al menos 8 caracteres'),
     password_repeat: z.string({message: 'Debes confirmar el password'})
@@ -175,10 +178,17 @@ const resolver = ref(zodResolver(
 const onFormSubmit = (e: any) => {
   if (e.valid) {
     console.log(e.values)
-    console.log("e34aaa22-0f99-4e95-ad83-f49f98f56380")//default employeetype
-    let payload: EmployeePayload = e.values
-    payload.employeeTypeId = e.values.type
-    payload.createUserRequestDTO = { username: e.values.username, password: e.values.password }
+
+    let payload: EmployeePayload = {
+      firstName: e.values.firstName,
+      lastName: e.values.lastName,
+      salary: e.values.salary,
+      iggsPercentage: e.values.has_porcentaje_iggs ? e.values.iggsPercentage : null,
+      irtraPercentage: e.values.has_porcentaje_iggs ? e.values.irtraPercentage : null,
+      employeeTypeId: { id: e.values.type },
+      createUserRequestDTO: { username: e.values.username, password: e.values.password }
+    }
+
     mutate(payload)
   }
 };
@@ -191,6 +201,8 @@ const {state: userTypes } = useQuery({
 const { mutate, asyncStatus } = useMutation({
   mutation: (staffData: EmployeePayload) => createEmployee(staffData),
   onError(error) {
+    console.log(error)
+    console.log(error.message)
     toast.error('Ocurrió un error al crear el empleado', {
       description: `
       Parece que los datos no son válidos:
