@@ -12,53 +12,53 @@
             <div class="w-full">
               <FloatLabel>
                 <label>Nombres</label>
-                <InputText name="nombres" type="text" fluid />
+                <InputText name="firstName" type="text" fluid />
               </FloatLabel>
-              <Message v-if="$form.nombres?.invalid" severity="error" size="small" variant="simple">{{
-                $form.nombres.error?.message }}</Message>
+              <Message v-if="$form.firstName?.invalid" severity="error" size="small" variant="simple">{{
+                $form.firstName.error?.message }}</Message>
             </div>
             <div class="w-full">
               <FloatLabel>
                 <label>Apellidos</label>
-                <InputText name="apellidos" type="text" fluid />
+                <InputText name="lastName" type="text" fluid />
               </FloatLabel>
-              <Message v-if="$form.apellidos?.invalid" severity="error" size="small" variant="simple">{{
-                $form.apellidos.error?.message }}</Message>
+              <Message v-if="$form.lastName?.invalid" severity="error" size="small" variant="simple">{{
+                $form.lastName.error?.message }}</Message>
             </div>
           </div>
           <div class="flex flex-row mt-8">
             <div>
               <FloatLabel>
                 <label>Salario</label>
-                <InputNumber name="salario" :min="1" :minFractionDigits="2" :maxFractionDigits="2" 
+                <InputNumber name="salary" :min="1" :minFractionDigits="2" :maxFractionDigits="2" 
                   mode="currency" currency="GTQ" placeholder="Salario" fluid />
               </FloatLabel>
-              <Message v-if="$form.salario?.invalid" severity="error" size="small" variant="simple">{{
-                $form.salario.error?.message }}</Message>
+              <Message v-if="$form.salary?.invalid" severity="error" size="small" variant="simple">{{
+                $form.salary.error?.message }}</Message>
             </div>
             <div>
               <div class="flex flex-row items-center gap-4 ml-4">
                 <ToggleSwitch name="has_porcentaje_iggs" class="min-w-10" />
                 <FloatLabel>
                   <label>Porcentaje IGGS</label>
-                  <InputNumber name="porcentaje_iggs" :min="1" :max="100" suffix="%" placeholder="Porcentaje IGGS" fluid
+                  <InputNumber name="iggsPercentage" :min="1" :max="100" suffix="%" placeholder="Porcentaje IGGS" fluid
                     :disabled="!$form.has_porcentaje_iggs?.value" />
                 </FloatLabel>
               </div>
-              <Message v-if="$form.porcentaje_iggs?.invalid" severity="error" size="small" variant="simple">{{
-                $form.porcentaje_iggs.error?.message }}</Message>
+              <Message v-if="$form.iggsPercentage?.invalid" severity="error" size="small" variant="simple">{{
+                $form.iggsPercentage.error?.message }}</Message>
             </div>
             <div>
               <div class="flex flex-row items-center gap-4 ml-4">
                 <ToggleSwitch name="has_porcentaje_irtra" class="min-w-10" />
                 <FloatLabel>
                   <label>Porcentaje IRTRA</label>
-                  <InputNumber name="porcentaje_irtra" :min="1" :max="100" suffix="%" label="Porcentaje IRTRA" fluid
+                  <InputNumber name="irtraPercentage" :min="1" :max="100" suffix="%" label="Porcentaje IRTRA" fluid
                     :disabled="!$form.has_porcentaje_irtra?.value" />
                 </FloatLabel>
               </div>
-              <Message v-if="$form.porcentaje_irtra?.invalid" severity="error" size="small" variant="simple">{{
-                $form.porcentaje_irtra.error?.message }}</Message>
+              <Message v-if="$form.irtraPercentage?.invalid" severity="error" size="small" variant="simple">{{
+                $form.irtraPercentage.error?.message }}</Message>
             </div>
           </div>
           <div class="mt-8">
@@ -71,7 +71,7 @@
             </template>
             <Message v-if="$form.type?.invalid" severity="error" size="small" variant="simple">{{ $form.city.error.message }}</Message>
           </div>
-          <h1 class="text-2xl font-semibold mb-6 mt-6">Datos del Usuario</h1>
+          <h1 class="text-2xl font-semibold mb-6">Datos del Usuario</h1>
           <div>
             <FloatLabel>
               <label>Username</label>
@@ -105,39 +105,41 @@
 <script setup lang="ts">
 import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { FloatLabel, InputNumber, Password, ToggleSwitch } from 'primevue';
+import { toast } from 'vue-sonner';
 import { z } from 'zod';
+import { createEmployee, getAllEmployeeTypes, type EmployeePayload } from '~/lib/api/admin/usuarios';
 
 const initialValues = reactive({
-  nombres: '',
-  apellidos: '',
-  salario: 0,
+  firstName: '',
+  lastName: '',
+  salary: 0,
   has_porcentaje_iggs: true,
-  porcentaje_iggs: 5,
+  iggsPercentage: 5,
   has_porcentaje_irtra: true,
-  porcentaje_irtra: 5,
-  type: 0,
+  irtraPercentage: 5,
+  type: '',
 
   username: '',
   password: '',
   password_repeat: '',
 });
 
-const selectedType = ref(0)
+const selectedType = ref('')
 
 const resolver = ref(zodResolver(
   z.object({
-    nombres: z.string().min(1, 'Los nombres son obligatorios.'),
-    apellidos: z.string().min(1, 'Los apellidos son obligatorios.'),
-    salario: z.number({ message: "El salario es obligatorio." }).min(1, 'El salario debe ser un numero positivo.'),
+    firstName: z.string().min(1, 'Los nombres son obligatorios.'),
+    lastName: z.string().min(1, 'Los apellidos son obligatorios.'),
+    salary: z.number({ message: "El salario es obligatorio." }).min(1, 'El salario debe ser un numero positivo.'),
 
     has_porcentaje_iggs: z.boolean(),
-    porcentaje_iggs: z.union([
+    iggsPercentage: z.union([
       z.number().min(1, "El porcentaje debe ser mayor a 0.").max(100, "El porcentaje no puede ser mayor a 100"),
-      z.literal(null) // Allows null when `has_porcentaje_iggs` is false
+      z.literal(null)
     ]).optional(),
 
     has_porcentaje_irtra: z.boolean(),
-    porcentaje_irtra: z.union([
+    irtraPercentage: z.union([
       z.number().min(1, "El porcentaje debe ser mayor a 0.").max(100, "El porcentaje no puede ser mayor a 100"),
       z.literal(null)
     ]).optional(),
@@ -146,16 +148,16 @@ const resolver = ref(zodResolver(
     password: z.string().min(8, 'Debes ingresar un password con al menos 8 caracteres'),
     password_repeat: z.string({message: 'Debes confirmar el password'})
   }).superRefine((data, ctx) => {
-   if (data.has_porcentaje_iggs && (data.porcentaje_iggs === null || data.porcentaje_iggs === undefined || data.porcentaje_iggs === 0)) {
+   if (data.has_porcentaje_iggs && (data.iggsPercentage === null || data.iggsPercentage === undefined || data.iggsPercentage === 0)) {
       ctx.addIssue({
-        path: ["porcentaje_iggs"],
+        path: ["iggsPercentage"],
         message: "Debe ingresar un porcentaje válido para IGGS.",
         code: z.ZodIssueCode.custom,
       });
     }
-    if (data.has_porcentaje_irtra && (data.porcentaje_irtra === null || data.porcentaje_irtra === undefined || data.porcentaje_irtra === 0)) {
+    if (data.has_porcentaje_irtra && (data.irtraPercentage === null || data.irtraPercentage === undefined || data.irtraPercentage === 0)) {
       ctx.addIssue({
-        path: ["porcentaje_irtra"],
+        path: ["irtraPercentage"],
         message: "Debe ingresar un porcentaje válido para IRTRA.",
         code: z.ZodIssueCode.custom,
       });
@@ -173,20 +175,41 @@ const resolver = ref(zodResolver(
 const onFormSubmit = (e: any) => {
   if (e.valid) {
     console.log(e.values)
+    console.log("e34aaa22-0f99-4e95-ad83-f49f98f56380")//default employeetype
+    let payload: EmployeePayload = e.values
+    payload.employeeTypeId = e.values.type
+    payload.createUserRequestDTO = { username: e.values.username, password: e.values.password }
+    mutate(payload)
   }
 };
 
-const {state: userTypes, status} = useQuery({
+const {state: userTypes } = useQuery({
   key: ['optionsTypes'],
-  query: () => $api<{id: number, name: string}[]>('/user-types')
+  query: () => getAllEmployeeTypes()
+})
+
+const { mutate, asyncStatus } = useMutation({
+  mutation: (staffData: EmployeePayload) => createEmployee(staffData),
+  onError(error) {
+    toast.error('Ocurrió un error al crear el empleado', {
+      description: `
+      Parece que los datos no son válidos:
+      ${(error)}
+      `
+    })
+  },
+  onSuccess() {
+    toast.success('Empleado creado correctamente')
+    navigateTo('/admin/personal')
+  }
 })
 
 watch(
   () => userTypes.value.data,
   (data) => {
     if (data && data.length > 0) {
-      selectedType.value = data[0].id; // Update the select's reactive value
-      initialValues.type = data[0].id;   // Update the form's initial value
+      selectedType.value = data[0].id; 
+      initialValues.type = data[0].id;
     }
   }, {immediate: true}
 );
