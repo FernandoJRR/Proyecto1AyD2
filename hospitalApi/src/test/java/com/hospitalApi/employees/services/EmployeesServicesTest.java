@@ -1,6 +1,10 @@
 package com.hospitalApi.employees.services;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -9,6 +13,7 @@ import java.math.BigDecimal;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -20,8 +25,8 @@ import com.hospitalApi.employees.repositories.EmployeeRepository;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
+import com.hospitalApi.users.ports.ForUsersPort;
 import com.hospitalApi.users.repositories.UserRepository;
-import com.hospitalApi.users.services.UserService;
 
 public class EmployeesServicesTest {
     @Mock
@@ -33,7 +38,7 @@ public class EmployeesServicesTest {
     private ForEmployeeTypePort forEmployeeTypePort;
 
     @Mock
-    private UserService userService;
+    private ForUsersPort forUsersPort;
 
     @InjectMocks
     private EmployeeService employeeService;
@@ -54,32 +59,95 @@ public class EmployeesServicesTest {
                 new BigDecimal(10.2),
                 new BigDecimal(10.2),
                 null);
+        employee.setId("adsfgdh-arsgdfhg-adfgh");
+
         user = new User("Luis", "123");
-        employeeType = new EmployeeType("asdfg-sdfgh-awsdfgh");
-    }
+        user.setId("wqer-qwerw-qweq");
 
-    @Test
-    public void insertEmployeeWithExistantUsername() throws DuplicatedEntryException {
-        // configuramos el mock para que lance una excepción al intentar crearlo
-        when(userService.createUser(user)).thenThrow(
-                new DuplicatedEntryException("El usuario ya existe con el nombre: " + user.getUsername()));
-        // cuando se busque si existe o no el tipo de usuario entonces se devolvera true
-
-        // verificamos que la excepción se lanza correctamente
-        assertThrows(DuplicatedEntryException.class, () -> {
-            userService.createUser(user);
-        });
-
-        verify(employeeRepository, times(0)).save(employee);
+        employeeType = new EmployeeType();
+        employeeType.setId("dasdd-asdasd-asdasd");
     }
 
     @Test
     public void insertEmployee() throws DuplicatedEntryException, NotFoundException {
+
+        // ARRANGE
         // configuramos el mock para que lance el user cuando este sea creado
-        when(userService.createUser(user)).thenReturn(user);
-        // configurar que el mock devuelva el empleado creado
-        when(employeeService.createEmployee(employee, employeeType, user)).thenReturn(employee);
-        // verifcar que el save se ejecuto una vez
-        verify(employeeRepository, times(1)).save(employee);
+        when(forEmployeeTypePort.existsEmployeeTypeById(any(EmployeeType.class))).thenReturn(true);
+        when(forUsersPort.createUser(any(User.class))).thenReturn(user);
+        when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
+        // ACT
+        Employee result = employeeService.createEmployee(employee, employeeType, user);
+
+        // ASSERT
+        // captor para capturar el objeto pasado a save()
+        ArgumentCaptor<Employee> employeeCaptor = ArgumentCaptor.forClass(Employee.class);
+        // verificar que se llamó a save() y capturar el argumento
+        verify(employeeRepository).save(employeeCaptor.capture());
+        // Obtener el objeto capturado
+        Employee capturedEmployee = employeeCaptor.getValue();
+
+        assertAll(
+                () -> assertNotNull(result, "El empleado no debería ser nulo"),
+                () -> assertEquals(result.getFirstName(), capturedEmployee.getFirstName(),
+                        "El nombre debe coincidir"),
+                () -> assertEquals(result.getLastName(), capturedEmployee.getLastName(),
+                        "El apellido debe coincidir"),
+                () -> assertEquals(result.getSalary(), capturedEmployee.getSalary(), "El salario debe coincidir"),
+                () -> assertEquals(user, capturedEmployee.getUser(), "El usuario debe coincidir"),
+                () -> assertEquals(employeeType, capturedEmployee.getEmployeeType(),
+                        "El tipo de empleado debe coincidir")
+
+        );
+
+        // se verifican las llamadas a los métodos dependientes
+        verify(forUsersPort, times(1)).createUser(any(User.class));
+        verify(forEmployeeTypePort, times(1)).existsEmployeeTypeById(employeeType);
+        verify(employeeRepository, times(1)).save(any(Employee.class));
     }
+
+    @Test
+    public void insertEmployeeWithExistantUsername() {
+        try {
+
+            // ARRANGE
+            when(forEmployeeTypePort.existsEmployeeTypeById(any(EmployeeType.class))).thenReturn(true);
+            when(forUsersPort.createUser(user)).thenThrow(DuplicatedEntryException.class);
+
+            // ACT and Asserts
+            assertThrows(DuplicatedEntryException.class, () -> {
+                // se verifica que se haya lanzado la excepcion
+                employeeService.createEmployee(employee, employeeType, user);
+            });
+
+            verify(forEmployeeTypePort, times(1)).existsEmployeeTypeById(any(EmployeeType.class));
+            verify(forUsersPort, times(1)).createUser(any(User.class));
+            verify(employeeRepository, times(0)).save(employee);
+        } catch (DuplicatedEntryException e) {
+
+        }
+    }
+
+    @Test
+    public void insertEmployeeWithInexistantEmployeeType() {
+        try {
+            // ARRANGE
+            when(forEmployeeTypePort.existsEmployeeTypeById(any(EmployeeType.class))).thenReturn(false);
+
+            // ACT 
+            assertThrows(NotFoundException.class, () -> {
+                // se verifica que se haya lanzado la excepcion
+                employeeService.createEmployee(employee, employeeType, user);
+            });
+
+            // Asserts
+            verify(forEmployeeTypePort, times(1)).existsEmployeeTypeById(any(EmployeeType.class));
+            verify(forUsersPort, times(0)).createUser(any(User.class));
+            verify(employeeRepository, times(0)).save(employee);
+
+        } catch (DuplicatedEntryException e) {
+
+        }
+    }
+
 }

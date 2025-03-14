@@ -10,6 +10,7 @@ import com.hospitalApi.employees.repositories.EmployeeRepository;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
+import com.hospitalApi.users.ports.ForUsersPort;
 import com.hospitalApi.users.services.UserService;
 
 import jakarta.transaction.Transactional;
@@ -21,7 +22,7 @@ public class EmployeeService implements ForEmployeesPort {
 
     private final EmployeeRepository employeeRepository;
     private final ForEmployeeTypePort forEmployeeTypePort;
-    private final UserService userService;
+    private final ForUsersPort userService;
 
     @Transactional(rollbackOn = Exception.class)
     public Employee createEmployee(Employee newEmployee, EmployeeType employeeType, User newUser)
