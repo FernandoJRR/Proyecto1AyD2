@@ -45,6 +45,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Activa CORS
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/**").permitAll() // Permite rutas públicas
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated() // Protege el resto
                 )
                 // sin sesiones

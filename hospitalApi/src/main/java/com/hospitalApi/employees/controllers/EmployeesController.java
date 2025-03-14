@@ -19,6 +19,11 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.mappers.UserMapper;
 import com.hospitalApi.users.models.User;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -34,6 +39,13 @@ public class EmployeesController {
     private final EmployeeMapper employeeMapper;
     private final UserMapper userMapper;
 
+    @Operation(summary = "Crear un nuevo empleado", description = "Este endpoint permite la creación de un nuevo empleado en el sistema.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Empleado creado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "409", description = "Conflicto - Username duplicado", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "No encontrado - Tipo de empleado no existe", content = @Content(mediaType = "application/json"))
+    })
     @PostMapping("/create-employee")
     public ResponseEntity<EmployeeResponseDTO> createEmployee(
             @RequestBody @Valid CreateEmployeeRequestDTO request) throws DuplicatedEntryException, NotFoundException {
