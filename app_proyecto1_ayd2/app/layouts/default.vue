@@ -37,4 +37,6 @@ const options = ref([
     route: '/admin'
   }
 ])
+
+defineExpose({ options })
 </script>

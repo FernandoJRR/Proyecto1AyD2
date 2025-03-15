@@ -23,5 +23,7 @@ const menus = [
     route: '/farmacia',
   },
 ]
+
+defineExpose({ menus })
 </script>
 
