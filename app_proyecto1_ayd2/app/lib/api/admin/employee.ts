@@ -1,4 +1,5 @@
 import type { Entity } from "../utils/entity"
+import type { EmployeeType } from "./employee-type"
 
 const CURRENT_EMPLOYEE_URI = '/v1/employees'
 
@@ -8,6 +9,7 @@ export interface Employee extends Entity {
   salary: number
   iggsPercentage: number
   irtraPercentage: number
+  employeeType: EmployeeType
 }
 
 
@@ -27,8 +29,18 @@ export interface EmployeePayload {
   createUserRequestDTO: UserPayload
 }
 
+export async function getAllEmployees(params?: {}) {
+  return await $api<Employee[]>(`${CURRENT_EMPLOYEE_URI}/`, {
+    params
+  })
+}
+
+export async function getEmployeeById(employee_id: string) {
+  return await $api<Employee>(`${CURRENT_EMPLOYEE_URI}/${employee_id}`)
+}
+
 export const createEmployee = async (data: EmployeePayload) => {
-  const response = await $api<Employee>(`${CURRENT_EMPLOYEE_URI}/create-employee`, {
+  const response = await $api<Employee>(`${CURRENT_EMPLOYEE_URI}`, {
     method: 'POST',
     body: data
   })

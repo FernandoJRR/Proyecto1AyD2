@@ -10,11 +10,19 @@
           </router-link>
         </div>
       </template>
-      <Column field="id" header="ID"></Column>
-      <Column field="name" header="Nombre"></Column>
-      <Column field="area" header="Area">
+      <Column header="Nombre Completo">
         <template #body="slotProps">
-          <Tag :value="slotProps.data.area" />
+          <template v-if="slotProps.data.firstName !== null">
+            {{ `${slotProps.data.firstName} ${slotProps.data.lastName}` }}
+          </template>
+          <template v-else>
+            {{ `Admin` }}
+          </template>
+        </template>
+      </Column>
+      <Column header="Area">
+        <template #body="slotProps">
+          <Tag :value="slotProps.data.employeeType.name" />
         </template>
       </Column>
       <Column header="Acciones">
@@ -22,7 +30,7 @@
             <RouterLink :to="`/admin/personal/${slotProps.data.id}`">
               <Button label="Ver" severity="info" rounded text/>
             </RouterLink>
-          <Button label="Deshabilitar" severity="danger" rounded text />
+          <Button v-if="slotProps.data.firstName !== null" label="Deshabilitar" severity="danger" rounded text />
         </template>
       </Column>
       <template #footer> Hay en total {{ state.data ? (state.data as any[]).length : 0 }} usuarios. </template>
@@ -30,11 +38,12 @@
   </div>
 </template>
 <script setup lang="ts">
+import { useQuery } from '@pinia/colada';
 import { RouterLink } from 'vue-router';
-import type { Employee } from '~/lib/api/admin/employee';
+import { getAllEmployees, type Employee } from '~/lib/api/admin/employee';
 
 const { state, asyncStatus } = useQuery({
-  key: ['usuarios'],
-  query: () => $api<Employee[]>('/names')
+  key: ['empleados'],
+  query: () => getAllEmployees()
 })
 </script>

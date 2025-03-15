@@ -15,7 +15,7 @@
         </a>
       </template>
     </Menubar>
-    <div class="flex items-center justify-center bg-gray-50">
+    <div class="flex items-center justify-center bg-gray-100 pl-28 pr-28">
       <div class="w-410 bg-white p-4 h-225">
         <NuxtPage />
       </div>
