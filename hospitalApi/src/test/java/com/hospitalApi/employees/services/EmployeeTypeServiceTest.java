@@ -32,41 +32,17 @@ public class EmployeeTypeServiceTest {
     }
 
     @Test
-    public void shouldReturnTrueWhenEmployeeTypeExistsById() {
-        try {
-
-            // ARRANGE
-            when(employeeTypeRepository.existsById(anyString())).thenReturn(true);
-            // ACT
-            boolean result = employeeService.verifyExistsEmployeeTypeById(employeeType.getId());
-            // ASSERTS
-            assertTrue(result);
-
-        } catch (NotFoundException e) {
-
-        }
-
+    public void shouldReturnTrueWhenEmployeeTypeExistsById() throws NotFoundException {
+        // ARRANGE
+        when(employeeTypeRepository.existsById(anyString())).thenReturn(true);
+        // ACT
+        boolean result = employeeService.verifyExistsEmployeeTypeById(employeeType.getId());
+        // ASSERTS
+        assertTrue(result);
     }
 
     @Test
-    public void shouldReturnTrueWhenEmployeeTypeExistsByName() {
-
-        try {
-
-            // ARRANGE
-            when(employeeTypeRepository.existsByName(anyString())).thenReturn(true);
-            // ACT
-            boolean result = employeeService.verifyExistsEmployeeTypeByName(employeeType.getName());
-            // ASSERTS
-            assertTrue(result);
-
-        } catch (NotFoundException e) {
-
-        }
-    }
-
-    @Test
-    public void shouldReturnFalseWhenEmployeeTypeDoesNotExistById() {
+    public void shouldThrowWhenEmployeeTypeDoesNotExistById() {
         // ARRANGE
         when(employeeTypeRepository.existsById(anyString())).thenReturn(false);
         // ACT y ASSERTS
@@ -76,12 +52,22 @@ public class EmployeeTypeServiceTest {
     }
 
     @Test
-    public void shouldReturnFalseWhenEmployeeTypeDoesNotExistByName() {
+    public void shouldReturnTrueWhenEmployeeTypeExistsByName() throws NotFoundException {
+        // ARRANGE
+        when(employeeTypeRepository.existsByName(anyString())).thenReturn(true);
+        // ACT
+        boolean result = employeeService.verifyExistsEmployeeTypeByName(employeeType.getName());
+        // ASSERTS
+        assertTrue(result);
+    }
+
+    @Test
+    public void shouldThrownWhenEmployeeTypeDoesNotExistByName() {
         // ARRANGE
         when(employeeTypeRepository.existsByName(anyString())).thenReturn(false);
         // ACT y ASSERTS
         assertThrows(NotFoundException.class, () -> {
-            employeeService.verifyExistsEmployeeTypeById(employeeType.getName());
+            employeeService.verifyExistsEmployeeTypeByName(employeeType.getName());
         });
     }
 
