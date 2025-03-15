@@ -36,6 +36,7 @@ public class EmployeeService implements ForEmployeesPort {
         // guardar el empledo
         newEmployee.setUser(user);
         newEmployee.setEmployeeType(employeeType);
+        user.setEmployee(newEmployee);
 
         // guardar el historial del empleado inicial
         return employeeRepository.save(newEmployee);
