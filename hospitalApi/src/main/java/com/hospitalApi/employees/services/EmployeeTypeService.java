@@ -22,9 +22,9 @@ public class EmployeeTypeService implements ForEmployeeTypePort {
      * @param employeeType
      * @throws NotFoundException si el nombre del tipo empleado no existe
      */
-    public boolean verifyExistsEmployeeTypeByName(EmployeeType employeeType) throws NotFoundException {
+    public boolean verifyExistsEmployeeTypeByName(String employeeName) throws NotFoundException {
 
-        if (!employeeTypeRepository.existsByName(employeeType.getName())) {
+        if (!employeeTypeRepository.existsByName(employeeName)) {
             throw new NotFoundException("No existe n tipo de empleado con el nombre especificado.");
         }
 
@@ -32,9 +32,9 @@ public class EmployeeTypeService implements ForEmployeeTypePort {
 
     }
 
-    public boolean verifyExistsEmployeeTypeById(EmployeeType employeeType) throws NotFoundException {
+    public boolean verifyExistsEmployeeTypeById(String employeeId) throws NotFoundException {
 
-        if (!employeeTypeRepository.existsById(employeeType.getId())) {
+        if (!employeeTypeRepository.existsById(employeeId)) {
             throw new NotFoundException("No existe n tipo de empleado con el nombre especificado.");
         }
 

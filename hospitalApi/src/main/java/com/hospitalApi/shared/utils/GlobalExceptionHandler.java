@@ -1,10 +1,13 @@
 package com.hospitalApi.shared.utils;
 
 import jakarta.validation.ConstraintViolationException;
+
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -49,6 +52,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<?> handleNotFoundException(IllegalStateException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
     /**
      * Cubre las excepciones que se lanzan cuando @Valid no es cumplido y las
      * validaciones no
@@ -69,16 +77,15 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<?> handleHandlerMethodValidationException(HandlerMethodValidationException ex) {
-        StringBuilder mensaje = new StringBuilder();
+        String menssage = "";
 
-        // recorre los errores de validación y agregarlos al mensaje de respuesta
-        ex.getAllValidationResults().forEach(result -> {
-            result.getResolvableErrors().forEach(error -> {
-                mensaje.append("- ").append(error.getDefaultMessage()).append("\n");
-            });
-        });
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mensaje.toString().trim());
+        // eecorre los errores de validación y los agrega al mensaje de respuesta
+        for (ParameterValidationResult result : ex.getAllValidationResults()) {
+            for (MessageSourceResolvable error : result.getResolvableErrors()) {
+                menssage = menssage + String.format("- %s \n", error.getDefaultMessage());
+            }
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(menssage.trim());
     }
 
     @ExceptionHandler(Exception.class)

@@ -94,18 +94,24 @@ public class EmployeesController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @Operation(summary = "Edita un empleado", description = "Este endpoint permite la cambiar el estado de desactivatedAt de un empleado en el sistema segun su id.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Empleado desactivado exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "Recursos no econtrados, el usuario a desactivar.", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "409", description = "Conflicto, el empleaod ya esta desactivado.", content = @Content(mediaType = "application/json")),
+
+    })
     @PatchMapping("/{employeeId}/desactivate")
-    public ResponseEntity<EmployeeResponseDTO> desactivateEmployee(
+    public ResponseEntity<Void> desactivateEmployee(
             @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
-            throws NotFoundException {
+            throws NotFoundException, IllegalStateException {
 
-        // mandar a editar el employee al port
-        Employee result = employeesPort.updateEmployee(employeeId, newEmployee, employeeType);
+        // mandar a desactivar el employee al port
+        employeesPort.desactivateEmployee(employeeId);
 
-        // convertir el Employee al dto
-        EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
+        return ResponseEntity.noContent().build();
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Operation(summary = "Busca un empleado", description = "Este endpoint permite la busqueda de un empleado en base a su Id.")
