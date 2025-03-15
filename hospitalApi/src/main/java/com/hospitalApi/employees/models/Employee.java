@@ -6,6 +6,7 @@
 package com.hospitalApi.employees.models;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.DynamicUpdate;
@@ -43,12 +44,10 @@ public class Employee extends Auditor {
     private BigDecimal igssPercentage;
     @Column(precision = 5, scale = 2, nullable = true)
     private BigDecimal irtraPercentage;
-
-    /**
-     * fecha de la renuncia
-     */
     @Column(nullable = true)
     private LocalDateTime resignDate;
+
+    private LocalDate desactivatedAt;
 
     @ManyToOne
     private EmployeeType employeeType;

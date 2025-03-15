@@ -5,6 +5,8 @@
 
 package com.hospitalApi.users.models;
 
+import java.time.LocalDate;
+
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.shared.models.Auditor;
 
@@ -15,7 +17,6 @@ import jakarta.persistence.OneToOne;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
 
 @Entity(name = "user")
 @Data
@@ -28,6 +29,8 @@ public class User extends Auditor {
 
     @Column(length = 255)
     private String password;
+
+    private LocalDate desactivatedAt;
 
     @OneToOne
     @JoinColumn(name = "employee_id")
