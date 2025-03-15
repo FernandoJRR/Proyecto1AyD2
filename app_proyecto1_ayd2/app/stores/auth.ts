@@ -12,7 +12,7 @@ export interface LoginPayload {
   password: string
 }
 
-const useAuthStore = defineStore('auth', {
+export const useAuthStore = defineStore('auth', {
   state: () => ({
     authenticated: false,
     loading: false,
@@ -49,8 +49,8 @@ const useAuthStore = defineStore('auth', {
 
       // Success
       // Set cookies, user and role
-      const tokenCookie = useCookie('cicsapp-user-token')
-      const roleCookie = useCookie('cicsapp-roleuser')
+      const tokenCookie = useCookie('proyecto1ayd2-user-token')
+      const roleCookie = useCookie('proyecto1ayd2-roleuser')
       tokenCookie.value = data?.value?.token
       roleCookie.value = 'staff'
       // Set the user in the store
