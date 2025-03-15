@@ -2,6 +2,7 @@ package com.hospitalApi.employees.controllers;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -84,8 +85,43 @@ public class EmployeesController {
         Employee newEmployee = employeeMapper.fromEmployeeRequestDtoToEmployee(request);
         EmployeeType employeeType = employeeTypeMapper.fromIdRequestDtoTo(request.getEmployeeTypeId());
 
-        // mandar a crear el employee al port
+        // mandar a editar el employee al port
         Employee result = employeesPort.updateEmployee(employeeId, newEmployee, employeeType);
+
+        // convertir el Employee al dto
+        EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PatchMapping("/{employeeId}/desactivate")
+    public ResponseEntity<EmployeeResponseDTO> desactivateEmployee(
+            @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
+            throws NotFoundException {
+
+        // mandar a editar el employee al port
+        Employee result = employeesPort.updateEmployee(employeeId, newEmployee, employeeType);
+
+        // convertir el Employee al dto
+        EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @Operation(summary = "Busca un empleado", description = "Este endpoint permite la busqueda de un empleado en base a su Id.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Empleado encontrado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado.", content = @Content(mediaType = "application/json")),
+
+    })
+    @GetMapping("/{employeeId}")
+    public ResponseEntity<EmployeeResponseDTO> findEmployeeById(
+            @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
+            throws NotFoundException {
+
+        // mandar a crear el employee al port
+        Employee result = employeesPort.findEmployeeById(employeeId);
 
         // convertir el Employee al dto
         EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
