@@ -7,9 +7,9 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 
 public interface ForEmployeeTypePort {
 
-    public boolean verifyExistsEmployeeTypeByName(EmployeeType employeeType) throws NotFoundException;
+    public boolean verifyExistsEmployeeTypeByName(String employeeType) throws NotFoundException;
 
-    public boolean verifyExistsEmployeeTypeById(EmployeeType employeeType) throws NotFoundException;
+    public boolean verifyExistsEmployeeTypeById(String employeeType) throws NotFoundException;
 
     public List<EmployeeType> findAllEmployeesTypes();
 }

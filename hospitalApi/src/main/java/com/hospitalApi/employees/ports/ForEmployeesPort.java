@@ -16,4 +16,7 @@ public interface ForEmployeesPort {
 
         public Employee findEmployeeById(String employeeId) throws NotFoundException;
 
+        public Employee desactivateEmployee(String currentId)
+                        throws NotFoundException, IllegalStateException;
+
 }
