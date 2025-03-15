@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/employeeType")
+@RequestMapping("/api/v1/employee-types")
 
 @RequiredArgsConstructor
 public class EmployeeTypeController {
@@ -34,7 +34,7 @@ public class EmployeeTypeController {
             @ApiResponse(responseCode = "200", description = "Lista de tipos de empleados obtenida exitosamente"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    @GetMapping("/get-employees-types")
+    @GetMapping
     public ResponseEntity<List<EmployeeTypeResponseDTO>> getEmployeesTypes() {
 
         // mandar a crear el employee al port

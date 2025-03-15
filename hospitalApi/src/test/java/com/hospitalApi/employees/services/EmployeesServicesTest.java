@@ -73,7 +73,7 @@ public class EmployeesServicesTest {
 
         // ARRANGE
         // configuramos el mock para que lance el user cuando este sea creado
-        when(forEmployeeTypePort.existsEmployeeTypeById(any(EmployeeType.class))).thenReturn(true);
+        when(forEmployeeTypePort.verifyExistsEmployeeTypeById(any(EmployeeType.class))).thenReturn(true);
         when(forUsersPort.createUser(any(User.class))).thenReturn(user);
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
         // ACT
@@ -102,7 +102,7 @@ public class EmployeesServicesTest {
 
         // se verifican las llamadas a los métodos dependientes
         verify(forUsersPort, times(1)).createUser(any(User.class));
-        verify(forEmployeeTypePort, times(1)).existsEmployeeTypeById(employeeType);
+        verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(employeeType);
         verify(employeeRepository, times(1)).save(any(Employee.class));
     }
 
@@ -111,7 +111,7 @@ public class EmployeesServicesTest {
         try {
 
             // ARRANGE
-            when(forEmployeeTypePort.existsEmployeeTypeById(any(EmployeeType.class))).thenReturn(true);
+            when(forEmployeeTypePort.verifyExistsEmployeeTypeById(any(EmployeeType.class))).thenReturn(true);
             when(forUsersPort.createUser(user)).thenThrow(DuplicatedEntryException.class);
 
             // ACT and Asserts
@@ -120,10 +120,10 @@ public class EmployeesServicesTest {
                 employeeService.createEmployee(employee, employeeType, user);
             });
 
-            verify(forEmployeeTypePort, times(1)).existsEmployeeTypeById(any(EmployeeType.class));
+            verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(any(EmployeeType.class));
             verify(forUsersPort, times(1)).createUser(any(User.class));
             verify(employeeRepository, times(0)).save(employee);
-        } catch (DuplicatedEntryException e) {
+        } catch (DuplicatedEntryException | NotFoundException e) {
 
         }
     }
@@ -132,20 +132,21 @@ public class EmployeesServicesTest {
     public void insertEmployeeWithInexistantEmployeeType() {
         try {
             // ARRANGE
-            when(forEmployeeTypePort.existsEmployeeTypeById(any(EmployeeType.class))).thenReturn(false);
+            when(forEmployeeTypePort.verifyExistsEmployeeTypeById(any(EmployeeType.class))).thenThrow(
+                    NotFoundException.class);
 
-            // ACT 
+            // ACT
             assertThrows(NotFoundException.class, () -> {
                 // se verifica que se haya lanzado la excepcion
                 employeeService.createEmployee(employee, employeeType, user);
             });
 
             // Asserts
-            verify(forEmployeeTypePort, times(1)).existsEmployeeTypeById(any(EmployeeType.class));
+            verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(any(EmployeeType.class));
             verify(forUsersPort, times(0)).createUser(any(User.class));
             verify(employeeRepository, times(0)).save(employee);
 
-        } catch (DuplicatedEntryException e) {
+        } catch (DuplicatedEntryException | NotFoundException e) {
 
         }
     }

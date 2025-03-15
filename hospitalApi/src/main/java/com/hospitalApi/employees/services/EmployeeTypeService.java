@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.hospitalApi.employees.models.EmployeeType;
 import com.hospitalApi.employees.ports.ForEmployeeTypePort;
 import com.hospitalApi.employees.repositories.EmployeeTypeRepository;
+import com.hospitalApi.shared.exceptions.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,12 +17,29 @@ public class EmployeeTypeService implements ForEmployeeTypePort {
 
     private final EmployeeTypeRepository employeeTypeRepository;
 
-    public boolean existsEmployeeTypeByName(EmployeeType employeeType) {
-        return employeeTypeRepository.existsByName(employeeType.getName());
+    /**
+     * 
+     * @param employeeType
+     * @throws NotFoundException si el nombre del tipo empleado no existe
+     */
+    public boolean verifyExistsEmployeeTypeByName(EmployeeType employeeType) throws NotFoundException {
+
+        if (!employeeTypeRepository.existsByName(employeeType.getName())) {
+            throw new NotFoundException("No existe n tipo de empleado con el nombre especificado.");
+        }
+
+        return true;
+
     }
 
-    public boolean existsEmployeeTypeById(EmployeeType employeeType) {
-        return employeeTypeRepository.existsById(employeeType.getId());
+    public boolean verifyExistsEmployeeTypeById(EmployeeType employeeType) throws NotFoundException {
+
+        if (!employeeTypeRepository.existsById(employeeType.getId())) {
+            throw new NotFoundException("No existe n tipo de empleado con el nombre especificado.");
+        }
+
+        return true;
+
     }
 
     public List<EmployeeType> findAllEmployeesTypes() {

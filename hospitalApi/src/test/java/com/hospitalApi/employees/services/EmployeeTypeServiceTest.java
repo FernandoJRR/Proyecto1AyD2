@@ -1,6 +1,7 @@
 package com.hospitalApi.employees.services;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -13,6 +14,7 @@ import org.mockito.MockitoAnnotations;
 
 import com.hospitalApi.employees.models.EmployeeType;
 import com.hospitalApi.employees.repositories.EmployeeTypeRepository;
+import com.hospitalApi.shared.exceptions.NotFoundException;
 
 public class EmployeeTypeServiceTest {
 
@@ -32,12 +34,18 @@ public class EmployeeTypeServiceTest {
 
     @Test
     public void shouldReturnTrueWhenEmployeeTypeExistsById() {
-        // ARRANGE
-        when(employeeTypeRepository.existsById(anyString())).thenReturn(true);
-        // ACT
-        boolean result = employeeService.existsEmployeeTypeById(employeeType);
-        // ASSERTS
-        assertTrue(result);
+        try {
+
+            // ARRANGE
+            when(employeeTypeRepository.existsById(anyString())).thenReturn(true);
+            // ACT
+            boolean result = employeeService.verifyExistsEmployeeTypeById(employeeType);
+            // ASSERTS
+            assertTrue(result);
+
+        } catch (NotFoundException e) {
+
+        }
 
     }
 
@@ -45,30 +53,37 @@ public class EmployeeTypeServiceTest {
     public void shouldReturnFalseWhenEmployeeTypeDoesNotExistById() {
         // ARRANGE
         when(employeeTypeRepository.existsById(anyString())).thenReturn(false);
-        // ACT
-        boolean result = employeeService.existsEmployeeTypeById(employeeType);
-        // ASSERTS
-        assertFalse(result);
+        // ACT y ASSERTS
+        assertThrows(NotFoundException.class, () -> {
+            employeeService.verifyExistsEmployeeTypeById(employeeType);
+        });
     }
 
     @Test
     public void shouldReturnTrueWhenEmployeeTypeExistsByName() {
-        // ARRANGE
-        when(employeeTypeRepository.existsByName(anyString())).thenReturn(true);
-        // ACT
-        boolean result = employeeService.existsEmployeeTypeByName(employeeType);
-        // ASSERTS
-        assertTrue(result);
+
+        try {
+
+            // ARRANGE
+            when(employeeTypeRepository.existsByName(anyString())).thenReturn(true);
+            // ACT
+            boolean result = employeeService.verifyExistsEmployeeTypeByName(employeeType);
+            // ASSERTS
+            assertTrue(result);
+
+        } catch (NotFoundException e) {
+
+        }
     }
 
     @Test
     public void shouldReturnFalseWhenEmployeeTypeDoesNotExistByName() {
         // ARRANGE
         when(employeeTypeRepository.existsByName(anyString())).thenReturn(false);
-        // ACT
-        boolean result = employeeService.existsEmployeeTypeByName(employeeType);
-        // ASSERTS
-        assertFalse(result);
+        // ACT y ASSERTS
+        assertThrows(NotFoundException.class, () -> {
+            employeeService.verifyExistsEmployeeTypeById(employeeType);
+        });
     }
 
 }

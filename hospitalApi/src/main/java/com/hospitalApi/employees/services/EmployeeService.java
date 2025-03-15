@@ -27,18 +27,47 @@ public class EmployeeService implements ForEmployeesPort {
     public Employee createEmployee(Employee newEmployee, EmployeeType employeeType, User newUser)
             throws DuplicatedEntryException, NotFoundException {
         // veficar que el tipo de empleado si exista
-        if (!forEmployeeTypePort.existsEmployeeTypeById(employeeType)) {
-            throw new NotFoundException("El tipo del empleado especificado no existe.");
-        }
+        forEmployeeTypePort.verifyExistsEmployeeTypeById(employeeType);
         // mandar a guardar el usuario
         User user = userService.createUser(newUser);
 
         // guardar el empledo
         newEmployee.setUser(user);
         newEmployee.setEmployeeType(employeeType);
+        user.setEmployee(newEmployee);
 
         // guardar el historial del empleado inicial
         return employeeRepository.save(newEmployee);
+    }
+
+    @Transactional(rollbackOn = Exception.class)
+    public Employee updateEmployee(String currentId, Employee newData, EmployeeType employeeType)
+            throws NotFoundException {
+        // traer el empleado por id
+        Employee currentEmployee = findEmployeeById(currentId);
+
+        // verificar que el tipo de empleado sí exista; si lanza excepción, entonces no
+        // existe
+        forEmployeeTypePort.verifyExistsEmployeeTypeById(employeeType);
+
+        // editar el empleado existente con la información de newData
+        currentEmployee.setFirstName(newData.getFirstName());
+        currentEmployee.setLastName(newData.getLastName());
+        currentEmployee.setSalary(newData.getSalary());
+        currentEmployee.setIgssPercentage(newData.getIgssPercentage());
+        currentEmployee.setIrtraPercentage(newData.getIrtraPercentage());
+        currentEmployee.setEmployeeType(employeeType);
+
+        return currentEmployee;
+    }
+
+    public Employee findEmployeeById(String employeeId) throws NotFoundException {
+        // manda a traer el employee si el optional esta vacio entonces retorna un
+        // notfound exception
+        Employee employee = employeeRepository.findById(employeeId).orElseThrow(
+                () -> new NotFoundException("El id especificado no pertenece a ningun empleado."));
+
+        return employee;
     }
 
 }
