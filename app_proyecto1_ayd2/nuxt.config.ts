@@ -8,7 +8,6 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   app: {
     baseURL: '/app/',              // 👈 Esto asegura que la app corre en /app/
-    buildAssetsDir: '/app/_nuxt/'  // 👈 Asegura que los assets JS/CSS carguen bien
   },
   modules: ['@primevue/nuxt-module', '@pinia/nuxt', '@pinia/colada-nuxt'],
   primevue: {
