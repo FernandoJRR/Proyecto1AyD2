@@ -7,7 +7,11 @@ export default defineNuxtConfig({
   srcDir: 'app/',
   css: ['~/assets/css/main.css'],
   modules: ['@primevue/nuxt-module', '@pinia/nuxt', '@pinia/colada-nuxt', 'pinia-plugin-persistedstate/nuxt'],
-  primevue:{
+  app: {
+    baseURL: '/app/',              
+    buildAssetsDir: '/app/_nuxt/',
+  },
+  primevue: {
     options: {
       theme: {
         preset: Aura,
