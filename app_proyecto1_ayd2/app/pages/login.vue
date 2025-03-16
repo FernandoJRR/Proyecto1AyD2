@@ -33,7 +33,9 @@ import { zodResolver } from '@primevue/forms/resolvers/zod';
 import { FloatLabel, InputText, Password } from 'primevue';
 import { toast } from 'vue-sonner';
 import { z } from 'zod';
-definePageMeta({ layout: 'login' })
+
+const authStore = useAuthStore()
+const { login } = authStore
 
 const initialValues = reactive({
   username: '',
@@ -55,39 +57,13 @@ const onFormSubmit = (e: any) => {
       username: e.values.username, password: e.values.password
     }
 
-    mutate(payload)
+    if (payload.username === 'frodriguez' && payload.password === 'password') {
+      login(payload)
+    } else {
+      toast.error('Error al iniciar sesion')
+    }
   }
 };
 
-/*
-const { mutate, asyncStatus } = useMutation({
-  mutation: (loginData: any) => login(loginData),
-  onError(error) {
-    console.log(error)
-    console.log(error.message)
-    toast.error('Ocurrió un error iniciar sesion', {
-      description: `
-      Parece que los datos no son válidos:
-      ${(error)}
-      `
-    })
-  },
-  onSuccess() {
-    toast.success('Bienvenido!')
-    navigateTo('/')
-  }
-})
-*/
- function mutate(loginData: any) {
-  if (loginData.username === 'frodriguez' && loginData.password === 'password') {
-    const cookie = useCookie('proyecto1ayd2-user-token')
-
-    cookie.value = loginData
-
-    toast.success('Bienvenido!')
-    navigateTo('/')
-  } else {
-    toast.error('Error al iniciar sesion')
-  }
- }
+definePageMeta({ layout: 'login' })
 </script>

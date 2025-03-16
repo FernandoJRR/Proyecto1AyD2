@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   srcDir: 'app/',
   css: ['~/assets/css/main.css'],
-  modules: ['@primevue/nuxt-module', '@pinia/nuxt', '@pinia/colada-nuxt'],
+  modules: ['@primevue/nuxt-module', '@pinia/nuxt', '@pinia/colada-nuxt', 'pinia-plugin-persistedstate/nuxt'],
   primevue:{
     options: {
       theme: {

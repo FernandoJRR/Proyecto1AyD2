@@ -13,6 +13,7 @@ export interface LoginPayload {
 }
 
 export const useAuthStore = defineStore('auth', {
+  persist: true,
   state: () => ({
     authenticated: false,
     loading: false,
@@ -25,6 +26,7 @@ export const useAuthStore = defineStore('auth', {
 
       const router = useRouter()
 
+      /*
       const { data, error } = await $api<any>(
         '/login',
         {
@@ -46,24 +48,33 @@ export const useAuthStore = defineStore('auth', {
           return
         }
       }
+      */
+      const data = { value: { token: 'token', user: { id: '', username: 'frodriguez', employee_id: 'id'} } }
 
-      // Success
-      // Set cookies, user and role
+      // Exito
       const tokenCookie = useCookie('proyecto1ayd2-user-token')
-      const roleCookie = useCookie('proyecto1ayd2-roleuser')
       tokenCookie.value = data?.value?.token
-      roleCookie.value = 'staff'
-      // Set the user in the store
-      this.user = data?.value?.staff ?? null
-      // Set the authenticated flag
+
+      this.user = data?.value?.user ?? null
       this.authenticated = true
-      // Set the staff roles
-      this.staffRoles = data?.value?.staff?.roles ?? []
-      // Redirect to the dashboard
+
+      toast.success('Bienvenido!')
       router.push('/')
-      // Return the data and error
+
       this.loading = false
       return { data, error: false }
+    },
+    async logout() {
+      this.loading = true
+      const tokenCookie = useCookie('proyecto1ayd2-user-token')
+      tokenCookie.value = null
+
+      this.user = null
+      this.authenticated = false
+
+      this.loading = false
+      const router = useRouter()
+      router.push('/login')
     }
   }
 })
