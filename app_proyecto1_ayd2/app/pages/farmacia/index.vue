@@ -2,7 +2,7 @@
   <div class="m-2">
     <h1 class="text-black mb-2 text-2xl">Farmacia</h1>
     <DataTable
-      :value="state.data as any[]"
+      :value="medicinesState.data as any[]"
       tableStyle="min-width: 50rem"
       stripedRows
       :loading="asyncStatus == 'loading'"
@@ -29,17 +29,16 @@
       </Column>
       <template #footer>
         Hay en total
-        {{ state.data ? (state.data as any[]).length : 0 }} medicamentos.
+        {{ medicinesState.data ? (medicinesState.data as any[]).length : 0 }} medicamentos.
       </template>
     </DataTable>
   </div>
 </template>
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
-import type { Medicine } from "~/lib/api/medicines/medicine";
 import { getAllMedicines } from "~/lib/api/medicines/medicine";
 
-const { data, error, isLoading } = useQuery({
+const { state: medicinesState, asyncStatus } = useQuery({
   key: ['medicines'],
   query: () => getAllMedicines(),
 });
