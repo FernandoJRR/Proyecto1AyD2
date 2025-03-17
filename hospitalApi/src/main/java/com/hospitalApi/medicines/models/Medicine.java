@@ -1,10 +1,13 @@
 package com.hospitalApi.medicines.models;
 
+import java.util.List;
+
 import com.hospitalApi.medicines.dtos.CreateMedicineRequestDTO;
 import com.hospitalApi.medicines.dtos.UpdateMedicineRequestDTO;
 import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -37,9 +40,12 @@ public class Medicine extends Auditor {
     private Integer minQuantity;
 
     @NotNull(message = "El precio del medicamento es requerido")
-    @Min(value = 1, message = "El precio del medicamento no puede ser menor a Q1.00")
+    @DecimalMin(value = "0.01", inclusive = true, message = "El precio del medicamento debe ser mayor a 0")
     @Column(nullable = false)
     private Double price;
+
+    @OneToMany(mappedBy = "medicine", fetch = FetchType.LAZY)
+    private List<SaleMedicine> saleMedicines;
 
     public Medicine(String id, String name, String description, Integer quantity, Integer minQuantity, Double price) {
         super(id);
