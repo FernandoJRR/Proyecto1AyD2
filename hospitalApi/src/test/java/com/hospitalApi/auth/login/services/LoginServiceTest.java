@@ -91,7 +91,7 @@ public class LoginServiceTest {
                 SALARY,
                 IGSS_PERCENTAGE,
                 IRTRA_PERCENTAGE,
-                RESIGN_DATE, new EmployeeTypeResponseDTO(ID, "FARMACIA"));
+                new EmployeeTypeResponseDTO(ID, "FARMACIA"));
 
     }
 
@@ -199,7 +199,7 @@ public class LoginServiceTest {
      * cuando: se intenta iniciar sesión con ese usuario.
      * entonces: se lanza una excepción `BadCredentialsException` y no se ejecutan
      * la carga de permisos ni la generación de jwt.
-     * 
+     *
      * @throws NotFoundException
      */
     @Test
