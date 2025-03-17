@@ -3,6 +3,7 @@ package com.hospitalApi.medicines.services;
 import java.util.List;
 
 import com.hospitalApi.medicines.dtos.CreateMedicineRequestDTO;
+import com.hospitalApi.medicines.dtos.MedicineResponseDTO;
 import com.hospitalApi.medicines.dtos.UpdateMedicineRequestDTO;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
@@ -22,31 +23,36 @@ public class MedicineService implements ForMedicinePort {
 
     @Override
     public Medicine createMedicine(CreateMedicineRequestDTO createMedicineRequestDTO) throws DuplicatedEntryException {
-        //Verificamos si el nombre del medicamento ya existe
+        // Verificamos si el nombre del medicamento ya existe
         if (medicineRepository.existsByName(createMedicineRequestDTO.getName())) {
-            throw new DuplicatedEntryException("El medicamento con nombre " + createMedicineRequestDTO.getName() + " ya existe");
+            throw new DuplicatedEntryException(
+                    "El medicamento con nombre " + createMedicineRequestDTO.getName() + " ya existe");
         }
-        //Generamos una nueva instancia de Medicine en base a los datos del DTO
+        // Generamos una nueva instancia de Medicine en base a los datos del DTO
         Medicine newMedicine = new Medicine(createMedicineRequestDTO);
-        //Guardamos el nuevo medicamento en la base de datos
+        // Guardamos el nuevo medicamento en la base de datos
         return medicineRepository.save(newMedicine);
     }
 
     @Override
-    public Medicine updateMedicine(Long id, UpdateMedicineRequestDTO updateMedicineRequestDTO) throws DuplicatedEntryException, NotFoundException {
+    public Medicine updateMedicine(Long id, UpdateMedicineRequestDTO updateMedicineRequestDTO)
+            throws DuplicatedEntryException, NotFoundException {
         // Obtenemos la medicina en base el id
-        Medicine currentMedicine = medicineRepository.findById(id).orElseThrow( () -> new NotFoundException("Medicamento con id " + id + " no encontrado"));
-        // Puede que la actualizacion contenga el mismo nombre que el actual medicamento si es
+        Medicine currentMedicine = medicineRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Medicamento con id " + id + " no encontrado"));
+        // Puede que la actualizacion contenga el mismo nombre que el actual medicamento
+        // si es
         // diferente verificamos si el nombre ya existe
         if (!currentMedicine.getName().equals(updateMedicineRequestDTO.getName())) {
-            //Verificamos si el nombre del medicamento ya existe
+            // Verificamos si el nombre del medicamento ya existe
             if (medicineRepository.existsByName(updateMedicineRequestDTO.getName())) {
-                throw new DuplicatedEntryException("El medicamento con nombre " + updateMedicineRequestDTO.getName() + " ya existe");
+                throw new DuplicatedEntryException(
+                        "El medicamento con nombre " + updateMedicineRequestDTO.getName() + " ya existe");
             }
         }
-        //Actualizamos los datos de la medicina
+        // Actualizamos los datos de la medicina
         currentMedicine = currentMedicine.updateFromDTO(updateMedicineRequestDTO);
-        //Guardamos los cambios en la base de datos
+        // Guardamos los cambios en la base de datos
         return medicineRepository.save(currentMedicine);
     }
 
@@ -62,8 +68,12 @@ public class MedicineService implements ForMedicinePort {
 
     @Override
     public List<Medicine> getAllMedicines() {
-        //Obtenemos todos los medicamentos y los mappeamos a un DTO
         return medicineRepository.findAll();
+    }
+
+    @Override
+    public List<Medicine> getMedicinesWithLowStock() {
+        return medicineRepository.findMedicinesWithLowStock();
     }
 
 }

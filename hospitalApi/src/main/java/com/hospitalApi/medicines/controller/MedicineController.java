@@ -28,7 +28,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 
 @RestController
-@RequestMapping("v1/medicines")
+@RequestMapping("api/v1/medicines")
 @RequiredArgsConstructor
 public class MedicineController {
 
@@ -47,13 +47,25 @@ public class MedicineController {
         return ResponseEntity.ok().body(response);
     }
 
+    @Operation(summary = "Obtener los medicamentos con stock bajo", description = "Devuelve la lista de los medicamentos con stock bajo.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de medicamentos con stock bajo obtenida exitosamente"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @GetMapping("/low-stock")
+    public ResponseEntity<List<MedicineResponseDTO>> getMedicinesWithLowStock() {
+        List<Medicine> medicineList = medicinePort.getMedicinesWithLowStock();
+        List<MedicineResponseDTO> response = medicineMapper.fromMedicineListToMedicineResponseDTOList(medicineList);
+        return ResponseEntity.ok().body(response);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<MedicineResponseDTO> getMedicine(
-            @PathVariable("id") @NotBlank(message = "El id del medicamento es requerido") Long id
-    ) throws NotFoundException {
-        //Obtener el medicamento en base al id
+            @PathVariable("id") @NotBlank(message = "El id del medicamento es requerido") Long id)
+            throws NotFoundException {
+        // Obtener el medicamento en base al id
         Medicine medicine = medicinePort.getMedicine(id);
-        //Convertir el medicamento a un DTO
+        // Convertir el medicamento a un DTO
         MedicineResponseDTO responseDTO = new MedicineResponseDTO(medicine);
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
     }
@@ -64,10 +76,9 @@ public class MedicineController {
             @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "409", description = "Conflicto - Nombre duplicado", content = @Content(mediaType = "application/json"))
     })
-    @PostMapping()
+    @PostMapping("/create")
     public ResponseEntity<MedicineResponseDTO> createMedicine(
-            @RequestBody @Valid CreateMedicineRequestDTO createMedicineRequestDTO
-    ) throws DuplicatedEntryException {
+            @RequestBody @Valid CreateMedicineRequestDTO createMedicineRequestDTO) throws DuplicatedEntryException {
         // Crear un nuevo medicamento en base al DTO
         Medicine medicine = new Medicine(createMedicineRequestDTO);
         // Creacion del medicamento en el port
@@ -87,7 +98,8 @@ public class MedicineController {
     @PatchMapping("/{id}")
     public ResponseEntity<MedicineResponseDTO> updateMedicine(
             @PathVariable("id") @NotBlank(message = "El id del medicamento es requerido") Long id,
-            @RequestBody @Valid UpdateMedicineRequestDTO updateMedicineRequestDTO) throws DuplicatedEntryException, NotFoundException {
+            @RequestBody @Valid UpdateMedicineRequestDTO updateMedicineRequestDTO)
+            throws DuplicatedEntryException, NotFoundException {
         // Actualizar el medicamento en base al DTO
         Medicine medicine = medicinePort.updateMedicine(id, updateMedicineRequestDTO);
         // Convertir el medicamento a un DTO y retornarlo

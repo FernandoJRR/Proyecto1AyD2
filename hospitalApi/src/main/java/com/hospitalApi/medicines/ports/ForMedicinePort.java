@@ -3,6 +3,7 @@ package com.hospitalApi.medicines.ports;
 import java.util.List;
 
 import com.hospitalApi.medicines.dtos.CreateMedicineRequestDTO;
+import com.hospitalApi.medicines.dtos.MedicineResponseDTO;
 import com.hospitalApi.medicines.dtos.UpdateMedicineRequestDTO;
 import com.hospitalApi.medicines.models.Medicine;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
@@ -18,4 +19,6 @@ public interface ForMedicinePort {
     public boolean deleteMedicine(Long id);
 
     public List<Medicine> getAllMedicines();
+
+    public List<Medicine> getMedicinesWithLowStock();
 }

@@ -52,16 +52,14 @@ public class MedicineServiceTest {
                 MEDICINE_DESCRIPTION,
                 MEDICINE_QUANTITY,
                 MEDICINE_MIN_QUANTITY,
-                MEDICINE_PRICE
-        );
+                MEDICINE_PRICE);
 
         updateDTO = new UpdateMedicineRequestDTO(
                 MEDICINE_NAME_UPDATED,
                 MEDICINE_DESCRIPTION,
                 MEDICINE_QUANTITY,
                 MEDICINE_MIN_QUANTITY,
-                MEDICINE_PRICE
-        );
+                MEDICINE_PRICE);
 
         medicine = new Medicine(
                 MEDICINE_ID,
@@ -69,8 +67,7 @@ public class MedicineServiceTest {
                 MEDICINE_DESCRIPTION,
                 MEDICINE_QUANTITY,
                 MEDICINE_MIN_QUANTITY,
-                MEDICINE_PRICE
-        );
+                MEDICINE_PRICE);
     }
 
     @Test
@@ -93,8 +90,7 @@ public class MedicineServiceTest {
                 () -> assertEquals(MEDICINE_DESCRIPTION, captured.getDescription()),
                 () -> assertEquals(MEDICINE_QUANTITY, captured.getQuantity()),
                 () -> assertEquals(MEDICINE_MIN_QUANTITY, captured.getMinQuantity()),
-                () -> assertEquals(MEDICINE_PRICE, captured.getPrice())
-        );
+                () -> assertEquals(MEDICINE_PRICE, captured.getPrice()));
 
         verify(medicineRepository, times(1)).existsByName(MEDICINE_NAME);
         verify(medicineRepository, times(1)).save(any(Medicine.class));
@@ -126,8 +122,7 @@ public class MedicineServiceTest {
         assertAll(
                 () -> assertEquals(MEDICINE_NAME_UPDATED, updated.getName()),
                 () -> assertEquals(MEDICINE_DESCRIPTION, updated.getDescription()),
-                () -> assertEquals(MEDICINE_QUANTITY, updated.getQuantity())
-        );
+                () -> assertEquals(MEDICINE_QUANTITY, updated.getQuantity()));
 
         verify(medicineRepository, times(1)).findById(MEDICINE_ID);
         verify(medicineRepository, times(1)).existsByName(MEDICINE_NAME_UPDATED);
@@ -201,4 +196,34 @@ public class MedicineServiceTest {
 
         verify(medicineRepository, times(1)).findAll();
     }
+
+    @Test
+    public void shouldReturnMedicinesWithLowStock() {
+        // ARRANGE
+        List<Medicine> lowStockMedicines = new ArrayList<>();
+
+        Medicine lowStockMedicine = new Medicine(
+                2L,
+                "Amoxicilina",
+                "Antibiótico de amplio espectro",
+                3, // quantity
+                5, // minQuantity
+                8.50);
+
+        lowStockMedicines.add(lowStockMedicine);
+
+        // Simulamos el resultado del repositorio
+        when(medicineRepository.findMedicinesWithLowStock()).thenReturn(lowStockMedicines);
+
+        // ACT
+        List<Medicine> result = medicineService.getMedicinesWithLowStock();
+
+        // ASSERT
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(2L, result.get(0).getId());
+
+        verify(medicineRepository, times(1)).findMedicinesWithLowStock();
+    }
+
 }
