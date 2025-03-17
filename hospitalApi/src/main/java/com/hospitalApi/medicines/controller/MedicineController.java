@@ -1,31 +1,36 @@
 package com.hospitalApi.medicines.controller;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.hospitalApi.medicines.dtos.CreateMedicineRequestDTO;
+import com.hospitalApi.medicines.dtos.MedicineResponseDTO;
+import com.hospitalApi.medicines.dtos.UpdateMedicineRequestDTO;
 import com.hospitalApi.medicines.mappers.MedicineMapper;
 import com.hospitalApi.medicines.models.Medicine;
 import com.hospitalApi.medicines.ports.ForMedicinePort;
-import com.hospitalApi.medicines.services.MedicineService;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.validation.constraints.NotBlank;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
-
-import com.hospitalApi.medicines.dtos.MedicineResponseDTO;
-import com.hospitalApi.medicines.dtos.UpdateMedicineRequestDTO;
-
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("api/v1/medicines")
