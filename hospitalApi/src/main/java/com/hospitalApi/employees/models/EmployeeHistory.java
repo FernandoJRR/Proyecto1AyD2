@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @DynamicUpdate
 public class EmployeeHistory extends Auditor {
-    @OneToOne(mappedBy = "employeeHistory")
+    @ManyToOne
     private HistoryType historyType;
 
     @ManyToOne

@@ -6,8 +6,11 @@ import org.springframework.stereotype.Component;
 
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.models.EmployeeType;
+import com.hospitalApi.employees.models.HistoryType;
+import com.hospitalApi.employees.repositories.EmployeeHistoryRepository;
 import com.hospitalApi.employees.repositories.EmployeeRepository;
 import com.hospitalApi.employees.repositories.EmployeeTypeRepository;
+import com.hospitalApi.employees.repositories.HistoryTypeRepository;
 import com.hospitalApi.shared.utils.PasswordEncoderUtil;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.repositories.UserRepository;
@@ -23,6 +26,7 @@ public class SeedersConfig implements CommandLineRunner {
     private final UserRepository userRepository;
     private final EmployeeTypeRepository employeeTypeRepository;
     private final EmployeeRepository employeeRepository;
+    private final HistoryTypeRepository historyTypeRepository;
     private final PasswordEncoderUtil passwordEncoderUtil;
 
     @Override
@@ -38,6 +42,13 @@ public class SeedersConfig implements CommandLineRunner {
         EmployeeType newEmployeeType = new EmployeeType("USER");
         employeeTypeRepository.save(newEmployeeType);
 
+        // se crean los tipos de historial
+        HistoryType historyTypeContratacion = new HistoryType("Contratacion");
+        HistoryType historyTypeDespido = new HistoryType("Despido");
+        HistoryType historyTypeRecontratacion = new HistoryType("Recontratacion");
+        HistoryType historyTypeAumentoSalarial = new HistoryType("Aumento Salarial");
+        HistoryType historyTypeDisminucionSalarial = new HistoryType("Disminucion Salarial");
+
         // creamos el usuario admin
         User newUser = new User("admin", passwordEncoderUtil.encode("admin"));
 
@@ -45,11 +56,17 @@ public class SeedersConfig implements CommandLineRunner {
         Employee newEmployee = new Employee(null, null, null, null, null, null,
                 newEmployeeType, newUser);
 
+        // se asigna el usuario a su empleado
         newUser.setEmployee(newEmployee);
 
         employeeRepository.save(newEmployee);
         userRepository.save(newUser);
 
+        historyTypeRepository.save(historyTypeContratacion);
+        historyTypeRepository.save(historyTypeDespido);
+        historyTypeRepository.save(historyTypeRecontratacion);
+        historyTypeRepository.save(historyTypeAumentoSalarial);
+        historyTypeRepository.save(historyTypeDisminucionSalarial);
     }
 
 }

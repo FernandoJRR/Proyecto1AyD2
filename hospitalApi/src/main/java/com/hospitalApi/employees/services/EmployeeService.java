@@ -35,6 +35,8 @@ public class EmployeeService implements ForEmployeesPort {
         // mandar a guardar el usuario
         User user = userService.createUser(newUser);
 
+        // crea el primer registro del empleado en el historial (su contratacion)
+
         // guardar el empledo
         newEmployee.setUser(user);
         newEmployee.setEmployeeType(employeeType);
