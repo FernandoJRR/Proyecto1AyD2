@@ -76,4 +76,28 @@ public class MedicineService implements ForMedicinePort {
         return medicineRepository.findMedicinesWithLowStock();
     }
 
+    @Override
+    public Medicine updateStockMedicine(String id, Integer quantity) throws NotFoundException {
+        Medicine currentMedicine = medicineRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Medicamento con id " + id + " no encontrado"));
+        currentMedicine.setQuantity(quantity);
+        return medicineRepository.save(currentMedicine);
+    }
+
+    @Override
+    public Medicine sumStockMedicine(String id, Integer quantity) throws NotFoundException {
+        Medicine currentMedicine = medicineRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Medicamento con id " + id + " no encontrado"));
+        currentMedicine.setQuantity(currentMedicine.getQuantity() + quantity);
+        return medicineRepository.save(currentMedicine);
+    }
+
+    @Override
+    public Medicine subtractStockMedicine(String id, Integer quantity) throws NotFoundException {
+        Medicine currentMedicine = medicineRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Medicamento con id " + id + " no encontrado"));
+        currentMedicine.setQuantity(currentMedicine.getQuantity() - quantity);
+        return medicineRepository.save(currentMedicine);
+    }
+
 }
