@@ -12,11 +12,11 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 public interface ForMedicinePort {
     public Medicine createMedicine(CreateMedicineRequestDTO createMedicineRequestDTO) throws DuplicatedEntryException;
 
-    public Medicine updateMedicine(Long id, UpdateMedicineRequestDTO updateMedicineRequestDTO) throws DuplicatedEntryException, NotFoundException;
+    public Medicine updateMedicine(String id, UpdateMedicineRequestDTO updateMedicineRequestDTO) throws DuplicatedEntryException, NotFoundException;
 
-    public Medicine getMedicine(Long id) throws NotFoundException;
+    public Medicine getMedicine(String id) throws NotFoundException;
 
-    public boolean deleteMedicine(Long id);
+    public boolean deleteMedicine(String id);
 
     public List<Medicine> getAllMedicines();
 

@@ -14,6 +14,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
+
+import javax.print.DocFlavor.STRING;
+
 import java.util.List;
 import java.util.ArrayList;
 
@@ -34,12 +37,19 @@ public class MedicineServiceTest {
     private Medicine medicine;
 
     // Constantes
-    private static final Long MEDICINE_ID = 1L;
+    private static final String MEDICINE_ID = "12312-12312-12312-12312";
     private static final String MEDICINE_NAME = "Paracetamol";
     private static final String MEDICINE_DESCRIPTION = "Medicina para el dolor de cabeza";
     private static final Integer MEDICINE_QUANTITY = 10;
     private static final Integer MEDICINE_MIN_QUANTITY = 5;
     private static final Double MEDICINE_PRICE = 5.00;
+
+    private static final String MEDICINE_ID_2 = "23434-23434-23434-23434";
+    private static final String MEDICINE_NAME_2 = "Amoxicilina";
+    private static final String MEDICINE_DESCRIPTION_2 = "Antibiótico de amplio espectro";
+    private static final Integer MEDICINE_QUANTITY_2 = 3;
+    private static final Integer MEDICINE_MIN_QUANTITY_2 = 5;
+    private static final Double MEDICINE_PRICE_2 = 8.50;
 
     private static final String MEDICINE_NAME_UPDATED = "Ibuprofeno";
 
@@ -203,12 +213,12 @@ public class MedicineServiceTest {
         List<Medicine> lowStockMedicines = new ArrayList<>();
 
         Medicine lowStockMedicine = new Medicine(
-                2L,
-                "Amoxicilina",
-                "Antibiótico de amplio espectro",
-                3, // quantity
-                5, // minQuantity
-                8.50);
+                MEDICINE_ID_2,
+                MEDICINE_NAME_2,
+                MEDICINE_DESCRIPTION_2,
+                MEDICINE_QUANTITY_2,
+                MEDICINE_MIN_QUANTITY_2,
+                MEDICINE_PRICE_2);
 
         lowStockMedicines.add(lowStockMedicine);
 
@@ -221,7 +231,7 @@ public class MedicineServiceTest {
         // ASSERT
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(2L, result.get(0).getId());
+        assertEquals(MEDICINE_ID_2, result.get(0).getId());
 
         verify(medicineRepository, times(1)).findMedicinesWithLowStock();
     }

@@ -61,7 +61,7 @@ public class MedicineController {
 
     @GetMapping("/{id}")
     public ResponseEntity<MedicineResponseDTO> getMedicine(
-            @PathVariable("id") @NotBlank(message = "El id del medicamento es requerido") Long id)
+            @PathVariable("id") @NotBlank(message = "El id del medicamento es requerido") String id)
             throws NotFoundException {
         // Obtener el medicamento en base al id
         Medicine medicine = medicinePort.getMedicine(id);
@@ -97,7 +97,7 @@ public class MedicineController {
     })
     @PatchMapping("/{id}")
     public ResponseEntity<MedicineResponseDTO> updateMedicine(
-            @PathVariable("id") @NotBlank(message = "El id del medicamento es requerido") Long id,
+            @PathVariable("id") @NotBlank(message = "El id del medicamento es requerido") String id,
             @RequestBody @Valid UpdateMedicineRequestDTO updateMedicineRequestDTO)
             throws DuplicatedEntryException, NotFoundException {
         // Actualizar el medicamento en base al DTO

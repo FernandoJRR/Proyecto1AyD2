@@ -35,7 +35,7 @@ public class MedicineService implements ForMedicinePort {
     }
 
     @Override
-    public Medicine updateMedicine(Long id, UpdateMedicineRequestDTO updateMedicineRequestDTO)
+    public Medicine updateMedicine(String id, UpdateMedicineRequestDTO updateMedicineRequestDTO)
             throws DuplicatedEntryException, NotFoundException {
         // Obtenemos la medicina en base el id
         Medicine currentMedicine = medicineRepository.findById(id)
@@ -57,12 +57,12 @@ public class MedicineService implements ForMedicinePort {
     }
 
     @Override
-    public Medicine getMedicine(Long id) throws NotFoundException {
+    public Medicine getMedicine(String id) throws NotFoundException {
         return medicineRepository.findById(id).orElseThrow(() -> new NotFoundException("Medicamento no encontrado"));
     }
 
     @Override
-    public boolean deleteMedicine(Long id) {
+    public boolean deleteMedicine(String id) {
         return false;
     }
 
