@@ -9,7 +9,7 @@ import lombok.Value;
 public class EmployeeResponseDTO {
 
     String id;
-    
+
     String firstName;
 
     String lastName;
@@ -21,5 +21,7 @@ public class EmployeeResponseDTO {
     BigDecimal irtraPercentage;
 
     LocalDateTime resignDate;
+
+    EmployeeTypeResponseDTO employeeType;
 
 }

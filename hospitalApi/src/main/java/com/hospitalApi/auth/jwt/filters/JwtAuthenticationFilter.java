@@ -39,18 +39,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         Optional<String> tokenOptional = extractTokenFromHeader(request);
 
-        if (tokenOptional.isEmpty()) {
-            return;
+        if (tokenOptional.isPresent()) {
+            String token = tokenOptional.get();
+            Optional<UserDetails> userDetailsOptional = validateToken(token);
+
+            if (userDetailsOptional.isPresent()) {
+                authenticateUser(userDetailsOptional.get(), token, request);
+            }
         }
-
-        String token = tokenOptional.get();
-        Optional<UserDetails> userDetailsOptional = validateToken(token);
-
-        if (userDetailsOptional.isEmpty()) {
-            return;
-        }
-
-        authenticateUser(userDetailsOptional.get(), token, request);
         filterChain.doFilter(request, response);
     }
 
