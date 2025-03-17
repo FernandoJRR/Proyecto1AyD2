@@ -1,43 +1,37 @@
 package com.hospitalApi.shared.config;
 
 import java.util.List;
-import lombok.AllArgsConstructor;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder.BCryptVersion;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-@AllArgsConstructor
+import com.hospitalApi.auth.login.ports.ForUserLoader;
+
 @Configuration
 public class SecurityConfig {
 
     private final AppProperties appProperties;
 
-    /*
-     * private final LoadUserService loadUserAdapter;
-     * private final JwtAuthenticationFilter jwtAuthenticationFilter;
-     * 
-     * /**
-     * Configuración del filtro de seguridad HTTP
-     *
-     * @param http
-     * 
-     * @return
-     * 
-     * @throws java.lang.Exception
-     */
+    private final ForUserLoader forUserLoader;
+
+    public SecurityConfig(AppProperties appProperties, @Lazy ForUserLoader forUserLoader) {
+        this.appProperties = appProperties;
+        this.forUserLoader = forUserLoader;
+    }
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -104,22 +98,6 @@ public class SecurityConfig {
     }
 
     /**
-     * Configuración de AuthenticationManager usando AuthenticationConfiguration
-     *
-     * @param authConfig
-     * @return
-     * @throws java.lang.Exception
-     */
-    /*
-     * @Bean
-     * public AuthenticationManager
-     * authenticationManager(AuthenticationConfiguration authConfig) throws
-     * Exception {
-     * return authConfig.getAuthenticationManager();
-     * }
-     */
-
-    /**
      * Configura el bean que sera expueto cuando se necesite el cripter en el
      * sistema, se eligio esta implementacion porque utiliza BCrypt (version 2B para
      * compatibilidad con
@@ -128,17 +106,22 @@ public class SecurityConfig {
      * @return
      */
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public PasswordEncoder getPasswordEnconder() {
         return new BCryptPasswordEncoder(BCryptVersion.$2B, 12);
     }
 
-    /*
-     * @Bean
-     * public DaoAuthenticationProvider authenticationProvider() {
-     * DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-     * provider.setPasswordEncoder(passwordEncoder());
-     * provider.setUserDetailsService(loadUserAdapter);
-     * return provider;
-     * }
+    /**
+     * Configura el autenticationmanager, le da que implementacion del metodo
+     * loadByUserName usara, asi como el econder
+     * 
+     * @return
      */
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(forUserLoader);
+        authProvider.setPasswordEncoder(getPasswordEnconder());
+        return new ProviderManager(List.of(authProvider));
+    }
+
 }

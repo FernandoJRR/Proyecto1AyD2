@@ -3,6 +3,7 @@ package com.hospitalApi.users.services;
 import org.springframework.stereotype.Service;
 
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
+import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.shared.utils.PasswordEncoderUtil;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
@@ -33,6 +34,16 @@ public class UserService implements ForUsersPort {
         User save = userRepository.save(newUser);
 
         return save;
+    }
+
+    public User findUserById(String userId) throws NotFoundException {
+        return userRepository.findById(userId).orElseThrow(() -> new NotFoundException(
+                "El id especificado no pertenece a ningun usuario en el sistema"));
+    }
+
+    public User findUserByUsername(String username) throws NotFoundException {
+        return userRepository.findByUsername(username).orElseThrow(() -> new NotFoundException(
+                "El nombre de usuario especificado no pertenece a ningun usuario en el sistema"));
     }
 
 }
