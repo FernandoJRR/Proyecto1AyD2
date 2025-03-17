@@ -1,10 +1,9 @@
 import { defineStore } from "pinia";
 import { toast } from "vue-sonner";
-import type { Entity } from "~/lib/api/utils/entity";
+import type { Employee } from "~/lib/api/admin/employee";
 
-export interface User extends Entity {
+export interface User {
   username: string
-  employee_id: string
 }
 
 export interface LoginPayload {
@@ -18,6 +17,7 @@ export const useAuthStore = defineStore('auth', {
     authenticated: false,
     loading: false,
     user: null as User | null,
+    employee: null as Employee | null,
     staffRoles: [] as any[]
   }),
   actions: {
@@ -26,7 +26,6 @@ export const useAuthStore = defineStore('auth', {
 
       const router = useRouter()
 
-      /*
       const { data, error } = await $api<any>(
         '/login',
         {
@@ -48,14 +47,15 @@ export const useAuthStore = defineStore('auth', {
           return
         }
       }
-      */
-      const data = { value: { token: 'token', user: { id: '', username: 'frodriguez', employee_id: 'id'} } }
 
+      console.log("RESPONSE LOGIN")
+      console.log(data)
       // Exito
       const tokenCookie = useCookie('proyecto1ayd2-user-token')
       tokenCookie.value = data?.value?.token
 
-      this.user = data?.value?.user ?? null
+      this.user = {username: data?.value?.username ?? null } 
+      this.employee = data?.value?.employee ?? null
       this.authenticated = true
 
       toast.success('Bienvenido!')
@@ -70,6 +70,7 @@ export const useAuthStore = defineStore('auth', {
       tokenCookie.value = null
 
       this.user = null
+      this.employee = null
       this.authenticated = false
 
       this.loading = false
