@@ -14,24 +14,25 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder.BCryptVersion;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.hospitalApi.auth.jwt.filters.JwtAuthenticationFilter;
 import com.hospitalApi.auth.login.ports.ForUserLoader;
 
+import lombok.RequiredArgsConstructor;
+
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final AppProperties appProperties;
 
     private final ForUserLoader forUserLoader;
 
-    public SecurityConfig(AppProperties appProperties, @Lazy ForUserLoader forUserLoader) {
-        this.appProperties = appProperties;
-        this.forUserLoader = forUserLoader;
-    }
-
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -43,9 +44,10 @@ public class SecurityConfig {
                         .anyRequest().authenticated() // Protege el resto
                 )
                 // sin sesiones
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
-        // Version con jwt activa y rutas con roles
+        // // Version con jwt activa y rutas con roles
         // http.csrf(csrf -> csrf.disable()) // Desactiva CSRF
         // .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Activa
         // CORS
@@ -67,7 +69,7 @@ public class SecurityConfig {
         // // sesiones
         // .addFilterBefore(jwtAuthenticationFilter,
         // UsernamePasswordAuthenticationFilter.class);
-        // Agrega el filtro JWT
+        // // Agrega el filtro JWT
 
         return http.getOrBuild();
     }
@@ -106,7 +108,7 @@ public class SecurityConfig {
      * @return
      */
     @Bean
-    public PasswordEncoder getPasswordEnconder() {
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(BCryptVersion.$2B, 12);
     }
 
@@ -120,7 +122,7 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(forUserLoader);
-        authProvider.setPasswordEncoder(getPasswordEnconder());
+        authProvider.setPasswordEncoder(passwordEncoder());
         return new ProviderManager(List.of(authProvider));
     }
 

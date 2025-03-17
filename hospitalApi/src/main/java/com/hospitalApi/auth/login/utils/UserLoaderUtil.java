@@ -6,9 +6,9 @@ package com.hospitalApi.auth.login.utils;
 
 import java.util.Set;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
@@ -17,17 +17,18 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
 
-import lombok.RequiredArgsConstructor;
-
 /**
  *
  * @author Luis Monterroso
  */
-@RequiredArgsConstructor
 @Component
 public class UserLoaderUtil implements ForUserLoader {
 
     private final ForUsersPort forUsersPort;
+
+    public UserLoaderUtil(@Lazy ForUsersPort forUsersPort) {
+        this.forUsersPort = forUsersPort;
+    }
 
     /**
      * Metodo usado para que Spring pueda cargar el usuario en el contexto de
