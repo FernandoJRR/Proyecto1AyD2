@@ -2,12 +2,15 @@ package com.hospitalApi.usuarios.services;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
+import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.shared.utils.PasswordEncoderUtil;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.repositories.UserRepository;
@@ -33,6 +37,11 @@ public class UserServiceTest {
 
     private User user;
 
+    private final String USER_USERNAME = "Luis";
+    private final String USER_PASSWORD = "abc";
+
+    private final String USER_ID = "123";
+
     /**
      * este metodo se ejecuta antes de cualquier prueba individual, se hace para
      * inicializar los moks
@@ -40,7 +49,8 @@ public class UserServiceTest {
     @BeforeEach
     private void setUp() {
         MockitoAnnotations.openMocks(this);
-        user = new User("Luis", "123");
+        user = new User(USER_USERNAME, USER_PASSWORD);
+        user.setId(USER_ID);
     }
 
     @Test
@@ -77,6 +87,61 @@ public class UserServiceTest {
 
         // verificamos que el metodo save no se haya ejecutado
         verify(userRepository, times(0)).save(any(User.class));
+    }
+
+    @Test
+    public void findUserByIdUserExistsReturnsUser() throws NotFoundException {
+        // ARRANGE
+        when(userRepository.findById(anyString())).thenReturn(Optional.of(user));
+
+        // ACT
+        User result = userService.findUserById(USER_ID);
+
+        // ASSERT
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(USER_ID, result.getId()));
+
+        verify(userRepository, times(1)).findById(USER_ID);// verificamos que se haya usado el argumento
+    }
+
+    @Test
+    public void findUserByIdUserNotFoundThrowsNotFoundException() {
+        // ARRANGE
+        when(userRepository.findById(anyString())).thenReturn(Optional.empty());
+
+        // ACT y ASSERT
+        assertThrows(NotFoundException.class, () -> {
+            userService.findUserById(USER_ID);
+        });
+
+        verify(userRepository, times(1)).findById(USER_ID);
+    }
+
+    @Test
+    public void findUserByUsernameUserExistsReturnsUser() throws NotFoundException {
+        // ARRANGE
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
+
+        // ACT
+        User result = userService.findUserByUsername(USER_USERNAME);
+
+        // ASSERT
+        assertAll(() -> assertNotNull(result),
+                () -> assertEquals(USER_USERNAME, result.getUsername()));
+        verify(userRepository, times(1)).findByUsername(USER_USERNAME);// verifammos que se haya usado el parametro
+    }
+
+    @Test
+    public void findUserByUsernameUserNotFoundThrowsNotFoundException() {
+        // ARRANGE
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.empty());
+
+        // ACT & ASSERT
+        assertThrows(NotFoundException.class, () -> {
+            userService.findUserByUsername(USER_USERNAME);
+        });
+        verify(userRepository, times(1)).findByUsername(USER_USERNAME);
     }
 
 }

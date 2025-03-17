@@ -20,5 +20,7 @@ const menus = [
     route: '/admin/tarifas',
   },
 ]
+
+defineExpose({ menus })
 </script>
 

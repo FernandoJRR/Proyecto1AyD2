@@ -1,14 +1,16 @@
 package com.hospitalApi.medicines.models;
 
+import java.util.List;
+
 import com.hospitalApi.medicines.dtos.CreateMedicineRequestDTO;
 import com.hospitalApi.medicines.dtos.UpdateMedicineRequestDTO;
+import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,14 +18,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 @Entity(name = "medicamento")
-@EqualsAndHashCode(of = "id")
-public class Medicine {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Medicine extends Auditor {
 
     @NotBlank(message = "El nombre del medicamento es requerido")
     @Column(unique = true, nullable = false, length = 100)
@@ -44,11 +40,24 @@ public class Medicine {
     private Integer minQuantity;
 
     @NotNull(message = "El precio del medicamento es requerido")
-    @Min(value = 1, message = "El precio del medicamento no puede ser menor a Q1.00")
+    @DecimalMin(value = "0.01", inclusive = true, message = "El precio del medicamento debe ser mayor a 0")
     @Column(nullable = false)
     private Double price;
 
+    @OneToMany(mappedBy = "medicine", fetch = FetchType.LAZY)
+    private List<SaleMedicine> saleMedicines;
+
+    public Medicine(String id, String name, String description, Integer quantity, Integer minQuantity, Double price) {
+        super(id);
+        this.name = name;
+        this.description = description;
+        this.quantity = quantity;
+        this.minQuantity = minQuantity;
+        this.price = price;
+    }
+
     public Medicine(String name, String description, Integer quantity, Integer minQuantity, Double price) {
+        super();
         this.name = name;
         this.description = description;
         this.quantity = quantity;
@@ -86,7 +95,7 @@ public class Medicine {
     @Override
     public String toString() {
         return "Medicine{" +
-                "id=" + id +
+                "id=" + this.getId() +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", quantity=" + quantity +

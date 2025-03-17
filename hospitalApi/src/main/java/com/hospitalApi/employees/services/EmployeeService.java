@@ -1,6 +1,8 @@
 package com.hospitalApi.employees.services;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -90,4 +92,11 @@ public class EmployeeService implements ForEmployeesPort {
         return employee;
     }
 
+    public List<Employee> findEmployees() {
+        // manda a traer el employee si el optional esta vacio entonces retorna un
+        // notfound exception
+        List<Employee> employees = employeeRepository.findAll();
+
+        return employees;
+    }
 }

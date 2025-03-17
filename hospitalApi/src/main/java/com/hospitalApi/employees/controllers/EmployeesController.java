@@ -1,5 +1,7 @@
 package com.hospitalApi.employees.controllers;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -135,4 +137,20 @@ public class EmployeesController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @Operation(summary = "Obtener todos los empleados", description = "Este endpoint permite la busqueda de todos los empleados.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Empleados encontrados exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+
+    })
+    @GetMapping("/")
+    public ResponseEntity<List<EmployeeResponseDTO>> findEmployees() {
+        // mandar a crear el employee al port
+        List<Employee> result = employeesPort.findEmployees();
+
+        // convertir el Employee al dto
+        List<EmployeeResponseDTO> response = employeeMapper.fromEmployeesToResponse(result);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 }

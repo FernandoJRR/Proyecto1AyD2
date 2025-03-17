@@ -5,6 +5,8 @@ import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.method.ParameterValidationResult;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
-import com.hospitalApi.shared.exceptions.BadCredentialsException;
 import com.hospitalApi.shared.exceptions.BadRequestException;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
@@ -25,7 +26,7 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicatedEntryException.class)
-    public ResponseEntity<?> handleDataIntegrityViolationException(DuplicatedEntryException ex) {
+    public ResponseEntity<?> handleDuplicatedEntryException(DuplicatedEntryException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
     }
 
@@ -36,10 +37,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<?> handleResourceNotFound(BadCredentialsException ex) {
+    public ResponseEntity<?> handleBadCredentialsException(BadCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                 "Autenticación fallida: El correo electrónico o la contraseña son incorrectos."
                         + " Por favor, verifica tus credenciales e intenta de nuevo.");
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<?> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                "El nombre de usuario especificado no pertenece a ningun usuario dentro del sistema.");
     }
 
     @ExceptionHandler(BadRequestException.class)
