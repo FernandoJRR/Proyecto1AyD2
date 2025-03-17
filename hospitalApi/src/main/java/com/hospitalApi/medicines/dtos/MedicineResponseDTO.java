@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class MedicineResponseDTO {
-    Long id;
+    String id;
     String name;
     String description;
     Integer quantity;

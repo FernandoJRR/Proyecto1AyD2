@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface MedicineRepository extends JpaRepository<Medicine, Long> {
+public interface MedicineRepository extends JpaRepository<Medicine, String> {
     /**
      * Verifica si el nombre del medicamento existe en la bd
      *

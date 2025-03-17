@@ -1,11 +1,18 @@
 package com.hospitalApi.medicines.services;
 
-import com.hospitalApi.medicines.dtos.CreateMedicineRequestDTO;
-import com.hospitalApi.medicines.dtos.UpdateMedicineRequestDTO;
-import com.hospitalApi.medicines.models.Medicine;
-import com.hospitalApi.medicines.repositories.MedicineRepository;
-import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
-import com.hospitalApi.shared.exceptions.NotFoundException;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -13,13 +20,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.Optional;
-import java.util.List;
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import com.hospitalApi.medicines.dtos.CreateMedicineRequestDTO;
+import com.hospitalApi.medicines.dtos.UpdateMedicineRequestDTO;
+import com.hospitalApi.medicines.models.Medicine;
+import com.hospitalApi.medicines.repositories.MedicineRepository;
+import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
+import com.hospitalApi.shared.exceptions.NotFoundException;
 
 public class MedicineServiceTest {
 
@@ -34,12 +40,19 @@ public class MedicineServiceTest {
     private Medicine medicine;
 
     // Constantes
-    private static final Long MEDICINE_ID = 1L;
+    private static final String MEDICINE_ID = "12312-12312-12312-12312";
     private static final String MEDICINE_NAME = "Paracetamol";
     private static final String MEDICINE_DESCRIPTION = "Medicina para el dolor de cabeza";
     private static final Integer MEDICINE_QUANTITY = 10;
     private static final Integer MEDICINE_MIN_QUANTITY = 5;
     private static final Double MEDICINE_PRICE = 5.00;
+
+    private static final String MEDICINE_ID_2 = "23434-23434-23434-23434";
+    private static final String MEDICINE_NAME_2 = "Amoxicilina";
+    private static final String MEDICINE_DESCRIPTION_2 = "Antibiótico de amplio espectro";
+    private static final Integer MEDICINE_QUANTITY_2 = 3;
+    private static final Integer MEDICINE_MIN_QUANTITY_2 = 5;
+    private static final Double MEDICINE_PRICE_2 = 8.50;
 
     private static final String MEDICINE_NAME_UPDATED = "Ibuprofeno";
 
@@ -203,12 +216,12 @@ public class MedicineServiceTest {
         List<Medicine> lowStockMedicines = new ArrayList<>();
 
         Medicine lowStockMedicine = new Medicine(
-                2L,
-                "Amoxicilina",
-                "Antibiótico de amplio espectro",
-                3, // quantity
-                5, // minQuantity
-                8.50);
+                MEDICINE_ID_2,
+                MEDICINE_NAME_2,
+                MEDICINE_DESCRIPTION_2,
+                MEDICINE_QUANTITY_2,
+                MEDICINE_MIN_QUANTITY_2,
+                MEDICINE_PRICE_2);
 
         lowStockMedicines.add(lowStockMedicine);
 
@@ -221,9 +234,113 @@ public class MedicineServiceTest {
         // ASSERT
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(2L, result.get(0).getId());
+        assertEquals(MEDICINE_ID_2, result.get(0).getId());
 
         verify(medicineRepository, times(1)).findMedicinesWithLowStock();
+    }
+
+    @Test
+    public void shouldUpdateStockMedicineSuccessfully() throws NotFoundException {
+        // ARRANGE
+        when(medicineRepository.findById(MEDICINE_ID)).thenReturn(Optional.of(medicine));
+        when(medicineRepository.save(any(Medicine.class))).thenReturn(medicine);
+
+        Integer newQuantity = 15;
+
+        // ACT
+        Medicine updatedMedicine = medicineService.updateStockMedicine(MEDICINE_ID, newQuantity);
+
+        // ASSERT
+        assertAll(
+                () -> assertNotNull(updatedMedicine),
+                () -> assertEquals(newQuantity, updatedMedicine.getQuantity()));
+
+        verify(medicineRepository, times(1)).findById(MEDICINE_ID);
+        verify(medicineRepository, times(1)).save(any(Medicine.class));
+    }
+
+    @Test
+    public void shouldThrowNotFoundExceptionWhenUpdatingStockAndMedicineNotFound() {
+        // ARRANGE
+        when(medicineRepository.findById(MEDICINE_ID)).thenReturn(Optional.empty());
+
+        // ACT & ASSERT
+        assertThrows(NotFoundException.class, () -> {
+            medicineService.updateStockMedicine(MEDICINE_ID, 10);
+        });
+
+        verify(medicineRepository, times(1)).findById(MEDICINE_ID);
+        verify(medicineRepository, times(0)).save(any(Medicine.class));
+    }
+
+    @Test
+    public void shouldSumStockMedicineSuccessfully() throws NotFoundException {
+        // ARRANGE
+        when(medicineRepository.findById(MEDICINE_ID)).thenReturn(Optional.of(medicine));
+        when(medicineRepository.save(any(Medicine.class))).thenReturn(medicine);
+
+        Integer quantityToAdd = 5;
+        Integer expectedQuantity = medicine.getQuantity() + quantityToAdd;
+
+        // ACT
+        Medicine updatedMedicine = medicineService.sumStockMedicine(MEDICINE_ID, quantityToAdd);
+
+        // ASSERT
+        assertAll(
+                () -> assertNotNull(updatedMedicine),
+                () -> assertEquals(expectedQuantity, updatedMedicine.getQuantity()));
+
+        verify(medicineRepository, times(1)).findById(MEDICINE_ID);
+        verify(medicineRepository, times(1)).save(any(Medicine.class));
+    }
+
+    @Test
+    public void shouldThrowNotFoundExceptionWhenSummingStockAndMedicineNotFound() {
+        // ARRANGE
+        when(medicineRepository.findById(MEDICINE_ID)).thenReturn(Optional.empty());
+
+        // ACT & ASSERT
+        assertThrows(NotFoundException.class, () -> {
+            medicineService.sumStockMedicine(MEDICINE_ID, 5);
+        });
+
+        verify(medicineRepository, times(1)).findById(MEDICINE_ID);
+        verify(medicineRepository, times(0)).save(any(Medicine.class));
+    }
+
+    @Test
+    public void shouldSubtractStockMedicineSuccessfully() throws NotFoundException {
+        // ARRANGE
+        when(medicineRepository.findById(MEDICINE_ID)).thenReturn(Optional.of(medicine));
+        when(medicineRepository.save(any(Medicine.class))).thenReturn(medicine);
+
+        Integer quantityToSubtract = 3;
+        Integer expectedQuantity = medicine.getQuantity() - quantityToSubtract;
+
+        // ACT
+        Medicine updatedMedicine = medicineService.subtractStockMedicine(MEDICINE_ID, quantityToSubtract);
+
+        // ASSERT
+        assertAll(
+                () -> assertNotNull(updatedMedicine),
+                () -> assertEquals(expectedQuantity, updatedMedicine.getQuantity()));
+
+        verify(medicineRepository, times(1)).findById(MEDICINE_ID);
+        verify(medicineRepository, times(1)).save(any(Medicine.class));
+    }
+
+    @Test
+    public void shouldThrowNotFoundExceptionWhenSubtractingStockAndMedicineNotFound() {
+        // ARRANGE
+        when(medicineRepository.findById(MEDICINE_ID)).thenReturn(Optional.empty());
+
+        // ACT & ASSERT
+        assertThrows(NotFoundException.class, () -> {
+            medicineService.subtractStockMedicine(MEDICINE_ID, 3);
+        });
+
+        verify(medicineRepository, times(1)).findById(MEDICINE_ID);
+        verify(medicineRepository, times(0)).save(any(Medicine.class));
     }
 
 }
