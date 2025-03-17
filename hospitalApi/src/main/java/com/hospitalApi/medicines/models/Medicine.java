@@ -1,5 +1,6 @@
 package com.hospitalApi.medicines.models;
 
+import com.hospitalApi.medicines.dtos.CreateMedicineRequestDTO;
 import com.hospitalApi.medicines.dtos.UpdateMedicineRequestDTO;
 
 import jakarta.persistence.*;
@@ -47,7 +48,23 @@ public class Medicine {
     @Column(nullable = false)
     private Double price;
 
-    public void updateFromDTO(UpdateMedicineRequestDTO dto) {
+    public Medicine(String name, String description, Integer quantity, Integer minQuantity, Double price) {
+        this.name = name;
+        this.description = description;
+        this.quantity = quantity;
+        this.minQuantity = minQuantity;
+        this.price = price;
+    }
+
+    public Medicine(CreateMedicineRequestDTO createMedicineRequestDTO) {
+        this.name = createMedicineRequestDTO.getName();
+        this.description = createMedicineRequestDTO.getDescription();
+        this.quantity = createMedicineRequestDTO.getQuantity();
+        this.minQuantity = createMedicineRequestDTO.getMinQuantity();
+        this.price = createMedicineRequestDTO.getPrice();
+    }
+
+    public Medicine updateFromDTO(UpdateMedicineRequestDTO dto) {
         if (dto.getName() != null) {
             this.name = dto.getName();
         }
@@ -63,6 +80,7 @@ public class Medicine {
         if (dto.getPrice() != null) {
             this.price = dto.getPrice();
         }
+        return this;
     }
 
     @Override
