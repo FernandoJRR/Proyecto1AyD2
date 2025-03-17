@@ -199,7 +199,7 @@ const {state: userTypes } = useQuery({
 })
 
 const { mutate, asyncStatus } = useMutation({
-  mutation: (staffData: EmployeePayload) => createEmployee(staffData),
+  mutation: (employeeData: EmployeePayload) => createEmployee(employeeData),
   onError(error) {
     console.log(error)
     console.log(error.message)
