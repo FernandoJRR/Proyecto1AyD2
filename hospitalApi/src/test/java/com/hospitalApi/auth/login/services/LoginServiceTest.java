@@ -30,6 +30,7 @@ import com.hospitalApi.auth.login.dtos.LoginResponseDTO;
 import com.hospitalApi.auth.login.ports.ForUserLoader;
 import com.hospitalApi.auth.login.service.LoginService;
 import com.hospitalApi.employees.dtos.EmployeeResponseDTO;
+import com.hospitalApi.employees.dtos.EmployeeTypeResponseDTO;
 import com.hospitalApi.employees.mappers.EmployeeMapper;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
@@ -90,7 +91,7 @@ public class LoginServiceTest {
                 SALARY,
                 IGSS_PERCENTAGE,
                 IRTRA_PERCENTAGE,
-                RESIGN_DATE);
+                RESIGN_DATE, new EmployeeTypeResponseDTO(ID, "FARMACIA"));
 
     }
 
