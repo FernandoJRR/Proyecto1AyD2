@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.mapstruct.Mapper;
 
+import com.hospitalApi.employees.dtos.EmployeeRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeTypeResponseDTO;
 import com.hospitalApi.employees.models.EmployeeType;
 import com.hospitalApi.shared.dtos.IdRequestDTO;
@@ -12,6 +13,8 @@ import com.hospitalApi.shared.dtos.IdRequestDTO;
 public interface EmployeeTypeMapper {
 
     public EmployeeType fromIdRequestDtoTo(IdRequestDTO idRequestDTO);
+
+    public EmployeeRequestDTO fromEmployeeTypeToEmployeeTypeResponseDto(EmployeeType employeeType);
 
     public List<EmployeeTypeResponseDTO> fromEmployeeTypeListToEmployeeTypeResponseDtoList(List<EmployeeType> types);
 }
