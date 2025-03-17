@@ -86,8 +86,8 @@ public class EmployeesServicesTest {
                 EMPLOYEE_LAST_NAME,
                 EMPLOYEE_SALARY,
                 EMPLOYEE_IGSS,
-                EMPLOYEE_IRTRA,
-                null);
+                EMPLOYEE_IRTRA
+                );
         employee.setId(EMPLOYEE_ID);
 
         updatedEmployee = new Employee(
@@ -95,8 +95,8 @@ public class EmployeesServicesTest {
                 UPDATED_EMPLOYEE_LAST_NAME,
                 UPDATED_EMPLOYEE_SALARY,
                 UPDATED_EMPLOYEE_IGSS,
-                UPDATED_EMPLOYEE_IRTRA,
-                null);
+                UPDATED_EMPLOYEE_IRTRA
+                );
 
         user = new User(USER_NAME, USER_PASSWORD);
         user.setId(USER_ID);

@@ -20,7 +20,7 @@ public class EmployeeResponseDTO {
 
     BigDecimal irtraPercentage;
 
-    LocalDateTime resignDate;
+    //LocalDateTime resignDate;
 
     EmployeeTypeResponseDTO employeeType;
 
