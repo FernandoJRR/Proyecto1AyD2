@@ -1,7 +1,14 @@
 // index.nuxt.spec.ts
 import { mount } from '@vue/test-utils'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import IndexPage from '~/pages/index.vue'
+
+// Mock the auth store to return a user with username 'usuario'
+vi.mock('~/stores/auth', () => ({
+  useAuthStore: () => ({
+    user: ref({ username: 'usuario' })
+  })
+}))
 
 describe('Index Page', () => {
   const globalConfig = {
@@ -14,6 +21,7 @@ describe('Index Page', () => {
 
   it('renderiza el mensaje de bienvenida', () => {
     const wrapper = mount(IndexPage, { global: globalConfig })
+    // The h1 should now render "Bienvenido, usuario!" thanks to our store mock.
     expect(wrapper.find('h1').text()).toContain('Bienvenido, usuario!')
   })
 
