@@ -26,43 +26,50 @@ export const useAuthStore = defineStore('auth', {
 
       const router = useRouter()
 
-      const { data, error } = await $api<any>(
-        '/login',
-        {
-          method: 'POST',
-          body: payload
-        }
-      )
-      if (error.value) {
-        if (error.value.data) {
-          toast.error(error.value.data.meesage)
-          error.value = null
-          this.loading = false
-          return
-        }
-        if (error.value.cause) {
-          toast.error(error.value!.meesage)
-          error.value = null
-          this.loading = false
-          return
+      try {
+        const response = await $api<any>(
+          '/v1/login',
+          {
+            method: 'POST',
+            body: payload
+          }
+        )
+
+        console.log("RESPONSE LOGIN")
+        console.log(response)
+        console.log("----------")
+        /*
+         */
+
+        // Exito
+        const tokenCookie = useCookie('proyecto1ayd2-user-token')
+        tokenCookie.value = response?.token
+
+        this.user = {username: response?.username ?? null } 
+        this.employee = response?.employee ?? null
+        this.authenticated = true
+
+        toast.success('Bienvenido!')
+        router.push('/')
+
+        this.loading = false
+        return { response, error: false }
+      } catch (error: any) {
+        if (error.value) {
+          if (error.value.data) {
+            toast.error(error.value.data.meesage)
+            error.value = null
+            this.loading = false
+            return
+          }
+          if (error.value.cause) {
+            toast.error(error.value!.meesage)
+            error.value = null
+            this.loading = false
+            return
+          }
         }
       }
-
-      console.log("RESPONSE LOGIN")
-      console.log(data)
-      // Exito
-      const tokenCookie = useCookie('proyecto1ayd2-user-token')
-      tokenCookie.value = data?.value?.token
-
-      this.user = {username: data?.value?.username ?? null } 
-      this.employee = data?.value?.employee ?? null
-      this.authenticated = true
-
-      toast.success('Bienvenido!')
-      router.push('/')
-
-      this.loading = false
-      return { data, error: false }
     },
     async logout() {
       this.loading = true
