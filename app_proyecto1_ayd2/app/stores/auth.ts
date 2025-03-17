@@ -1,10 +1,9 @@
 import { defineStore } from "pinia";
 import { toast } from "vue-sonner";
-import type { Entity } from "~/lib/api/utils/entity";
+import type { Employee } from "~/lib/api/admin/employee";
 
-export interface User extends Entity {
+export interface User {
   username: string
-  employee_id: string
 }
 
 export interface LoginPayload {
@@ -18,6 +17,7 @@ export const useAuthStore = defineStore('auth', {
     authenticated: false,
     loading: false,
     user: null as User | null,
+    employee: null as Employee | null,
     staffRoles: [] as any[]
   }),
   actions: {
@@ -26,43 +26,50 @@ export const useAuthStore = defineStore('auth', {
 
       const router = useRouter()
 
-      /*
-      const { data, error } = await $api<any>(
-        '/login',
-        {
-          method: 'POST',
-          body: payload
-        }
-      )
-      if (error.value) {
-        if (error.value.data) {
-          toast.error(error.value.data.meesage)
-          error.value = null
-          this.loading = false
-          return
-        }
-        if (error.value.cause) {
-          toast.error(error.value!.meesage)
-          error.value = null
-          this.loading = false
-          return
+      try {
+        const response = await $api<any>(
+          '/v1/login',
+          {
+            method: 'POST',
+            body: payload
+          }
+        )
+
+        console.log("RESPONSE LOGIN")
+        console.log(response)
+        console.log("----------")
+        /*
+         */
+
+        // Exito
+        const tokenCookie = useCookie('proyecto1ayd2-user-token')
+        tokenCookie.value = response?.token
+
+        this.user = {username: response?.username ?? null } 
+        this.employee = response?.employee ?? null
+        this.authenticated = true
+
+        toast.success('Bienvenido!')
+        router.push('/')
+
+        this.loading = false
+        return { response, error: false }
+      } catch (error: any) {
+        if (error.value) {
+          if (error.value.data) {
+            toast.error(error.value.data.meesage)
+            error.value = null
+            this.loading = false
+            return
+          }
+          if (error.value.cause) {
+            toast.error(error.value!.meesage)
+            error.value = null
+            this.loading = false
+            return
+          }
         }
       }
-      */
-      const data = { value: { token: 'token', user: { id: '', username: 'frodriguez', employee_id: 'id'} } }
-
-      // Exito
-      const tokenCookie = useCookie('proyecto1ayd2-user-token')
-      tokenCookie.value = data?.value?.token
-
-      this.user = data?.value?.user ?? null
-      this.authenticated = true
-
-      toast.success('Bienvenido!')
-      router.push('/')
-
-      this.loading = false
-      return { data, error: false }
     },
     async logout() {
       this.loading = true
@@ -70,6 +77,7 @@ export const useAuthStore = defineStore('auth', {
       tokenCookie.value = null
 
       this.user = null
+      this.employee = null
       this.authenticated = false
 
       this.loading = false
