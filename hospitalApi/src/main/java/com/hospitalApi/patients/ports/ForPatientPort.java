@@ -10,7 +10,7 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 
 public interface ForPatientPort {
 
-    public Patient createPatient(CreatePatientRequestDTO createPatientRequestDTO) throws DuplicatedEntryException;
+    public Patient createPatient(Patient patient) throws DuplicatedEntryException;
 
     public Patient updatePatient(String id, UpdatePatientRequestDTO updatePatientRequestDTO)
             throws DuplicatedEntryException, NotFoundException;

@@ -30,6 +30,7 @@ public class PatientServiceTest {
     private PatientService patientService;
 
     private CreatePatientRequestDTO createPatientDTO;
+    private Patient createPatient;
     private UpdatePatientRequestDTO updatePatientDTO;
     private Patient patient;
 
@@ -52,6 +53,8 @@ public class PatientServiceTest {
                 .dpi(PATIENT_DPI)
                 .build();
 
+        createPatient = new Patient(createPatientDTO);
+
         updatePatientDTO = UpdatePatientRequestDTO.builder()
                 .firstnames(UPDATED_FIRSTNAME)
                 .lastnames(UPDATED_LASTNAME)
@@ -72,7 +75,7 @@ public class PatientServiceTest {
         when(patientRespository.save(any(Patient.class))).thenReturn(patient);
 
         // ACT
-        Patient result = patientService.createPatient(createPatientDTO);
+        Patient result = patientService.createPatient(createPatient);
 
         // ASSERT
         ArgumentCaptor<Patient> patientCaptor = ArgumentCaptor.forClass(Patient.class);
@@ -96,7 +99,7 @@ public class PatientServiceTest {
 
         // ACT & ASSERT
         assertThrows(DuplicatedEntryException.class, () -> {
-            patientService.createPatient(createPatientDTO);
+            patientService.createPatient(createPatient);
         });
 
         verify(patientRespository, times(1)).existsByDpi(PATIENT_DPI);

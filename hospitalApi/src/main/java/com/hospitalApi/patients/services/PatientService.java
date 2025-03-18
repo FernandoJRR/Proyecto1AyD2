@@ -20,11 +20,10 @@ public class PatientService implements ForPatientPort {
     private final PatientRespository patientRespository;
 
     @Override
-    public Patient createPatient(CreatePatientRequestDTO createPatientRequestDTO) throws DuplicatedEntryException {
-        if (patientRespository.existsByDpi(createPatientRequestDTO.getDpi())) {
-            throw new DuplicatedEntryException("El DPI " + createPatientRequestDTO.getDpi() + " ya existe");
+    public Patient createPatient(Patient patient) throws DuplicatedEntryException {
+        if (patientRespository.existsByDpi(patient.getDpi())) {
+            throw new DuplicatedEntryException("El DPI " + patient.getDpi() + " ya existe");
         }
-        Patient patient = new Patient(createPatientRequestDTO);
         return patientRespository.save(patient);
     }
 
