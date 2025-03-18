@@ -7,7 +7,7 @@ import lombok.Value;
 @Value
 public class LoginResponseDTO {
 
-    String usename;
+    String username;
     EmployeeResponseDTO employee;
     String token;
 }

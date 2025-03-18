@@ -57,11 +57,7 @@ const onFormSubmit = (e: any) => {
       username: e.values.username, password: e.values.password
     }
 
-    if (payload.username === 'frodriguez' && payload.password === 'password') {
-      login(payload)
-    } else {
-      toast.error('Error al iniciar sesion')
-    }
+    login(payload)
   }
 };
 

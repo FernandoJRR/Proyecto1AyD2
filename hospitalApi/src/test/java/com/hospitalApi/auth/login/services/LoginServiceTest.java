@@ -126,7 +126,7 @@ public class LoginServiceTest {
         assertAll(
                 () -> assertNotNull(result),
 
-                () -> assertEquals(USERNAME, result.getUsename()),
+                () -> assertEquals(USERNAME, result.getUsername()),
                 () -> assertEquals(JWT_TOKEN, result.getToken()),
                 () -> assertEquals(employeeResponseDTO, result.getEmployee()));
 
@@ -199,7 +199,7 @@ public class LoginServiceTest {
      * cuando: se intenta iniciar sesión con ese usuario.
      * entonces: se lanza una excepción `BadCredentialsException` y no se ejecutan
      * la carga de permisos ni la generación de jwt.
-     * 
+     *
      * @throws NotFoundException
      */
     @Test
