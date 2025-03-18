@@ -1,5 +1,7 @@
 package com.hospitalApi.patients.services;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.hospitalApi.patients.dtos.CreatePatientRequestDTO;
@@ -54,6 +56,16 @@ public class PatientService implements ForPatientPort {
         }
         patient.updateFromDTO(updatePatientRequestDTO);
         return patientRespository.save(patient);
+    }
+
+    @Override
+    public List<Patient> getPatients() {
+        return patientRespository.findAllByOrderByCreatedAtDesc();
+    }
+
+    @Override
+    public List<Patient> searchPatients(String query) {
+        return patientRespository.findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(query, query);
     }
 
 }
