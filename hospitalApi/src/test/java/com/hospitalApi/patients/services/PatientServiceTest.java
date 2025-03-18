@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
 import java.util.Optional;
 
 public class PatientServiceTest {
@@ -61,8 +62,7 @@ public class PatientServiceTest {
                 PATIENT_ID,
                 PATIENT_FIRSTNAME,
                 PATIENT_LASTNAME,
-                PATIENT_DPI
-        );
+                PATIENT_DPI);
     }
 
     @Test
@@ -83,8 +83,7 @@ public class PatientServiceTest {
                 () -> assertNotNull(result),
                 () -> assertEquals(PATIENT_FIRSTNAME, captured.getFirstnames()),
                 () -> assertEquals(PATIENT_LASTNAME, captured.getLastnames()),
-                () -> assertEquals(PATIENT_DPI, captured.getDpi())
-        );
+                () -> assertEquals(PATIENT_DPI, captured.getDpi()));
 
         verify(patientRespository, times(1)).existsByDpi(PATIENT_DPI);
         verify(patientRespository, times(1)).save(any(Patient.class));
@@ -178,8 +177,7 @@ public class PatientServiceTest {
                 () -> assertNotNull(updated),
                 () -> assertEquals(UPDATED_FIRSTNAME, updated.getFirstnames()),
                 () -> assertEquals(UPDATED_LASTNAME, updated.getLastnames()),
-                () -> assertEquals(UPDATED_DPI, updated.getDpi())
-        );
+                () -> assertEquals(UPDATED_DPI, updated.getDpi()));
 
         verify(patientRespository, times(1)).findById(PATIENT_ID);
         verify(patientRespository, times(1)).existsByDpi(UPDATED_DPI);
@@ -216,4 +214,55 @@ public class PatientServiceTest {
         verify(patientRespository, times(1)).existsByDpi(UPDATED_DPI);
         verify(patientRespository, times(0)).save(any(Patient.class));
     }
+
+    @Test
+    public void shouldGetAllPatientsOrderedByCreatedAtDesc() {
+        List<Patient> patients = List.of(patient);
+
+        when(patientRespository.findAllByOrderByCreatedAtDesc()).thenReturn(patients);
+
+        List<Patient> result = patientService.getPatients();
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(PATIENT_ID, result.get(0).getId());
+
+        verify(patientRespository, times(1)).findAllByOrderByCreatedAtDesc();
+    }
+
+    @Test
+    public void shouldSearchPatientsByFirstnamesOrLastnamesIgnoreCase() {
+        String query = "carlos";
+
+        List<Patient> searchResults = List.of(patient);
+
+        when(patientRespository.findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(query, query))
+                .thenReturn(searchResults);
+
+        List<Patient> result = patientService.searchPatients(query);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(PATIENT_FIRSTNAME, result.get(0).getFirstnames());
+
+        verify(patientRespository, times(1))
+                .findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(query, query);
+    }
+
+    @Test
+    public void shouldReturnEmptyListWhenSearchPatientsDoesNotFindAny() {
+        String query = "noExiste";
+
+        when(patientRespository.findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(query, query))
+                .thenReturn(List.of());
+
+        List<Patient> result = patientService.searchPatients(query);
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(patientRespository, times(1))
+                .findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(query, query);
+    }
+
 }
