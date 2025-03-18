@@ -22,8 +22,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.hospitalApi.employees.models.Employee;
+import com.hospitalApi.employees.models.EmployeeHistory;
 import com.hospitalApi.employees.models.EmployeeType;
+import com.hospitalApi.employees.models.HistoryType;
+import com.hospitalApi.employees.ports.ForEmployeeHistoryPort;
 import com.hospitalApi.employees.ports.ForEmployeeTypePort;
+import com.hospitalApi.employees.ports.ForHistoryTypePort;
 import com.hospitalApi.employees.repositories.EmployeeRepository;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
@@ -43,10 +47,18 @@ public class EmployeesServicesTest {
     @Mock
     private ForUsersPort forUsersPort;
 
+    @Mock
+    private ForEmployeeHistoryPort forEmployeeHistoryPort;
+
+    @Mock
+    private ForHistoryTypePort forHistoryTypePort;
+
     @InjectMocks
     private EmployeeService employeeService;
 
     private User user;
+    private HistoryType historyType;
+    private EmployeeHistory employeeHistory;
     private Employee employee;
     private Employee updatedEmployee;
     private EmployeeType employeeType;
@@ -73,6 +85,12 @@ public class EmployeesServicesTest {
     private static final BigDecimal UPDATED_EMPLOYEE_SALARY = new BigDecimal(7000);
     private static final BigDecimal UPDATED_EMPLOYEE_IGSS = new BigDecimal(5.25);
     private static final BigDecimal UPDATED_EMPLOYEE_IRTRA = new BigDecimal(10.2);
+
+    /** Para el historial del empleado **/
+    private static final String HISTORY_TYPE_ID = "fdsf-rtrer-bbvk";
+    private static final String HISTORY_TYPE = "Contratacion";
+    private static final String EMPLOYEE_HISTORY_ID = "rewf-fdsa-fdsd";
+    private static final String EMPLOYEE_HISTORY_COMMENTARY = "Se realizo la contratacion";
 
     /**
      * este metodo se ejecuta antes de cualquier prueba individual, se hace para
@@ -101,6 +119,12 @@ public class EmployeesServicesTest {
         user = new User(USER_NAME, USER_PASSWORD);
         user.setId(USER_ID);
 
+        historyType = new HistoryType(HISTORY_TYPE);
+        historyType.setId(HISTORY_TYPE_ID);
+
+        employeeHistory = new EmployeeHistory(EMPLOYEE_HISTORY_COMMENTARY);
+        employeeHistory.setId(EMPLOYEE_HISTORY_ID);
+
         employeeType = new EmployeeType();
         employeeType.setId(EMPLOYEE_TYPE_ID);
     }
@@ -112,6 +136,9 @@ public class EmployeesServicesTest {
         // configuramos el mock para que lance el user cuando este sea creado
         when(forEmployeeTypePort.verifyExistsEmployeeTypeById(anyString())).thenReturn(true);
         when(forUsersPort.createUser(any(User.class))).thenReturn(user);
+        when(forHistoryTypePort.findHistoryTypeByName(anyString())).thenReturn(historyType);
+        when(forEmployeeHistoryPort.createEmployeeHistoryHiring(any(Employee.class)))
+            .thenReturn(employeeHistory);
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
         // ACT
         Employee result = employeeService.createEmployee(employee, employeeType, user);
@@ -130,12 +157,14 @@ public class EmployeesServicesTest {
                 () -> assertEquals(result.getLastName(), capturedEmployee.getLastName()),
                 () -> assertEquals(result.getSalary(), capturedEmployee.getSalary()),
                 () -> assertEquals(user, capturedEmployee.getUser()),
+                () -> assertEquals(employeeHistory, capturedEmployee.getEmployeeHistories().get(0)),
                 () -> assertEquals(employeeType, capturedEmployee.getEmployeeType())
 
         );
 
         // se verifican las llamadas a los métodos dependientes
         verify(forUsersPort, times(1)).createUser(any(User.class));
+        verify(forEmployeeHistoryPort, times(1)).createEmployeeHistoryHiring(any(Employee.class));
         verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(anyString());
         verify(employeeRepository, times(1)).save(any(Employee.class));
     }
