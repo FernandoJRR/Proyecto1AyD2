@@ -1,11 +1,16 @@
 package com.hospitalApi.patients.models;
 
+import java.util.List;
+
+import com.hospitalApi.consult.models.Consult;
 import com.hospitalApi.patients.dtos.CreatePatientRequestDTO;
 import com.hospitalApi.patients.dtos.UpdatePatientRequestDTO;
 import com.hospitalApi.shared.models.Auditor;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -35,6 +40,9 @@ public class Patient extends Auditor {
     @Pattern(regexp = "\\d{13}", message = "El número de DPI debe contener solo números y tener 13 dígitos")
     @Column(unique = true, nullable = false, length = 13)
     private String dpi;
+
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Consult> consultas;
 
     /**
      * Contructor de un paciente en base a su id, nombres, apellidos y dpi
