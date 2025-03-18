@@ -24,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
@@ -78,7 +79,7 @@ public class SaleMedicineController {
     })
     @GetMapping("/{id}")
     public ResponseEntity<SaleMedicineDTO> getSaleMedicine(
-            @RequestParam("id") @NotBlank(message = "El id de la venta de medicamento es requerido") String id)
+            @PathVariable("id") @NotBlank(message = "El id de la venta de medicamento es requerido") String id)
             throws NotFoundException {
         SaleMedicine saleMedicine = saleMedicinePort.findById(id);
         SaleMedicineDTO saleMedicineDTO = new SaleMedicineDTO(saleMedicine);
