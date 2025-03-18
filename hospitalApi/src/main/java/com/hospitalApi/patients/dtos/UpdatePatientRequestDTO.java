@@ -3,6 +3,7 @@ package com.hospitalApi.patients.dtos;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class UpdatePatientRequestDTO {
 
     @Size(min = 1, max = 250, message = "El nombre del paciente debe tener entre 1 y 250 caracteres")

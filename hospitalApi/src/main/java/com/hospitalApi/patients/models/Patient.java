@@ -1,5 +1,6 @@
 package com.hospitalApi.patients.models;
 
+import com.hospitalApi.patients.dtos.CreatePatientRequestDTO;
 import com.hospitalApi.patients.dtos.UpdatePatientRequestDTO;
 import com.hospitalApi.shared.models.Auditor;
 
@@ -37,6 +38,7 @@ public class Patient extends Auditor {
 
     /**
      * Contructor de un paciente en base a su id, nombres, apellidos y dpi
+     * 
      * @param id
      * @param firstnames
      * @param lastnames
@@ -49,8 +51,16 @@ public class Patient extends Auditor {
         this.dpi = dpi;
     }
 
+    public Patient(CreatePatientRequestDTO createPatientRequestDTO) {
+        super();
+        this.firstnames = createPatientRequestDTO.getFirstnames();
+        this.lastnames = createPatientRequestDTO.getLastnames();
+        this.dpi = createPatientRequestDTO.getDpi();
+    }
+
     /**
      * Contrictor de un paciente en base a sus nombres, apellidos y dpi
+     * 
      * @param firstnames
      * @param lastnames
      * @param dpi
