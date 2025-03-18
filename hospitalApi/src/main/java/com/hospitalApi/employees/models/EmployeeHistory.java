@@ -7,7 +7,6 @@ import com.hospitalApi.shared.models.Auditor;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -26,4 +25,8 @@ public class EmployeeHistory extends Auditor {
 
     @Column(length = 200)
     private String commentary;
+
+    public EmployeeHistory(String commentary) {
+        this.commentary = commentary;
+    }
 }

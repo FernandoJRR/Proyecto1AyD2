@@ -7,9 +7,13 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.hospitalApi.employees.models.Employee;
+import com.hospitalApi.employees.models.EmployeeHistory;
 import com.hospitalApi.employees.models.EmployeeType;
+import com.hospitalApi.employees.models.HistoryType;
+import com.hospitalApi.employees.ports.ForEmployeeHistoryPort;
 import com.hospitalApi.employees.ports.ForEmployeeTypePort;
 import com.hospitalApi.employees.ports.ForEmployeesPort;
+import com.hospitalApi.employees.ports.ForHistoryTypePort;
 import com.hospitalApi.employees.repositories.EmployeeRepository;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
@@ -25,6 +29,7 @@ public class EmployeeService implements ForEmployeesPort {
 
     private final EmployeeRepository employeeRepository;
     private final ForEmployeeTypePort forEmployeeTypePort;
+    private final ForEmployeeHistoryPort forEmployeeHistoryPort;
     private final ForUsersPort userService;
 
     @Transactional(rollbackOn = Exception.class)
@@ -36,10 +41,14 @@ public class EmployeeService implements ForEmployeesPort {
         User user = userService.createUser(newUser);
 
         // crea el primer registro del empleado en el historial (su contratacion)
+        EmployeeHistory createdEmployeeHistory = forEmployeeHistoryPort.createEmployeeHistoryHiring(newEmployee);
 
         // guardar el empledo
         newEmployee.setUser(user);
         newEmployee.setEmployeeType(employeeType);
+        ArrayList<EmployeeHistory> employeeHistories = new ArrayList<>();
+        employeeHistories.add(createdEmployeeHistory);
+        newEmployee.setEmployeeHistories(employeeHistories);
         user.setEmployee(newEmployee);
 
         // guardar el historial del empleado inicial

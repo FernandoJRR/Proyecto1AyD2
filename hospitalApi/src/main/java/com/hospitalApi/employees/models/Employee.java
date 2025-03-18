@@ -57,7 +57,7 @@ public class Employee extends Auditor {
     @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
     private User user;
 
-    @OneToMany(mappedBy = "employee")
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
     private List<EmployeeHistory> employeeHistories;
 
     /**

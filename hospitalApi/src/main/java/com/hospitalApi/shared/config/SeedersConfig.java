@@ -4,6 +4,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import com.hospitalApi.employees.enums.HistoryTypeEnum;
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.models.EmployeeType;
 import com.hospitalApi.employees.models.HistoryType;
@@ -43,11 +44,11 @@ public class SeedersConfig implements CommandLineRunner {
         employeeTypeRepository.save(newEmployeeType);
 
         // se crean los tipos de historial
-        HistoryType historyTypeContratacion = new HistoryType("Contratacion");
-        HistoryType historyTypeDespido = new HistoryType("Despido");
-        HistoryType historyTypeRecontratacion = new HistoryType("Recontratacion");
-        HistoryType historyTypeAumentoSalarial = new HistoryType("Aumento Salarial");
-        HistoryType historyTypeDisminucionSalarial = new HistoryType("Disminucion Salarial");
+        HistoryType historyTypeContratacion = new HistoryType(HistoryTypeEnum.CONTRATACION.name());
+        HistoryType historyTypeDespido = new HistoryType(HistoryTypeEnum.DESPIDO.name());
+        HistoryType historyTypeRecontratacion = new HistoryType(HistoryTypeEnum.RECONTRATACION.name());
+        HistoryType historyTypeAumentoSalarial = new HistoryType(HistoryTypeEnum.AUMENTO_SALARIAL.name());
+        HistoryType historyTypeDisminucionSalarial = new HistoryType(HistoryTypeEnum.DISMINUCION_SALARIAL.name());
 
         // creamos el usuario admin
         User newUser = new User("admin", passwordEncoderUtil.encode("admin"));
