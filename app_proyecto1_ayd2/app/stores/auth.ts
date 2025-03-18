@@ -35,12 +35,6 @@ export const useAuthStore = defineStore('auth', {
           }
         )
 
-        console.log("RESPONSE LOGIN")
-        console.log(response)
-        console.log("----------")
-        /*
-         */
-
         // Exito
         const tokenCookie = useCookie('proyecto1ayd2-user-token')
         tokenCookie.value = response?.token
@@ -55,20 +49,9 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false
         return { response, error: false }
       } catch (error: any) {
-        if (error.value) {
-          if (error.value.data) {
-            toast.error(error.value.data.meesage)
-            error.value = null
-            this.loading = false
-            return
-          }
-          if (error.value.cause) {
-            toast.error(error.value!.meesage)
-            error.value = null
-            this.loading = false
-            return
-          }
-        }
+        toast.error(error.response._data)
+        this.loading = false
+        return
       }
     },
     async logout() {
