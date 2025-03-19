@@ -126,7 +126,7 @@ public class LoginServiceTest {
         assertAll(
                 () -> assertNotNull(result),
 
-                () -> assertEquals(USERNAME, result.getUsename()),
+                () -> assertEquals(USERNAME, result.getUsername()),
                 () -> assertEquals(JWT_TOKEN, result.getToken()),
                 () -> assertEquals(employeeResponseDTO, result.getEmployee()));
 
