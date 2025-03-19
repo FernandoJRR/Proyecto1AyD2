@@ -44,7 +44,7 @@ import { useQuery } from '@pinia/colada';
 import { getEmployeeById } from '~/lib/api/admin/employee';
 
 const { state } = useQuery({
-  key: ['usuario'],
+  key: ['usuario', useRoute().params.id as string],
   query: () => getEmployeeById(useRoute().params.id as string)
 })
 </script>

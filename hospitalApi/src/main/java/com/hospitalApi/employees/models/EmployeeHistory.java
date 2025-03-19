@@ -1,5 +1,7 @@
 package com.hospitalApi.employees.models;
 
+import java.time.LocalDate;
+
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.hospitalApi.shared.models.Auditor;
@@ -25,6 +27,9 @@ public class EmployeeHistory extends Auditor {
 
     @Column(length = 200)
     private String commentary;
+
+    @Column(nullable = true)
+    private LocalDate historyDate;
 
     public EmployeeHistory(String commentary) {
         this.commentary = commentary;
