@@ -91,6 +91,7 @@ public class EmployeesServicesTest {
     private static final String HISTORY_TYPE = "Contratacion";
     private static final String EMPLOYEE_HISTORY_ID = "rewf-fdsa-fdsd";
     private static final String EMPLOYEE_HISTORY_COMMENTARY = "Se realizo la contratacion";
+    private static final LocalDate EMPLOYEE_HISTORY_LOCAL_DATE = LocalDate.of(2022, 11, 23);
 
     /**
      * este metodo se ejecuta antes de cualquier prueba individual, se hace para
@@ -123,6 +124,7 @@ public class EmployeesServicesTest {
         historyType.setId(HISTORY_TYPE_ID);
 
         employeeHistory = new EmployeeHistory(EMPLOYEE_HISTORY_COMMENTARY);
+        employeeHistory.setHistoryDate(EMPLOYEE_HISTORY_LOCAL_DATE);
         employeeHistory.setId(EMPLOYEE_HISTORY_ID);
 
         employeeType = new EmployeeType();
@@ -137,11 +139,11 @@ public class EmployeesServicesTest {
         when(forEmployeeTypePort.verifyExistsEmployeeTypeById(anyString())).thenReturn(true);
         when(forUsersPort.createUser(any(User.class))).thenReturn(user);
         when(forHistoryTypePort.findHistoryTypeByName(anyString())).thenReturn(historyType);
-        when(forEmployeeHistoryPort.createEmployeeHistoryHiring(any(Employee.class)))
+        when(forEmployeeHistoryPort.createEmployeeHistoryHiring(any(Employee.class), any(LocalDate.class)))
             .thenReturn(employeeHistory);
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
         // ACT
-        Employee result = employeeService.createEmployee(employee, employeeType, user);
+        Employee result = employeeService.createEmployee(employee, employeeType, user, employeeHistory);
 
         // ASSERT
         // captor para capturar el objeto pasado a save()
@@ -164,7 +166,7 @@ public class EmployeesServicesTest {
 
         // se verifican las llamadas a los métodos dependientes
         verify(forUsersPort, times(1)).createUser(any(User.class));
-        verify(forEmployeeHistoryPort, times(1)).createEmployeeHistoryHiring(any(Employee.class));
+        verify(forEmployeeHistoryPort, times(1)).createEmployeeHistoryHiring(any(Employee.class), any(LocalDate.class));
         verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(anyString());
         verify(employeeRepository, times(1)).save(any(Employee.class));
     }
@@ -179,7 +181,7 @@ public class EmployeesServicesTest {
         // ACT and Asserts
         assertThrows(DuplicatedEntryException.class, () -> {
             // se verifica que se haya lanzado la excepcion
-            employeeService.createEmployee(employee, employeeType, user);
+            employeeService.createEmployee(employee, employeeType, user, employeeHistory);
         });
 
         verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(anyString());
@@ -197,7 +199,7 @@ public class EmployeesServicesTest {
         // ACT
         assertThrows(NotFoundException.class, () -> {
             // se verifica que se haya lanzado la excepcion
-            employeeService.createEmployee(employee, employeeType, user);
+            employeeService.createEmployee(employee, employeeType, user, employeeHistory);
         });
 
         // Asserts
