@@ -1,5 +1,7 @@
 package com.hospitalApi.employees.services;
 
+import java.time.LocalDate;
+
 import org.springframework.stereotype.Service;
 
 import com.hospitalApi.employees.enums.HistoryTypeEnum;
@@ -20,7 +22,7 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
     private final EmployeeHistoryRepository employeeHistoryRepository;
     private final ForHistoryTypePort forHistoryTypePort;
 
-    public EmployeeHistory createEmployeeHistoryHiring(Employee employee)
+    public EmployeeHistory createEmployeeHistoryHiring(Employee employee, LocalDate hiringDate)
             throws NotFoundException {
         HistoryType historyTypeContratacion = forHistoryTypePort.findHistoryTypeByName(HistoryTypeEnum.CONTRATACION.name());
 
@@ -28,6 +30,7 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
 
         employeeHistory.setHistoryType(historyTypeContratacion);
         employeeHistory.setEmployee(employee);
+        employeeHistory.setHistoryDate(hiringDate);
 
         return employeeHistoryRepository.save(employeeHistory);
     }

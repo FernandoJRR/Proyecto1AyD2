@@ -61,15 +61,24 @@
                 $form.irtraPercentage.error?.message }}</Message>
             </div>
           </div>
-          <div class="mt-8">
-            <template v-if="userTypes.status === 'success'">
+          <div class="flex flex-row gap-4 mt-8">
+            <div class="w-full">
+              <template v-if="userTypes.status === 'success'">
+                <FloatLabel>
+                  <label>Tipo de Usuario</label>
+                  <Select name="type" v-model="selectedType" optionLabel="name" optionValue="id" 
+                    :options="userTypes.data" placeholder="Selecciona un tipo de usuario" fluid />
+                </FloatLabel>
+                <Message v-if="$form.type?.invalid" severity="error" size="small" variant="simple">{{ $form.city.error.message }}</Message>
+              </template>
+            </div>
+            <div class="w-full">
               <FloatLabel>
-                <label>Tipo de Usuario</label>
-                <Select name="type" v-model="selectedType" optionLabel="name" optionValue="id" 
-                  :options="userTypes.data" placeholder="Selecciona un tipo de usuario" fluid />
+                <label>Fecha de Contratacion</label>
+                <DatePicker name="hiring_date" class="w-full" />
               </FloatLabel>
-            </template>
-            <Message v-if="$form.type?.invalid" severity="error" size="small" variant="simple">{{ $form.city.error.message }}</Message>
+              <Message v-if="$form.hiring_date?.invalid" severity="error" size="small" variant="simple">{{ $form.city.error.message }}</Message>
+            </div>
           </div>
           <h1 class="text-2xl font-semibold mb-6">Datos del Usuario</h1>
           <div>
@@ -104,7 +113,7 @@
 </template>
 <script setup lang="ts">
 import { zodResolver } from '@primevue/forms/resolvers/zod';
-import { FloatLabel, InputNumber, Password, ToggleSwitch } from 'primevue';
+import { DatePicker, FloatLabel, InputNumber, Password, ToggleSwitch } from 'primevue';
 import { toast } from 'vue-sonner';
 import { z } from 'zod';
 import { createEmployee, type EmployeePayload } from '~/lib/api/admin/employee';
@@ -123,6 +132,8 @@ const initialValues = reactive({
   username: '',
   password: '',
   password_repeat: '',
+
+  hiring_date: new Date()
 });
 
 const selectedType = ref('')
@@ -149,7 +160,9 @@ const resolver = ref(zodResolver(
 
     username: z.string().min(8, 'Debes ingresar un username con al menos 8 caracteres'),
     password: z.string().min(8, 'Debes ingresar un password con al menos 8 caracteres'),
-    password_repeat: z.string({message: 'Debes confirmar el password'})
+    password_repeat: z.string({message: 'Debes confirmar el password'}),
+
+    hiring_date: z.date()
   }).superRefine((data, ctx) => {
    if (data.has_porcentaje_iggs && (data.iggsPercentage === null || data.iggsPercentage === undefined || data.iggsPercentage === 0)) {
       ctx.addIssue({
@@ -186,7 +199,8 @@ const onFormSubmit = (e: any) => {
       iggsPercentage: e.values.has_porcentaje_iggs ? e.values.iggsPercentage : null,
       irtraPercentage: e.values.has_porcentaje_iggs ? e.values.irtraPercentage : null,
       employeeTypeId: { id: e.values.type },
-      createUserRequestDTO: { username: e.values.username, password: e.values.password }
+      createUserRequestDTO: { username: e.values.username, password: e.values.password },
+      employeeHistoryDateRequestDTO: { historyDate: e.values.hiring_date }
     }
 
     mutate(payload)

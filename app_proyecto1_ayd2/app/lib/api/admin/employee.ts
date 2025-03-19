@@ -18,6 +18,9 @@ export interface UserPayload {
   password: string
 }
 
+export interface EmployeeHistoryDatePayload {
+  historyDate: string
+}
 
 export interface EmployeePayload {
   firstName: string
@@ -27,6 +30,7 @@ export interface EmployeePayload {
   irtraPercentage: number | null
   employeeTypeId: { id: string }
   createUserRequestDTO: UserPayload
+  employeeHistoryDateRequestDTO: EmployeeHistoryDatePayload
 }
 
 export async function getAllEmployees(params?: {}) {

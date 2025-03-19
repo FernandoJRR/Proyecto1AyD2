@@ -15,9 +15,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hospitalApi.employees.dtos.CreateEmployeeRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeResponseDTO;
+import com.hospitalApi.employees.mappers.EmployeeHistoryMapper;
 import com.hospitalApi.employees.mappers.EmployeeMapper;
 import com.hospitalApi.employees.mappers.EmployeeTypeMapper;
 import com.hospitalApi.employees.models.Employee;
+import com.hospitalApi.employees.models.EmployeeHistory;
 import com.hospitalApi.employees.models.EmployeeType;
 import com.hospitalApi.employees.ports.ForEmployeesPort;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
@@ -45,6 +47,7 @@ public class EmployeesController {
     private final EmployeeTypeMapper employeeTypeMapper;
     private final EmployeeMapper employeeMapper;
     private final UserMapper userMapper;
+    private final EmployeeHistoryMapper employeeHistoryMapper;
 
     @Operation(summary = "Crear un nuevo empleado", description = "Este endpoint permite la creación de un nuevo empleado en el sistema.")
     @ApiResponses(value = {
@@ -60,9 +63,11 @@ public class EmployeesController {
         Employee newEmployee = employeeMapper.fromCreateEmployeeRequestDtoToEmployee(request);
         EmployeeType employeeType = employeeTypeMapper.fromIdRequestDtoTo(request.getEmployeeTypeId());
         User newUser = userMapper.fromCreateUserRequestDtoToUser(request.getCreateUserRequestDTO());
+        EmployeeHistory employeeHistoryDate = employeeHistoryMapper
+            .fromEmployeeHistoryDateRequestDtoToEmployeeHistory(request.getEmployeeHistoryDateRequestDTO());
 
         // mandar a crear el employee al port
-        Employee result = employeesPort.createEmployee(newEmployee, employeeType, newUser);
+        Employee result = employeesPort.createEmployee(newEmployee, employeeType, newUser, employeeHistoryDate);
 
         // convertir el Employee al dto
         EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);

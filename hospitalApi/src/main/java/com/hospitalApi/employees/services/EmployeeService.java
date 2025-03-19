@@ -1,6 +1,7 @@
 package com.hospitalApi.employees.services;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -32,7 +33,7 @@ public class EmployeeService implements ForEmployeesPort {
     private final ForUsersPort userService;
 
     @Transactional(rollbackOn = Exception.class)
-    public Employee createEmployee(Employee newEmployee, EmployeeType employeeType, User newUser)
+    public Employee createEmployee(Employee newEmployee, EmployeeType employeeType, User newUser, EmployeeHistory employeeHistoryDate)
             throws DuplicatedEntryException, NotFoundException {
         // veficar que el tipo de empleado si exista
         forEmployeeTypePort.verifyExistsEmployeeTypeById(employeeType.getId());
@@ -40,7 +41,7 @@ public class EmployeeService implements ForEmployeesPort {
         User user = userService.createUser(newUser);
 
         // crea el primer registro del empleado en el historial (su contratacion)
-        EmployeeHistory createdEmployeeHistory = forEmployeeHistoryPort.createEmployeeHistoryHiring(newEmployee);
+        EmployeeHistory createdEmployeeHistory = forEmployeeHistoryPort.createEmployeeHistoryHiring(newEmployee, employeeHistoryDate.getHistoryDate());
 
         // guardar el empledo
         newEmployee.setUser(user);
