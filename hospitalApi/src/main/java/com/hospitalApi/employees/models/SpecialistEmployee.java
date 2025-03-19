@@ -1,9 +1,13 @@
 package com.hospitalApi.employees.models;
 
+import java.util.List;
+
 import com.hospitalApi.shared.models.Auditor;
+import com.hospitalApi.surgery.models.SurgeryEmployee;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -27,4 +31,8 @@ public class SpecialistEmployee extends Auditor {
     @Size(min = 3, max = 100, message = "Los apellidos del especialista deben tener entre 3 y 100 caracteres")
     @Column(nullable = false, length = 100)
     private String apellidos;
+
+    @OneToMany(mappedBy = "specialistEmployee")
+    private List<SurgeryEmployee> surgeryEmployees;
+
 }

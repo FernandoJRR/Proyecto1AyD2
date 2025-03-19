@@ -35,11 +35,11 @@ public class Consult extends Auditor {
     @NotNull(message = "El estado de la consulta es requerido")
     private Boolean isInternado = false;
 
-    @Column(precision = 10, scale = 2, nullable = false)
+    @Column(nullable = false)
     @DecimalMin(value = "0.01", inclusive = true, message = "El costo de la consulta debe ser mayor a 0")
     private Double costoConsulta;
 
-    @Column(precision = 10, scale = 2, nullable = false)
+    @Column(nullable = false)
     @DecimalMin(value = "0.01", inclusive = true, message = "El costo de la medicina debe ser mayor a 0")
     private Double costoTotal;
 

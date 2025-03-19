@@ -1,11 +1,14 @@
 package com.hospitalApi.surgery.models;
 
+import java.util.List;
+
 import com.hospitalApi.consult.models.Consult;
 import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -40,4 +43,8 @@ public class Surgery extends Auditor {
     @DecimalMin(value = "0.01", message = "El costo de la cirugía debe ser mayor a 0")
     @Column(nullable = false)
     private Double surgeryCost;
+
+    @OneToMany(mappedBy = "surgery")
+    private List<SurgeryEmployee> surgeryEmployees;
+
 }

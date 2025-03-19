@@ -6,6 +6,8 @@ import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -19,8 +21,16 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity(name = "empleado_cirugia")
 public class SurgeryEmployee extends Auditor {
+    @ManyToOne
+    @JoinColumn(name = "surgery_id", nullable = false)
     private Surgery surgery;
+
+    @ManyToOne
+    @JoinColumn(name = "employee_id", nullable = true)
     private Employee employee;
+
+    @ManyToOne
+    @JoinColumn(name = "specialist_employee_id", nullable = true)
     private SpecialistEmployee specialistEmployee;
 
     @NotBlank(message = "El pago al especialista es requerido")
