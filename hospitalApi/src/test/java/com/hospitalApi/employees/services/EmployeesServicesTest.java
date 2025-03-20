@@ -110,7 +110,7 @@ public class EmployeesServicesTest {
 
         // ARRANGE
         // configuramos el mock para que lance el user cuando este sea creado
-        when(forEmployeeTypePort.verifyExistsEmployeeTypeById(anyString())).thenReturn(true);
+        when(forEmployeeTypePort.existsEmployeeTypeById(anyString())).thenReturn(true);
         when(forUsersPort.createUser(any(User.class))).thenReturn(user);
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
         // ACT
@@ -136,7 +136,7 @@ public class EmployeesServicesTest {
 
         // se verifican las llamadas a los métodos dependientes
         verify(forUsersPort, times(1)).createUser(any(User.class));
-        verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(anyString());
+        verify(forEmployeeTypePort, times(1)).existsEmployeeTypeById(anyString());
         verify(employeeRepository, times(1)).save(any(Employee.class));
     }
 
@@ -144,7 +144,7 @@ public class EmployeesServicesTest {
     public void shouldNotInsertEmployeeWithExistantUsername() throws DuplicatedEntryException, NotFoundException {
 
         // ARRANGE
-        when(forEmployeeTypePort.verifyExistsEmployeeTypeById(anyString())).thenReturn(true);
+        when(forEmployeeTypePort.existsEmployeeTypeById(anyString())).thenReturn(true);
         when(forUsersPort.createUser(user)).thenThrow(DuplicatedEntryException.class);
 
         // ACT and Asserts
@@ -153,7 +153,7 @@ public class EmployeesServicesTest {
             employeeService.createEmployee(employee, employeeType, user);
         });
 
-        verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(anyString());
+        verify(forEmployeeTypePort, times(1)).existsEmployeeTypeById(anyString());
         verify(forUsersPort, times(1)).createUser(any(User.class));
         verify(employeeRepository, times(0)).save(employee);
 
@@ -162,7 +162,7 @@ public class EmployeesServicesTest {
     @Test
     public void shouldNotInsertEmployeeWithInexistantEmployeeType() throws NotFoundException, DuplicatedEntryException {
         // ARRANGE
-        when(forEmployeeTypePort.verifyExistsEmployeeTypeById(anyString())).thenThrow(
+        when(forEmployeeTypePort.existsEmployeeTypeById(anyString())).thenThrow(
                 NotFoundException.class);
 
         // ACT
@@ -172,7 +172,7 @@ public class EmployeesServicesTest {
         });
 
         // Asserts
-        verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(anyString());
+        verify(forEmployeeTypePort, times(1)).existsEmployeeTypeById(anyString());
         verify(forUsersPort, times(0)).createUser(any(User.class));
         verify(employeeRepository, times(0)).save(employee);
 
@@ -183,7 +183,7 @@ public class EmployeesServicesTest {
 
         // ARRANGE
         when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
-        when(forEmployeeTypePort.verifyExistsEmployeeTypeById(anyString())).thenReturn(true);
+        when(forEmployeeTypePort.existsEmployeeTypeById(anyString())).thenReturn(true);
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
 
         // ACT
@@ -201,13 +201,13 @@ public class EmployeesServicesTest {
 
         // Asegurar que se guardó en la base de datos
         verify(employeeRepository, times(1)).findById(anyString());
-        verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(anyString());
+        verify(forEmployeeTypePort, times(1)).existsEmployeeTypeById(anyString());
         verify(employeeRepository, times(1)).save(any(Employee.class));
 
     }
 
     @Test
-    public void shouldNotUpdateEmployeeWithInexistantEmployee() throws NotFoundException {
+    public void updateEmployeeShouldNotUpdateEmployeeWithInexistantEmployee() throws NotFoundException {
         // ARRANGE
         // cuando se busque el empleado por id entonces volvr vacio para que lance la
         // excepcion
@@ -220,18 +220,18 @@ public class EmployeesServicesTest {
 
         // Asserts
         verify(employeeRepository, times(1)).findById(anyString());
-        verify(forEmployeeTypePort, times(0)).verifyExistsEmployeeTypeById(anyString());
+        verify(forEmployeeTypePort, times(0)).existsEmployeeTypeById(anyString());
         verify(employeeRepository, times(0)).save(employee);
 
     }
 
     @Test
-    public void shouldNotUpdateEmployeeWithInexistantEmployeeType() throws NotFoundException {
+    public void updateEmployeeShouldNotUpdateEmployeeWithInexistantEmployeeType() throws NotFoundException {
         // ARRANGE
         // cuando se busque por id entonces devolver el employee
         when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
 
-        when(forEmployeeTypePort.verifyExistsEmployeeTypeById(anyString())).thenThrow(
+        when(forEmployeeTypePort.existsEmployeeTypeById(anyString())).thenThrow(
                 NotFoundException.class);
         // ACT
         assertThrows(NotFoundException.class, () -> {
@@ -240,7 +240,7 @@ public class EmployeesServicesTest {
 
         // ASSERTS
         verify(employeeRepository, times(1)).findById(anyString());
-        verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(anyString());
+        verify(forEmployeeTypePort, times(1)).existsEmployeeTypeById(anyString());
         verify(employeeRepository, times(0)).save(employee);
 
     }
