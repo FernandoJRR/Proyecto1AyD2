@@ -1,4 +1,4 @@
-package com.hospitalApi.patients.controller;
+package com.hospitalApi.patients.controllers;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

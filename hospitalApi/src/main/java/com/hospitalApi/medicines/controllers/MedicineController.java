@@ -1,4 +1,4 @@
-package com.hospitalApi.medicines.controller;
+package com.hospitalApi.medicines.controllers;
 
 import java.util.List;
 
