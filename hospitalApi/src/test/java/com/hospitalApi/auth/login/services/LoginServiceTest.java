@@ -13,6 +13,9 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -29,8 +32,11 @@ import com.hospitalApi.auth.jwt.ports.ForJwtGenerator;
 import com.hospitalApi.auth.login.dtos.LoginResponseDTO;
 import com.hospitalApi.auth.login.ports.ForUserLoader;
 import com.hospitalApi.auth.login.service.LoginService;
+import com.hospitalApi.employees.dtos.EmployeeHistoriesResponseDTO;
+import com.hospitalApi.employees.dtos.EmployeeHistoryResponseDTO;
 import com.hospitalApi.employees.dtos.EmployeeResponseDTO;
 import com.hospitalApi.employees.dtos.EmployeeTypeResponseDTO;
+import com.hospitalApi.employees.dtos.HistoryTypeResponseDTO;
 import com.hospitalApi.employees.mappers.EmployeeMapper;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
@@ -67,6 +73,9 @@ public class LoginServiceTest {
     private static final BigDecimal SALARY = new BigDecimal("5000.00");
     private static final BigDecimal IGSS_PERCENTAGE = new BigDecimal("4.83");
     private static final BigDecimal IRTRA_PERCENTAGE = new BigDecimal("1.00");
+    private static final String EMPLOYEE_TYPE = "FARMACIA";
+    private static final String EMPLOYEE_HISTORY_COMMENTARY = "Comentario";
+    private static final LocalDate EMPLOYEE_HISTORY_DATE = LocalDate.of(2022, 11, 22);
     private static final LocalDateTime RESIGN_DATE = null;
 
     // objetos a devolver en las pruebas
@@ -85,14 +94,22 @@ public class LoginServiceTest {
 
         permissions = Set.of();
         // configuramos la respuesta que se da
+        List<EmployeeHistoryResponseDTO> employeeHistoryResponseDTOs = Arrays.asList(
+                    new EmployeeHistoryResponseDTO(
+                        new HistoryTypeResponseDTO(),
+                        EMPLOYEE_HISTORY_COMMENTARY,
+                        EMPLOYEE_HISTORY_DATE
+                    )
+        );
         employeeResponseDTO = new EmployeeResponseDTO(ID,
                 FIRST_NAME,
                 LAST_NAME,
                 SALARY,
                 IGSS_PERCENTAGE,
                 IRTRA_PERCENTAGE,
-                new EmployeeTypeResponseDTO(ID, "FARMACIA"));
-
+                new EmployeeTypeResponseDTO(ID, EMPLOYEE_TYPE),
+                new EmployeeHistoriesResponseDTO()
+                );
     }
 
     /**
