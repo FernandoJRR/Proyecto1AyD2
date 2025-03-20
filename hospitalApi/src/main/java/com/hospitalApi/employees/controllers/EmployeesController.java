@@ -40,117 +40,123 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EmployeesController {
 
-    private final ForEmployeesPort employeesPort;
+        private final ForEmployeesPort employeesPort;
 
-    private final EmployeeTypeMapper employeeTypeMapper;
-    private final EmployeeMapper employeeMapper;
-    private final UserMapper userMapper;
+        private final EmployeeTypeMapper employeeTypeMapper;
+        private final EmployeeMapper employeeMapper;
+        private final UserMapper userMapper;
 
-    @Operation(summary = "Crear un nuevo empleado", description = "Este endpoint permite la creación de un nuevo empleado en el sistema.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Empleado creado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "409", description = "Conflicto - Username duplicado", content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "No encontrado - Tipo de empleado no existe", content = @Content(mediaType = "application/json"))
-    })
-    @PostMapping
-    public ResponseEntity<EmployeeResponseDTO> createEmployee(
-            @RequestBody @Valid CreateEmployeeRequestDTO request) throws DuplicatedEntryException, NotFoundException {
-        // extraer los parametros para la creacion del employee
-        Employee newEmployee = employeeMapper.fromCreateEmployeeRequestDtoToEmployee(request);
-        EmployeeType employeeType = employeeTypeMapper.fromIdRequestDtoTo(request.getEmployeeTypeId());
-        User newUser = userMapper.fromCreateUserRequestDtoToUser(request.getCreateUserRequestDTO());
+        @Operation(summary = "Crear un nuevo empleado", description = "Este endpoint permite la creación de un nuevo empleado en el sistema.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "201", description = "Empleado creado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
+                        @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "409", description = "Conflicto - Username duplicado", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "404", description = "No encontrado - Tipo de empleado no existe", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        })
+        @PostMapping
+        public ResponseEntity<EmployeeResponseDTO> createEmployee(
+                        @RequestBody @Valid CreateEmployeeRequestDTO request)
+                        throws DuplicatedEntryException, NotFoundException {
+                // extraer los parametros para la creacion del employee
+                Employee newEmployee = employeeMapper.fromCreateEmployeeRequestDtoToEmployee(request);
+                EmployeeType employeeType = employeeTypeMapper
+                                .fromIdRequestDtoToEmployeeType(request.getEmployeeTypeId());
+                User newUser = userMapper.fromCreateUserRequestDtoToUser(request.getCreateUserRequestDTO());
 
-        // mandar a crear el employee al port
-        Employee result = employeesPort.createEmployee(newEmployee, employeeType, newUser);
+                // mandar a crear el employee al port
+                Employee result = employeesPort.createEmployee(newEmployee, employeeType, newUser);
 
-        // convertir el Employee al dto
-        EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
+                // convertir el Employee al dto
+                EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        }
 
-    @Operation(summary = "Edita un empleado", description = "Este endpoint permite la edición de un empleado en el sistema.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Empleado editado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "Recursos no econtrados, el usuario a editar no existe o el tipo de empleado no existe.", content = @Content(mediaType = "application/json")),
+        @Operation(summary = "Edita un empleado", description = "Este endpoint permite la edición de un empleado en el sistema.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Empleado editado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
+                        @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "404", description = "Recursos no econtrados, el usuario a editar no existe o el tipo de empleado no existe.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
 
-    })
-    @PatchMapping("/{employeeId}")
-    public ResponseEntity<EmployeeResponseDTO> updateEmployee(
-            @RequestBody @Valid EmployeeRequestDTO request,
-            @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
-            throws NotFoundException {
+        })
 
-        // extraer los parametros para la creacion del employee
-        Employee newEmployee = employeeMapper.fromEmployeeRequestDtoToEmployee(request);
-        EmployeeType employeeType = employeeTypeMapper.fromIdRequestDtoTo(request.getEmployeeTypeId());
+        @PatchMapping("/{employeeId}")
+        public ResponseEntity<EmployeeResponseDTO> updateEmployee(
+                        @RequestBody @Valid EmployeeRequestDTO request,
+                        @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
+                        throws NotFoundException {
 
-        // mandar a editar el employee al port
-        Employee result = employeesPort.updateEmployee(employeeId, newEmployee, employeeType);
+                // extraer los parametros para la creacion del employee
+                Employee newEmployee = employeeMapper.fromEmployeeRequestDtoToEmployee(request);
+                EmployeeType employeeType = employeeTypeMapper
+                                .fromIdRequestDtoToEmployeeType(request.getEmployeeTypeId());
 
-        // convertir el Employee al dto
-        EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
+                // mandar a editar el employee al port
+                Employee result = employeesPort.updateEmployee(employeeId, newEmployee, employeeType);
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+                // convertir el Employee al dto
+                EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
 
-    @Operation(summary = "Edita un empleado", description = "Este endpoint permite la cambiar el estado de desactivatedAt de un empleado en el sistema segun su id.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Empleado desactivado exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "Recursos no econtrados, el usuario a desactivar.", content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "409", description = "Conflicto, el empleaod ya esta desactivado.", content = @Content(mediaType = "application/json")),
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+        }
 
-    })
-    @PatchMapping("/{employeeId}/desactivate")
-    public ResponseEntity<Void> desactivateEmployee(
-            @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
-            throws NotFoundException, IllegalStateException {
+        @Operation(summary = "Edita un empleado", description = "Este endpoint permite la cambiar el estado de desactivatedAt de un empleado en el sistema segun su id.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "204", description = "Empleado desactivado exitosamente"),
+                        @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "404", description = "Recursos no econtrados, el usuario a desactivar.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "409", description = "Conflicto, el empleaod ya esta desactivado.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        })
+        @PatchMapping("/{employeeId}/desactivate")
+        public ResponseEntity<Void> desactivateEmployee(
+                        @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
+                        throws NotFoundException, IllegalStateException {
 
-        // mandar a desactivar el employee al port
-        employeesPort.desactivateEmployee(employeeId);
+                // mandar a desactivar el employee al port
+                employeesPort.desactivateEmployee(employeeId);
 
-        return ResponseEntity.noContent().build();
+                return ResponseEntity.noContent().build();
 
-    }
+        }
 
-    @Operation(summary = "Busca un empleado", description = "Este endpoint permite la busqueda de un empleado en base a su Id.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Empleado encontrado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
-            @ApiResponse(responseCode = "404", description = "Usuario no encontrado.", content = @Content(mediaType = "application/json")),
+        @Operation(summary = "Busca un empleado", description = "Este endpoint permite la busqueda de un empleado en base a su Id.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Empleado encontrado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
+                        @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "404", description = "Usuario no encontrado.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        })
+        @GetMapping("/{employeeId}")
+        public ResponseEntity<EmployeeResponseDTO> findEmployeeById(
+                        @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
+                        throws NotFoundException {
 
-    })
-    @GetMapping("/{employeeId}")
-    public ResponseEntity<EmployeeResponseDTO> findEmployeeById(
-            @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
-            throws NotFoundException {
+                // mandar a crear el employee al port
+                Employee result = employeesPort.findEmployeeById(employeeId);
 
-        // mandar a crear el employee al port
-        Employee result = employeesPort.findEmployeeById(employeeId);
+                // convertir el Employee al dto
+                EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
 
-        // convertir el Employee al dto
-        EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+        }
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+        @Operation(summary = "Obtener todos los empleados", description = "Este endpoint permite la busqueda de todos los empleados.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Empleados encontrados exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
+                        @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        })
+        @GetMapping("/")
+        public ResponseEntity<List<EmployeeResponseDTO>> findEmployees() {
+                // mandar a crear el employee al port
+                List<Employee> result = employeesPort.findEmployees();
 
-    @Operation(summary = "Obtener todos los empleados", description = "Este endpoint permite la busqueda de todos los empleados.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Empleados encontrados exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+                // convertir el Employee al dto
+                List<EmployeeResponseDTO> response = employeeMapper.fromEmployeesToResponse(result);
 
-    })
-    @GetMapping("/")
-    public ResponseEntity<List<EmployeeResponseDTO>> findEmployees() {
-        // mandar a crear el employee al port
-        List<Employee> result = employeesPort.findEmployees();
-
-        // convertir el Employee al dto
-        List<EmployeeResponseDTO> response = employeeMapper.fromEmployeesToResponse(result);
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+        }
 }

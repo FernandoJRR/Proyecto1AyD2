@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -91,7 +92,7 @@ public class LoginServiceTest {
                 SALARY,
                 IGSS_PERCENTAGE,
                 IRTRA_PERCENTAGE,
-                RESIGN_DATE, new EmployeeTypeResponseDTO(ID, "FARMACIA"));
+                RESIGN_DATE, new EmployeeTypeResponseDTO(ID, "FARMACIA", List.of()));
 
     }
 
@@ -153,7 +154,7 @@ public class LoginServiceTest {
 
         // ACT y ASSERT
         assertThrows(NotFoundException.class, () -> {
-            LoginResponseDTO result = loginService.login(user.getUsername(), user.getPassword());
+            loginService.login(user.getUsername(), user.getPassword());
         });
 
         verify(forUsersPort, times(1)).findUserByUsername(user.getUsername());

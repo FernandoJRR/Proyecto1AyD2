@@ -16,6 +16,11 @@ public interface ForEmployeesPort {
         public Employee updateEmployee(String currentId, Employee newData, EmployeeType employeeType)
                         throws NotFoundException;
 
+        public Employee reassignEmployeeType(String employeeId, String employeeTypeId) throws NotFoundException;
+
+        public List<Employee> reassignEmployeeType(List<Employee> employeeIds, String employeeTypeId)
+                        throws NotFoundException;
+
         public Employee findEmployeeById(String employeeId) throws NotFoundException;
 
         public List<Employee> findEmployees();
