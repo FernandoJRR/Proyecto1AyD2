@@ -3,6 +3,16 @@ import type { EmployeeType } from "./employee-type"
 
 const CURRENT_EMPLOYEE_URI = '/v1/employees'
 
+export interface HistoryType {
+  type: string
+}
+
+export interface EmployeeHistory {
+  historyType: HistoryType
+  commentary: string
+  historyDate: string
+}
+
 export interface Employee extends Entity {
   firstName: string
   lastName: string
@@ -10,6 +20,7 @@ export interface Employee extends Entity {
   iggsPercentage: number
   irtraPercentage: number
   employeeType: EmployeeType
+  employeeHistories: Array<EmployeeHistory>
 }
 
 
