@@ -32,13 +32,13 @@ public class EmployeeService implements ForEmployeesPort {
     public Employee createEmployee(Employee newEmployee, EmployeeType employeeType, User newUser)
             throws DuplicatedEntryException, NotFoundException {
         // veficar que el tipo de empleado si exista
-        forEmployeeTypePort.existsEmployeeTypeById(employeeType.getId());
+        EmployeeType existingEmployeeType = forEmployeeTypePort.findEmployeeTypeById(employeeType.getId());
         // mandar a guardar el usuario
         User user = userService.createUser(newUser);
 
         // guardar el empledo
         newEmployee.setUser(user);
-        newEmployee.setEmployeeType(employeeType);
+        newEmployee.setEmployeeType(existingEmployeeType);
         user.setEmployee(newEmployee);
 
         // guardar el historial del empleado inicial
@@ -51,9 +51,8 @@ public class EmployeeService implements ForEmployeesPort {
         // traer el empleado por id
         Employee currentEmployee = findEmployeeById(currentId);
 
-        // verificar que el tipo de empleado sí exista; si lanza excepción, entonces no
-        // existe
-        forEmployeeTypePort.existsEmployeeTypeById(employeeType.getId());
+        // traer el tipo de empleado que se desea asignar
+        EmployeeType existingEmployeeType = forEmployeeTypePort.findEmployeeTypeById(employeeType.getId());
 
         // editar el empleado existente con la información de newData
         currentEmployee.setFirstName(newData.getFirstName());
@@ -61,7 +60,7 @@ public class EmployeeService implements ForEmployeesPort {
         currentEmployee.setSalary(newData.getSalary());
         currentEmployee.setIgssPercentage(newData.getIgssPercentage());
         currentEmployee.setIrtraPercentage(newData.getIrtraPercentage());
-        currentEmployee.setEmployeeType(employeeType);
+        currentEmployee.setEmployeeType(existingEmployeeType);
 
         return employeeRepository.save(currentEmployee);
     }

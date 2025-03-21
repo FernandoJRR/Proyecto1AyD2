@@ -2,7 +2,6 @@ package com.hospitalApi.patients.ports;
 
 import java.util.List;
 
-import com.hospitalApi.patients.dtos.CreatePatientRequestDTO;
 import com.hospitalApi.patients.dtos.UpdatePatientRequestDTO;
 import com.hospitalApi.patients.models.Patient;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;

@@ -27,7 +27,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -87,8 +86,8 @@ public class EmployeeTypeController {
 
         @PatchMapping("/{employeeTypeId}")
         public ResponseEntity<EmployeeTypeResponseDTO> editEmployeeType(
-                        @PathVariable("employeeTypeId") @NotBlank(message = "El id del tipo de empleado no puede estar vacio") String employeeTypeId,
-                        @RequestBody @Valid SaveEmployeeTypeRequestDTO request)
+                        @RequestBody @Valid SaveEmployeeTypeRequestDTO request,
+                        @PathVariable("employeeTypeId") String employeeTypeId)
                         throws DuplicatedEntryException, NotFoundException {
                 // mapeamos la request
                 EmployeeType employeeTypeToUpdate = employeeTypeMapper.fromCreateEmployeeTypeDtoToEmployeeType(request);
@@ -109,7 +108,7 @@ public class EmployeeTypeController {
 
         @DeleteMapping("/{employeeTypeId}")
         public ResponseEntity<EmployeeTypeResponseDTO> editEmployeeType(
-                        @PathVariable("employeeTypeId") @NotBlank(message = "El id del tipo de empleado no puede estar vacio") String employeeTypeId)
+                        @PathVariable("employeeTypeId") String employeeTypeId)
                         throws NotFoundException {
 
                 // mandar a crear el employee l port
