@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.hospitalApi.consult.models.Consult;
+import com.hospitalApi.consult.port.ForConsultPort;
 import com.hospitalApi.medicines.models.Medicine;
 import com.hospitalApi.medicines.models.SaleMedicine;
 import com.hospitalApi.medicines.ports.ForMedicinePort;
@@ -21,6 +23,7 @@ public class SaleMedicineService implements ForSaleMedicinePort {
 
     private final SaleMedicineRepository saleMedicineRepository;
     private final ForMedicinePort forMedicinePort;
+    private final ForConsultPort forConsultPort;
 
     @Override
     public SaleMedicine findById(String id) throws NotFoundException {
@@ -51,16 +54,28 @@ public class SaleMedicineService implements ForSaleMedicinePort {
 
     @Override
     public SaleMedicine createSaleMedicine(String consultId, String medicineId, Integer quantity)
-            throws NotFoundException, UnsupportedOperationException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'createSaleMedicine'");
+            throws NotFoundException {
+        Consult consult = forConsultPort.findById(consultId);
+        // Obtenemos la medicina en base al id
+        Medicine medicine = forMedicinePort.getMedicine(medicineId);
+        // Verificamos si hay suficiente stock
+        if (medicine.getQuantity() < quantity) {
+            throw new NotFoundException("No hay suficiente stock para el medicamento con id " + medicineId);
+        }
+        // Creamos una nueva instancia de SaleMedicine
+        SaleMedicine newSaleMedicine = new SaleMedicine(consult, medicine, quantity);
+        // Guardamos la nueva venta de medicamento en la base de datos
+        SaleMedicine saleMedicine = saleMedicineRepository.save(newSaleMedicine);
+        // Actualizamos el stock de la medicina
+        forMedicinePort.subtractStockMedicine(medicineId, quantity);
+        return saleMedicine;
     }
 
     @Override
     public List<SaleMedicine> getSalesMedicinesByConsultId(String consultId)
-            throws NotFoundException, UnsupportedOperationException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getSalesMedicinesByConsultId'");
+            throws NotFoundException {
+        forConsultPort.findById(consultId);
+        return saleMedicineRepository.findByConsultId(consultId);
     }
 
     @Override
@@ -94,9 +109,10 @@ public class SaleMedicineService implements ForSaleMedicinePort {
 
     @Override
     public Double totalSalesMedicinesByConsult(String consultId)
-            throws NotFoundException, UnsupportedOperationException {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'totalSalesMedicinesByConsult'");
+            throws NotFoundException {
+        forConsultPort.findById(consultId);
+        // Obtenemos el total de ventas de medicina en base al id de la consulta
+        return saleMedicineRepository.totalSalesMedicinesByConsult(consultId);
     }
 
     @Override

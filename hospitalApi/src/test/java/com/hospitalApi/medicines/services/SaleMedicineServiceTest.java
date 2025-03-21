@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.hospitalApi.consult.models.Consult;
+import com.hospitalApi.consult.port.ForConsultPort;
 import com.hospitalApi.medicines.models.Medicine;
 import com.hospitalApi.medicines.models.SaleMedicine;
 import com.hospitalApi.medicines.ports.ForMedicinePort;
@@ -18,6 +20,7 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -30,13 +33,18 @@ public class SaleMedicineServiceTest {
     @Mock
     private ForMedicinePort forMedicinePort;
 
+    @Mock
+    private ForConsultPort forConsultPort;
+
     @InjectMocks
     private SaleMedicineService saleMedicineService;
 
     private Medicine medicine;
     private SaleMedicine saleMedicine;
+    private Consult consult;
 
     private static final String MEDICINE_ID = "12312-12312-12312-12312";
+        private static final String CONSULT_ID = "CONSULT-9999";
     private static final String MEDICINE_NAME = "Paracetamol";
     private static final String MEDICINE_DESCRIPTION = "Para el dolor";
     private static final String SALE_MEDICINE_ID = "99999-88888-77777-66666";
@@ -55,11 +63,14 @@ public class SaleMedicineServiceTest {
                 MEDICINE_DESCRIPTION,
                 MEDICINE_QUANTITY,
                 MEDICINE_MIN_QUANTITY,
-                MEDICINE_PRICE
-        );
+                MEDICINE_PRICE);
 
         saleMedicine = new SaleMedicine(medicine, SALE_QUANTITY);
         saleMedicine.setId(SALE_MEDICINE_ID);
+
+        consult = new Consult();
+        consult.setId(CONSULT_ID);
+        consult.setCreatedAt(LocalDate.now());
     }
 
     @Test
@@ -169,8 +180,7 @@ public class SaleMedicineServiceTest {
 
         when(saleMedicineRepository.findByCreatedAtBetween(
                 LocalDate.parse(startDate),
-                LocalDate.parse(endDate)
-        )).thenReturn(sales);
+                LocalDate.parse(endDate))).thenReturn(sales);
 
         List<SaleMedicine> result = saleMedicineService.getSalesMedicineBetweenDates(startDate, endDate);
 
@@ -180,8 +190,7 @@ public class SaleMedicineServiceTest {
 
         verify(saleMedicineRepository, times(1)).findByCreatedAtBetween(
                 LocalDate.parse(startDate),
-                LocalDate.parse(endDate)
-        );
+                LocalDate.parse(endDate));
     }
 
     @Test
@@ -192,8 +201,7 @@ public class SaleMedicineServiceTest {
 
         when(saleMedicineRepository.totalSalesMedicinesBetweenDates(
                 LocalDate.parse(startDate),
-                LocalDate.parse(endDate)
-        )).thenReturn(expectedTotal);
+                LocalDate.parse(endDate))).thenReturn(expectedTotal);
 
         Double result = saleMedicineService.totalSalesMedicinesBetweenDates(startDate, endDate);
 
@@ -202,8 +210,7 @@ public class SaleMedicineServiceTest {
 
         verify(saleMedicineRepository, times(1)).totalSalesMedicinesBetweenDates(
                 LocalDate.parse(startDate),
-                LocalDate.parse(endDate)
-        );
+                LocalDate.parse(endDate));
     }
 
     @Test
@@ -248,5 +255,95 @@ public class SaleMedicineServiceTest {
         assertEquals(saleMedicine, result.get(0));
 
         verify(saleMedicineRepository, times(1)).findAll();
+    }
+
+    @Test
+    public void shouldCreateSaleMedicineWithConsultSuccessfully() throws NotFoundException {
+        // Arrange
+        when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
+        when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(medicine);
+        when(saleMedicineRepository.save(any(SaleMedicine.class))).thenReturn(saleMedicine);
+        when(forMedicinePort.subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY)).thenReturn(medicine);
+
+        // Act
+        SaleMedicine result = saleMedicineService.createSaleMedicine(CONSULT_ID, MEDICINE_ID, SALE_QUANTITY);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(consult, result.getConsult());
+        assertEquals(medicine, result.getMedicine());
+        assertEquals(SALE_QUANTITY, result.getQuantity());
+
+        ArgumentCaptor<SaleMedicine> captor = ArgumentCaptor.forClass(SaleMedicine.class);
+        verify(saleMedicineRepository).save(captor.capture());
+
+        SaleMedicine capturedSale = captor.getValue();
+        assertEquals(consult, capturedSale.getConsult());
+        assertEquals(medicine, capturedSale.getMedicine());
+        assertEquals(SALE_QUANTITY, capturedSale.getQuantity());
+
+        verify(forConsultPort).findById(CONSULT_ID);
+        verify(forMedicinePort).getMedicine(MEDICINE_ID);
+        verify(forMedicinePort).subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY);
+    }
+
+    @Test
+    public void shouldThrowNotFoundWhenCreatingSaleMedicineWithConsultIfStockIsInsufficient() throws NotFoundException {
+        medicine.setQuantity(2);
+
+        when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
+        when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(medicine);
+
+        assertThrows(NotFoundException.class,
+                () -> saleMedicineService.createSaleMedicine(CONSULT_ID, MEDICINE_ID, SALE_QUANTITY));
+
+        verify(forConsultPort).findById(CONSULT_ID);
+        verify(forMedicinePort).getMedicine(MEDICINE_ID);
+        verify(saleMedicineRepository, never()).save(any());
+        verify(forMedicinePort, never()).subtractStockMedicine(anyString(), any());
+    }
+
+    @Test
+    public void shouldGetSalesMedicinesByConsultIdSuccessfully() throws NotFoundException {
+        List<SaleMedicine> sales = new ArrayList<>();
+        sales.add(saleMedicine);
+
+        when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
+        when(saleMedicineRepository.findByConsultId(CONSULT_ID)).thenReturn(sales);
+
+        List<SaleMedicine> result = saleMedicineService.getSalesMedicinesByConsultId(CONSULT_ID);
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(saleMedicine, result.get(0));
+
+        verify(forConsultPort).findById(CONSULT_ID);
+        verify(saleMedicineRepository).findByConsultId(CONSULT_ID);
+    }
+
+    @Test
+    public void shouldGetTotalSalesMedicinesByConsultSuccessfully() throws NotFoundException {
+        Double expectedTotal = 250.0;
+
+        when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
+        when(saleMedicineRepository.totalSalesMedicinesByConsult(CONSULT_ID)).thenReturn(expectedTotal);
+
+        Double result = saleMedicineService.totalSalesMedicinesByConsult(CONSULT_ID);
+
+        assertNotNull(result);
+        assertEquals(expectedTotal, result);
+
+        verify(forConsultPort).findById(CONSULT_ID);
+        verify(saleMedicineRepository).totalSalesMedicinesByConsult(CONSULT_ID);
+    }
+
+    @Test
+    public void shouldThrowNotFoundExceptionWhenConsultIdDoesNotExistForGetTotalSales() throws NotFoundException {
+        when(forConsultPort.findById(CONSULT_ID)).thenThrow(new NotFoundException("Consulta no encontrada"));
+
+        assertThrows(NotFoundException.class, () -> saleMedicineService.totalSalesMedicinesByConsult(CONSULT_ID));
+
+        verify(forConsultPort).findById(CONSULT_ID);
+        verify(saleMedicineRepository, never()).totalSalesMedicinesByConsult(anyString());
     }
 }
