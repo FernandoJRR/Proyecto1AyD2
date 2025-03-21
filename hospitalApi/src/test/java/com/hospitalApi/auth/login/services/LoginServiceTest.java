@@ -108,7 +108,7 @@ public class LoginServiceTest {
                 IGSS_PERCENTAGE,
                 IRTRA_PERCENTAGE,
                 new EmployeeTypeResponseDTO(ID, EMPLOYEE_TYPE),
-                new EmployeeHistoriesResponseDTO()
+                new ArrayList<EmployeeHistoryResponseDTO>()
                 );
     }
 

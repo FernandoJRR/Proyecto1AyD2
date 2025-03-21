@@ -24,4 +24,5 @@ public class EmployeeResponseDTO {
 
     EmployeeTypeResponseDTO employeeType;
 
+    EmployeeHistoriesResponseDTO employeeHistoryResponseDTO;
 }
