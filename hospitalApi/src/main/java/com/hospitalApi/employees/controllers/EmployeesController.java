@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +32,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -54,6 +54,7 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "404", description = "No encontrado - Tipo de empleado no existe", content = @Content(mediaType = "application/json")),
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
+        @PreAuthorize("hasAuthority('CREAR_EMPLEADOS')")//el usuario necesita este permiso para entrar al endpoint
         @PostMapping
         public ResponseEntity<EmployeeResponseDTO> createEmployee(
                         @RequestBody @Valid CreateEmployeeRequestDTO request)
@@ -81,11 +82,11 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
 
         })
-
+        @PreAuthorize("hasAuthority('EDITAR_EMPLEADOS')")//el usuario necesita este permiso para entrar al endpoint
         @PatchMapping("/{employeeId}")
         public ResponseEntity<EmployeeResponseDTO> updateEmployee(
-                        @RequestBody @Valid EmployeeRequestDTO request,
-                        @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
+                        @PathVariable("employeeId") String employeeId,
+                        @RequestBody @Valid EmployeeRequestDTO request)
                         throws NotFoundException {
 
                 // extraer los parametros para la creacion del employee
@@ -112,7 +113,7 @@ public class EmployeesController {
         })
         @PatchMapping("/{employeeId}/desactivate")
         public ResponseEntity<Void> desactivateEmployee(
-                        @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
+                        @PathVariable("employeeId") String employeeId)
                         throws NotFoundException, IllegalStateException {
 
                 // mandar a desactivar el employee al port
@@ -131,7 +132,7 @@ public class EmployeesController {
         })
         @GetMapping("/{employeeId}")
         public ResponseEntity<EmployeeResponseDTO> findEmployeeById(
-                        @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
+                        @PathVariable("employeeId") String employeeId)
                         throws NotFoundException {
 
                 // mandar a crear el employee al port

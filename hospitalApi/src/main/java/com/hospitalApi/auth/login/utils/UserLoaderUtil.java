@@ -5,9 +5,11 @@
 package com.hospitalApi.auth.login.utils;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,8 @@ import com.hospitalApi.auth.login.ports.ForUserLoader;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
+
+import jakarta.transaction.Transactional;
 
 /**
  *
@@ -35,6 +39,7 @@ public class UserLoaderUtil implements ForUserLoader {
      * seguridad.
      */
     @Override
+    @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         try {
             // traer el usuario por nombre de usuario
@@ -51,7 +56,21 @@ public class UserLoaderUtil implements ForUserLoader {
         }
     }
 
+    /**
+     * Carga los permisos asociados a un usuario a partir de su tipo de empleado.
+     *
+     * @param user El usuario cuyos permisos serán cargados.
+     * @return Un conjunto de `GrantedAuthority` con los permisos del usuario.
+     */
     public Set<GrantedAuthority> loadUserPermissions(User user) {
-        return Set.of();
+        // verificamos que ninguno de los componentes necesarios venga nulo, de ser asi
+        // entonces retornamos un vacio
+        if (user == null || user.getEmployee() == null || user.getEmployee().getEmployeeType() == null) {
+            return Set.of();
+        }
+
+        return user.getEmployee().getEmployeeType().getPermissions().stream()
+                .map(permission -> new SimpleGrantedAuthority(permission.getAction()))
+                .collect(Collectors.toSet());
     }
 }

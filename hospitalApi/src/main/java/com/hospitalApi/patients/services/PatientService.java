@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.hospitalApi.patients.dtos.CreatePatientRequestDTO;
 import com.hospitalApi.patients.dtos.UpdatePatientRequestDTO;
 import com.hospitalApi.patients.models.Patient;
 import com.hospitalApi.patients.ports.ForPatientPort;

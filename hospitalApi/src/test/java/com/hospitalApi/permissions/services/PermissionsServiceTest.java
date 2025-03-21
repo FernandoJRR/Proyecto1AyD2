@@ -1,12 +1,18 @@
 package com.hospitalApi.permissions.services;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +23,7 @@ import org.mockito.MockitoAnnotations;
 
 import com.hospitalApi.permissions.models.Permission;
 import com.hospitalApi.permissions.repositories.PermissionRepository;
+import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
 public class PermissionsServiceTest {
@@ -35,6 +42,49 @@ public class PermissionsServiceTest {
         permission = new Permission("NAME_MOCK", "ACTION_MOCK");
         permission.setId("qwe-qweq-wer");
 
+    }
+
+    /**
+     * dado: que el permiso no existe en la base de datos.
+     * cuando: se intenta crear un nuevo permiso.
+     * entonces: el permiso debe guardarse correctamente en la base de datos.
+     */
+    @Test
+    public void shouldCreatePermissionSuccessfully() throws DuplicatedEntryException {
+        // ARRANGE
+        when(permissionRepository.existsByName(anyString())).thenReturn(false);
+        when(permissionRepository.save(any(Permission.class))).thenReturn(permission);
+
+        // ACT
+        Permission result = permissionService.createPermission(permission);
+
+        // ASSERT
+        assertAll(
+                // el retorno no debe ser nulo
+                () -> assertNotNull(result),
+                // la salida debe ser igual a la entrada een su nombre
+                () -> assertEquals(permission.getName(), result.getName()));
+        // estos metodos solo deben instanciarse una sola vez
+        verify(permissionRepository, times(1)).existsByName(permission.getName());
+        verify(permissionRepository, times(1)).save(permission);
+    }
+
+    /**
+     * dado: que un permiso con el mismo nombre ya existe en la base de datos.
+     * cuando: se intenta crear un nuevo permiso con ese nombre.
+     * entonces: se lanza una excepción DuplicatedEntryException y no se guarda el
+     * permiso.
+     */
+    @Test
+    public void shouldThrowDuplicatedEntryExceptionWhenPermissionAlreadyExists() {
+        // ARRANGE
+        when(permissionRepository.existsByName(anyString())).thenReturn(true);
+
+        // ACT y ASSERT
+        assertThrows(DuplicatedEntryException.class, () -> permissionService.createPermission(permission));
+
+        verify(permissionRepository, times(1)).existsByName(permission.getName());
+        verify(permissionRepository, never()).save(any(Permission.class));
     }
 
     /**
@@ -119,5 +169,25 @@ public class PermissionsServiceTest {
         // se verifica que la consulta se haya hecho con el id del permiso
         verify(permissionRepository, times(1)).findById(permission.getId());
 
+    }
+
+    /**
+     * dado: que todos los permisos especificados existen en la base de datos.
+     * cuando: se buscan los permisos por sus IDs.
+     * entonces: el método devuelve una lista con los permisos encontrados.
+     */
+    @Test
+    public void shouldFindAllPermissionsByIdSuccessfully() throws NotFoundException {
+        // ARRANGE
+        List<Permission> permissionsToFind = List.of(permission);
+        when(permissionRepository.findById(anyString())).thenReturn(Optional.of(permission));
+
+        // ACT
+        List<Permission> result = permissionService.findAllById(permissionsToFind);
+
+        // ASSERT
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(permissionRepository, times(1)).findById(anyString());
     }
 }

@@ -41,4 +41,10 @@ public class User extends Auditor {
         this.password = password;
     }
 
+    public User(String id, String username, String password) {
+        super(id);
+        this.username = username;
+        this.password = password;
+    }
+
 }
