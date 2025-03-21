@@ -7,7 +7,9 @@ import org.mapstruct.Mapper;
 import com.hospitalApi.employees.dtos.CreateEmployeeRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeResponseDTO;
+import com.hospitalApi.employees.dtos.HistoryTypeResponseDTO;
 import com.hospitalApi.employees.models.Employee;
+import com.hospitalApi.employees.models.HistoryType;
 
 @Mapper(componentModel = "spring")
 public interface EmployeeMapper {
@@ -18,4 +20,5 @@ public interface EmployeeMapper {
     public EmployeeResponseDTO fromEmployeeToResponse(Employee employee);
 
     public List<EmployeeResponseDTO> fromEmployeesToResponse(List<Employee> employees);
+
 }

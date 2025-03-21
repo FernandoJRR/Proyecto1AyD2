@@ -2,6 +2,7 @@ package com.hospitalApi.employees.dtos;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.Value;
 
@@ -24,5 +25,5 @@ public class EmployeeResponseDTO {
 
     EmployeeTypeResponseDTO employeeType;
 
-    EmployeeHistoriesResponseDTO employeeHistoryResponseDTO;
+    List<EmployeeHistoryResponseDTO> employeeHistories;
 }
