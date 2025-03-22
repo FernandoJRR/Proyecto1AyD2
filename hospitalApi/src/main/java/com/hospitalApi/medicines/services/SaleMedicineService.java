@@ -1,12 +1,15 @@
 package com.hospitalApi.medicines.services;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
 import com.hospitalApi.consult.models.Consult;
 import com.hospitalApi.consult.port.ForConsultPort;
+import com.hospitalApi.medicines.dtos.CreateSaleMedicineConsultRequestDTO;
+import com.hospitalApi.medicines.dtos.CreateSaleMedicineFarmaciaRequestDTO;
 import com.hospitalApi.medicines.models.Medicine;
 import com.hospitalApi.medicines.models.SaleMedicine;
 import com.hospitalApi.medicines.ports.ForMedicinePort;
@@ -129,6 +132,32 @@ public class SaleMedicineService implements ForSaleMedicinePort {
     @Override
     public List<SaleMedicine> getAllSalesMedicines() {
         return saleMedicineRepository.findAll();
+    }
+
+    @Override
+    @Transactional(rollbackOn = Exception.class)
+    public List<SaleMedicine> createSaleMedicines(
+            List<CreateSaleMedicineFarmaciaRequestDTO> createSaleMedicineFarmaciaRequestDTOs) throws NotFoundException {
+        List<SaleMedicine> saleMedicines = new ArrayList<>();
+        for (CreateSaleMedicineFarmaciaRequestDTO createSaleMedicineFarmaciaRequestDTO : createSaleMedicineFarmaciaRequestDTOs) {
+            SaleMedicine saleMedicine = this.createSaleMedicine(createSaleMedicineFarmaciaRequestDTO.getMedicineId(),
+                    createSaleMedicineFarmaciaRequestDTO.getQuantity());
+            saleMedicines.add(saleMedicine);
+        }
+        return saleMedicines;
+    }
+
+    @Override
+    public List<SaleMedicine> createSaleMedicinesForConsult(
+            List<CreateSaleMedicineConsultRequestDTO> createSaleMedicineConsultRequestDTOs) throws NotFoundException {
+        List<SaleMedicine> saleMedicines = new ArrayList<>();
+        for (CreateSaleMedicineConsultRequestDTO createSaleMedicineConsultRequestDTO : createSaleMedicineConsultRequestDTOs) {
+            SaleMedicine saleMedicine = this.createSaleMedicine(createSaleMedicineConsultRequestDTO.getConsultId(),
+                    createSaleMedicineConsultRequestDTO.getMedicineId(),
+                    createSaleMedicineConsultRequestDTO.getQuantity());
+            saleMedicines.add(saleMedicine);
+        }
+        return saleMedicines;
     }
 
 }

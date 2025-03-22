@@ -3,6 +3,7 @@ package com.hospitalApi.medicines.services;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
@@ -12,6 +13,8 @@ import java.util.Optional;
 
 import com.hospitalApi.consult.models.Consult;
 import com.hospitalApi.consult.port.ForConsultPort;
+import com.hospitalApi.medicines.dtos.CreateSaleMedicineConsultRequestDTO;
+import com.hospitalApi.medicines.dtos.CreateSaleMedicineFarmaciaRequestDTO;
 import com.hospitalApi.medicines.models.Medicine;
 import com.hospitalApi.medicines.models.SaleMedicine;
 import com.hospitalApi.medicines.ports.ForMedicinePort;

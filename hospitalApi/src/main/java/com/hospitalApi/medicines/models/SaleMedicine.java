@@ -33,7 +33,7 @@ public class SaleMedicine extends Auditor {
     @JoinColumn(name = "medicine_id", nullable = false)
     private Medicine medicine;
 
-    @NotBlank(message = "La cantidad del medicamento es requerida")
+    @NotNull(message = "La cantidad del medicamento es requerida")
     @Column(nullable = false)
     @Min(value = 1, message = "La cantidad del medicamento no puede ser menor a 1")
     private Integer quantity;
