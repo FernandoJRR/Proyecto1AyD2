@@ -58,9 +58,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      *         es válido.
      */
     private Optional<String> extractTokenFromHeader(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader("Authorization"))
-                .filter(header -> header.startsWith("Bearer "))
-                .map(header -> header.substring(7));
+        // extraemos el header autorizacion d ela request
+        String authHeader = request.getHeader("Authorization");
+        // si el header no esta nulo y comienza por Bearer entonces significa que trae
+        // un jwt
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7); // ahora eliminamos la palabra Bearer
+            return Optional.of(token);
+        }
+
+        return Optional.empty();
     }
 
     /**
@@ -71,22 +78,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @return Optional con los detalles del usuario si el token es
      *         válido.
      */
-    private Optional<UserDetails> validateToken(String jwt) {
-        try {
-            String username = jwtManager.extractUsername(jwt);
+    private Optional<UserDetails> validateToken(String jwt) throws UsernameNotFoundException {
+        String username = jwtManager.extractUsername(jwt);
 
-            // cargar al usuario
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        // cargar al usuario
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            // si esta invalido el token entonces lanzar un optional vacio
-            if (!jwtManager.isTokenValid(jwt, userDetails.getUsername())) {
-                return Optional.empty();
-            }
+        // si esta invalido entonces esto lanzara excepcion
+        jwtManager.isTokenValid(jwt, userDetails.getUsername());
 
-            return Optional.of(userDetails);
-        } catch (UsernameNotFoundException ex) {
-            return Optional.empty();
-        }
+        return Optional.of(userDetails);
+
     }
 
     /**
