@@ -46,8 +46,9 @@ public class MedicineController {
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @GetMapping("/all")
-    public ResponseEntity<List<MedicineResponseDTO>> getAllMedicines() {
-        List<Medicine> medicineList = medicinePort.getAllMedicines();
+    public ResponseEntity<List<MedicineResponseDTO>> getAllMedicines(
+            @RequestParam(value = "query", required = false) String query) {
+        List<Medicine> medicineList = medicinePort.getAllMedicines(query);
         List<MedicineResponseDTO> response = medicineMapper.fromMedicineListToMedicineResponseDTOList(medicineList);
         return ResponseEntity.ok().body(response);
     }
@@ -111,10 +112,4 @@ public class MedicineController {
         MedicineResponseDTO responseDTO = new MedicineResponseDTO(medicine);
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
     }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> deleteMethodName(@RequestParam Long id) {
-        return ResponseEntity.ok().body(false);
-    }
-
 }

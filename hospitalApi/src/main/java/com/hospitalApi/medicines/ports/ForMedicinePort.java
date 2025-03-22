@@ -21,9 +21,7 @@ public interface ForMedicinePort {
 
     public Medicine getMedicine(String id) throws NotFoundException;
 
-    public boolean deleteMedicine(String id);
-
-    public List<Medicine> getAllMedicines();
+    public List<Medicine> getAllMedicines(String query);
 
     public List<Medicine> getMedicinesWithLowStock();
 }
