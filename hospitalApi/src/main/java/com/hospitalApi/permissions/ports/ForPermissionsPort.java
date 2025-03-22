@@ -24,4 +24,11 @@ public interface ForPermissionsPort {
 
     public Permission findPermissionById(Permission permission) throws NotFoundException;
 
+    /**
+     * Recupera todos los permisos registrados en el sistema.
+     *
+     * @return una lista de Permission con todos los permisos existentes.
+     */
+    public List<Permission> findAllPemrissions();
+
 }

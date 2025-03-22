@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hospitalApi.employees.dtos.EmployeeTypeResponseDTO;
@@ -45,7 +46,8 @@ public class EmployeeTypeController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
         @GetMapping
-        public ResponseEntity<List<EmployeeTypeResponseDTO>> getEmployeesTypes() {
+        @ResponseStatus(HttpStatus.OK)
+        public List<EmployeeTypeResponseDTO> getEmployeesTypes() {
 
                 // mandar a crear el employee al port
                 List<EmployeeType> result = employeeTypePort.findAllEmployeesTypes();
@@ -54,19 +56,39 @@ public class EmployeeTypeController {
                 List<EmployeeTypeResponseDTO> response = employeeTypeMapper
                                 .fromEmployeeTypeListToEmployeeTypeResponseDtoList(result);
 
-                return ResponseEntity.status(HttpStatus.OK).body(response);
+                return response;
+        }
+
+        @Operation(summary = "Obtiene un tipo de empleado por su ID", description = "Este endpoint permite obtener la información de un tipo de empleado específico utilizando su ID. Si el tipo de empleado no existe, se lanza una excepción.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Tipo de empleado encontrado exitosamente"),
+                        @ApiResponse(responseCode = "404", description = "Recurso no encontrado - No existe un tipo de empleado con el ID especificado"),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        })
+        @GetMapping("/{employeeTypeId}")
+        @ResponseStatus(HttpStatus.OK)
+        public EmployeeTypeResponseDTO finEmployeeTypeById(
+                        @PathVariable("employeeTypeId") String employeeTypeId) throws NotFoundException {
+
+                // mandar a busar por el id
+                EmployeeType result = employeeTypePort.findEmployeeTypeById(employeeTypeId);
+
+                // convertir el employee type al dto
+                EmployeeTypeResponseDTO response = employeeTypeMapper.fromEmployeeTypeToEmployeeTypeResponseDto(result);
+                return response;
         }
 
         @Operation(summary = "Crea un nuevo tipo de empleado en el sistema", description = "Este endpoint permite la creación de un nuevo tipo de empleado, asegurando que el nombre no esté duplicado y que los permisos asignados existan en el sistema.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "201", description = "Tipo de empleado creado exitosamente"),
                         @ApiResponse(responseCode = "400", description = "Solicitud inválida - Validaciones fallidas"),
-                        @ApiResponse(responseCode = "400", description = "Recurso no encontrado - Si algun permiso no se encuentra por medio de los ids especificados"),
+                        @ApiResponse(responseCode = "404", description = "Recurso no encontrado - Si algun permiso no se encuentra por medio de los ids especificados"),
                         @ApiResponse(responseCode = "409", description = "Conflicto - Ya existe un tipo de empleado con el mismo nombre"),
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
         @PostMapping
-        public ResponseEntity<EmployeeTypeResponseDTO> createTypeEmployee(
+        @ResponseStatus(HttpStatus.CREATED)
+        public EmployeeTypeResponseDTO createTypeEmployee(
                         @RequestBody @Valid SaveEmployeeTypeRequestDTO request)
                         throws DuplicatedEntryException, NotFoundException {
                 // mapeamos la request
@@ -81,11 +103,20 @@ public class EmployeeTypeController {
                 EmployeeTypeResponseDTO response = employeeTypeMapper
                                 .fromEmployeeTypeToEmployeeTypeResponseDto(savedEmployeeType);
 
-                return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                return response;
         }
 
+        @Operation(summary = "Edita un tipo de empleado existente", description = "Este endpoint permite editar un tipo de empleado ya existente utilizando su ID. Se valida que el nuevo nombre no esté duplicado y que los permisos proporcionados existan en el sistema.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Tipo de empleado actualizado exitosamente"),
+                        @ApiResponse(responseCode = "400", description = "Solicitud inválida - Validaciones fallidas"),
+                        @ApiResponse(responseCode = "404", description = "Recurso no encontrado - No existe un tipo de empleado o permiso con los IDs especificados"),
+                        @ApiResponse(responseCode = "409", description = "Conflicto - Ya existe un tipo de empleado con el mismo nombre"),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        })
         @PatchMapping("/{employeeTypeId}")
-        public ResponseEntity<EmployeeTypeResponseDTO> editEmployeeType(
+        @ResponseStatus(HttpStatus.OK)
+        public EmployeeTypeResponseDTO editEmployeeType(
                         @RequestBody @Valid SaveEmployeeTypeRequestDTO request,
                         @PathVariable("employeeTypeId") String employeeTypeId)
                         throws DuplicatedEntryException, NotFoundException {
@@ -103,16 +134,23 @@ public class EmployeeTypeController {
                 EmployeeTypeResponseDTO response = employeeTypeMapper
                                 .fromEmployeeTypeToEmployeeTypeResponseDto(savedEmployeeType);
 
-                return ResponseEntity.status(HttpStatus.OK).body(response);
+                return response;
         }
 
+        @Operation(summary = "Elimina un tipo de empleado por su ID", description = "Este endpoint permite eliminar un tipo de empleado del sistema. Si el tipo está asignado a empleados, estos serán reasignados al tipo de empleado por defecto antes de eliminar. No se permite eliminar el tipo de empleado por defecto.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "204", description = "Tipo de empleado eliminado exitosamente"),
+                        @ApiResponse(responseCode = "409", description = "Conflicto - No se puede eliminar el tipo de empleado por defecto"),
+                        @ApiResponse(responseCode = "404", description = "Recurso no encontrado - No existe un tipo de empleado con el ID especificado"),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        })
         @DeleteMapping("/{employeeTypeId}")
-        public ResponseEntity<EmployeeTypeResponseDTO> editEmployeeType(
+        public ResponseEntity<EmployeeTypeResponseDTO> deleteEmployeeTypeById(
                         @PathVariable("employeeTypeId") String employeeTypeId)
                         throws NotFoundException {
 
-                // mandar a crear el employee l port
-                boolean isEliminated = employeeTypePort.deleteEmployeeTypeById(
+                // mandar a eliminar el tipo de empleado
+                employeeTypePort.deleteEmployeeTypeById(
                                 employeeTypeId);
 
                 return ResponseEntity.noContent().build();

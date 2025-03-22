@@ -25,6 +25,15 @@ public class EmployeeTypeService implements ForEmployeeTypePort {
     private final ForPermissionsPort forPermissionsPort;
     private final ForEmployeesPort forEmployeesPort;
 
+    /**
+     * Constructor de la clase
+     * 
+     * @param employeeTypeRepository
+     * @param forPermissionsPort
+     * @param forEmployeesPort       //se inicializa como lazy porque este depende
+     *                               de ForEmployeeTypePort y asi evitamos error de
+     *                               recursividad
+     */
     public EmployeeTypeService(EmployeeTypeRepository employeeTypeRepository, ForPermissionsPort forPermissionsPort,
             @Lazy ForEmployeesPort forEmployeesPort) {
         this.employeeTypeRepository = employeeTypeRepository;
@@ -62,6 +71,13 @@ public class EmployeeTypeService implements ForEmployeeTypePort {
             throws DuplicatedEntryException, NotFoundException {
         // mandamos a traer el tipo de usuario con el id
         EmployeeType existingEmployeeType = findEmployeeTypeById(employeeTypeId);
+
+        // debemos verificar que si se esta intentando editar el por defecto que no sea en si nombre
+        if (EmployeeTypeEnum.DEFAULT.getEmployeeType().getName().equals(existingEmployeeType.getName())
+        && !updatedEmployeeType.getName().equals(EmployeeTypeEnum.DEFAULT.getEmployeeType().getName())) {
+            throw new IllegalStateException("No se puede editar el nombre del tipo de empleado por defecto.");
+        }
+
         // si ya existe otro usuario con el mismo nombre y no es el encontrado entonces
         // lanzar el error de info duplicada
         if (employeeTypeRepository.existsByNameAndIdIsNot(updatedEmployeeType.getName(),

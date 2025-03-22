@@ -62,4 +62,9 @@ public class PermissionService implements ForPermissionsPort {
         return permissionRepository.findById(permission.getId()).orElseThrow(
                 () -> new NotFoundException(errorMessage));
     }
+
+    @Override
+    public List<Permission> findAllPemrissions() {
+        return permissionRepository.findAll();
+    }
 }
