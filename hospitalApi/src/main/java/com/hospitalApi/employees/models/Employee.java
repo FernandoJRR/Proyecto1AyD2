@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.hibernate.annotations.DynamicUpdate;
 
+import com.hospitalApi.consults.models.EmployeeConsult;
 import com.hospitalApi.shared.models.Auditor;
 import com.hospitalApi.surgery.models.SurgeryEmployee;
 import com.hospitalApi.users.models.User;
@@ -58,8 +59,11 @@ public class Employee extends Auditor {
     @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
     private User user;
 
-    @OneToMany(mappedBy = "employee")
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SurgeryEmployee> surgeryEmployees;
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmployeeConsult> employeeConsults;
 
     /**
      * Para la creacion de nuevos empleados

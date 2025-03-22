@@ -51,6 +51,9 @@ public class Consult extends Auditor {
     @OneToMany(mappedBy = "consult", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaleMedicine> saleMedicines;
 
+    @OneToMany(mappedBy = "consult", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmployeeConsult> employeeConsults;
+
     // Habitacion
     // private Habitacion habitacion;
     public Consult(String id, Patient patient, Boolean isInternado, Double costoConsulta, Double costoTotal) {

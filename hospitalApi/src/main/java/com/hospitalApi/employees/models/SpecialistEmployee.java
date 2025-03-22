@@ -9,6 +9,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,6 +32,11 @@ public class SpecialistEmployee extends Auditor {
     @Size(min = 3, max = 100, message = "Los apellidos del especialista deben tener entre 3 y 100 caracteres")
     @Column(nullable = false, length = 100)
     private String apellidos;
+
+    @NotBlank(message = "El DPI del especialista es requerido")
+    @Pattern(regexp = "^[0-9]{13}$", message = "El DPI del especialista debe tener 13 dígitos")
+    @Column(nullable = false, length = 13, unique = true)
+    private String dpi;
 
     @OneToMany(mappedBy = "specialistEmployee")
     private List<SurgeryEmployee> surgeryEmployees;
