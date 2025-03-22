@@ -2,7 +2,7 @@ package com.hospitalApi.medicines.models;
 
 import org.hibernate.annotations.DynamicUpdate;
 
-import com.hospitalApi.consult.models.Consult;
+import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.Column;

@@ -2,7 +2,7 @@ package com.hospitalApi.surgery.models;
 
 import java.util.List;
 
-import com.hospitalApi.consult.models.Consult;
+import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.Column;

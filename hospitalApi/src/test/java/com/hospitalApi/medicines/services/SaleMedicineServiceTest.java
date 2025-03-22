@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.hospitalApi.consult.models.Consult;
-import com.hospitalApi.consult.port.ForConsultPort;
+import com.hospitalApi.consults.models.Consult;
+import com.hospitalApi.consults.port.ForConsultPort;
 import com.hospitalApi.medicines.dtos.CreateSaleMedicineConsultRequestDTO;
 import com.hospitalApi.medicines.dtos.CreateSaleMedicineFarmaciaRequestDTO;
 import com.hospitalApi.medicines.models.Medicine;

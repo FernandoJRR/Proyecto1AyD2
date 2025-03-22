@@ -1,4 +1,4 @@
-package com.hospitalApi.consult.dtos;
+package com.hospitalApi.consults.dtos;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;

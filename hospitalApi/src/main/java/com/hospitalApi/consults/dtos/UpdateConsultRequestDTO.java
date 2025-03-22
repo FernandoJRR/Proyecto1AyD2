@@ -1,4 +1,4 @@
-package com.hospitalApi.consult.dtos;
+package com.hospitalApi.consults.dtos;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

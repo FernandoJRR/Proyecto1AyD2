@@ -1,9 +1,9 @@
-package com.hospitalApi.consult.models;
+package com.hospitalApi.consults.models;
 
 import java.util.List;
 
-import com.hospitalApi.consult.dtos.CreateConsultRequestDTO;
-import com.hospitalApi.consult.dtos.UpdateConsultRequestDTO;
+import com.hospitalApi.consults.dtos.CreateConsultRequestDTO;
+import com.hospitalApi.consults.dtos.UpdateConsultRequestDTO;
 import com.hospitalApi.medicines.models.SaleMedicine;
 import com.hospitalApi.patients.models.Patient;
 import com.hospitalApi.shared.models.Auditor;
@@ -45,6 +45,9 @@ public class Consult extends Auditor {
     @DecimalMin(value = "0.01", inclusive = true, message = "El costo de la medicina debe ser mayor a 0")
     private Double costoTotal;
 
+    @NotNull(message = "El estado de la consulta es requerido")
+    private Boolean isPaid = false;
+
     @OneToMany(mappedBy = "consult", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SaleMedicine> saleMedicines;
 
@@ -58,10 +61,10 @@ public class Consult extends Auditor {
         this.costoTotal = costoTotal;
     }
 
-    public Consult(CreateConsultRequestDTO createConsultRequestDTO, Patient patient) {
+    public Consult(Patient patient, Double costoConsulta) {
         this.patient = patient;
-        this.costoConsulta = createConsultRequestDTO.getCostoConsulta();
-        this.costoTotal = createConsultRequestDTO.getCostoConsulta();
+        this.costoConsulta = costoConsulta;
+        this.costoTotal = costoConsulta;
     }
 
     public Consult updateConsultFromDTO(UpdateConsultRequestDTO updateConsultRequestDTO) {

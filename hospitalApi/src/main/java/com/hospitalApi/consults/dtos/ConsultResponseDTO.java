@@ -1,8 +1,8 @@
-package com.hospitalApi.consult.dtos;
+package com.hospitalApi.consults.dtos;
 
 import java.time.LocalDate;
 
-import com.hospitalApi.consult.models.Consult;
+import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.patients.dtos.PatientResponseDTO;
 
 import lombok.AllArgsConstructor;

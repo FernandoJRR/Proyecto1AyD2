@@ -1,11 +1,11 @@
-package com.hospitalApi.consult.mappers;
+package com.hospitalApi.consults.mappers;
 
 import java.util.List;
 
 import org.mapstruct.Mapper;
 
-import com.hospitalApi.consult.dtos.ConsultResponseDTO;
-import com.hospitalApi.consult.models.Consult;
+import com.hospitalApi.consults.dtos.ConsultResponseDTO;
+import com.hospitalApi.consults.models.Consult;
 
 @Mapper(componentModel = "spring")
 public interface ConsultMapper {

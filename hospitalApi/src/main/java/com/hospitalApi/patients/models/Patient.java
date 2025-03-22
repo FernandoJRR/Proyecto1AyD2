@@ -2,7 +2,7 @@ package com.hospitalApi.patients.models;
 
 import java.util.List;
 
-import com.hospitalApi.consult.models.Consult;
+import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.patients.dtos.CreatePatientRequestDTO;
 import com.hospitalApi.patients.dtos.UpdatePatientRequestDTO;
 import com.hospitalApi.shared.models.Auditor;
