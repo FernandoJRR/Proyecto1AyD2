@@ -17,6 +17,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,6 +25,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity(name = "consulta")
 public class Consult extends Auditor {
 
@@ -48,6 +50,13 @@ public class Consult extends Auditor {
 
     // Habitacion
     // private Habitacion habitacion;
+    public Consult(String id, Patient patient, Boolean isInternado, Double costoConsulta, Double costoTotal) {
+        super(id);
+        this.patient = patient;
+        this.isInternado = isInternado;
+        this.costoConsulta = costoConsulta;
+        this.costoTotal = costoTotal;
+    }
 
     public Consult(CreateConsultRequestDTO createConsultRequestDTO, Patient patient) {
         this.patient = patient;

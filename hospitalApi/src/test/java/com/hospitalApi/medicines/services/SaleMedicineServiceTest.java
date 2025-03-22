@@ -16,6 +16,7 @@ import com.hospitalApi.medicines.models.Medicine;
 import com.hospitalApi.medicines.models.SaleMedicine;
 import com.hospitalApi.medicines.ports.ForMedicinePort;
 import com.hospitalApi.medicines.repositories.SaleMedicineRepository;
+import com.hospitalApi.patients.models.Patient;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +45,7 @@ public class SaleMedicineServiceTest {
     private Consult consult;
 
     private static final String MEDICINE_ID = "12312-12312-12312-12312";
-        private static final String CONSULT_ID = "CONSULT-9999";
+    private static final String CONSULT_ID = "CONSULT-9999";
     private static final String MEDICINE_NAME = "Paracetamol";
     private static final String MEDICINE_DESCRIPTION = "Para el dolor";
     private static final String SALE_MEDICINE_ID = "99999-88888-77777-66666";
@@ -68,9 +69,8 @@ public class SaleMedicineServiceTest {
         saleMedicine = new SaleMedicine(medicine, SALE_QUANTITY);
         saleMedicine.setId(SALE_MEDICINE_ID);
 
-        consult = new Consult();
-        consult.setId(CONSULT_ID);
-        consult.setCreatedAt(LocalDate.now());
+        Patient patient = new Patient("Jose Jose", "Sosa Ortiz", "123456789");
+        consult = new Consult(CONSULT_ID, patient, false, 200.00, 200.00);
     }
 
     @Test
@@ -260,47 +260,89 @@ public class SaleMedicineServiceTest {
     @Test
     public void shouldCreateSaleMedicineWithConsultSuccessfully() throws NotFoundException {
         // Arrange
-        when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
-        when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(medicine);
-        when(saleMedicineRepository.save(any(SaleMedicine.class))).thenReturn(saleMedicine);
-        when(forMedicinePort.subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY)).thenReturn(medicine);
+        Consult mockConsult = new Consult();
+        mockConsult.setId(CONSULT_ID);
+
+        Medicine mockMedicine = new Medicine();
+        mockMedicine.setId(MEDICINE_ID);
+        mockMedicine.setQuantity(20);
+        mockMedicine.setPrice(50.0);
+
+        when(forConsultPort.findById(CONSULT_ID)).thenReturn(mockConsult);
+        when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(mockMedicine);
+        when(forMedicinePort.subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY)).thenReturn(mockMedicine);
+
+        ArgumentCaptor<SaleMedicine> captor = ArgumentCaptor.forClass(SaleMedicine.class);
+
+        SaleMedicine savedSaleMedicine = new SaleMedicine(mockConsult, mockMedicine, SALE_QUANTITY);
+        when(saleMedicineRepository.save(any(SaleMedicine.class))).thenReturn(savedSaleMedicine);
 
         // Act
         SaleMedicine result = saleMedicineService.createSaleMedicine(CONSULT_ID, MEDICINE_ID, SALE_QUANTITY);
 
         // Assert
-        assertNotNull(result);
-        assertEquals(consult, result.getConsult());
-        assertEquals(medicine, result.getMedicine());
-        assertEquals(SALE_QUANTITY, result.getQuantity());
+        assertNotNull(result, "El resultado no debe ser null");
 
-        ArgumentCaptor<SaleMedicine> captor = ArgumentCaptor.forClass(SaleMedicine.class);
-        verify(saleMedicineRepository).save(captor.capture());
+        assertAll("Verificación del SaleMedicine devuelto",
+                () -> assertEquals(mockConsult.getId(), result.getConsult().getId(), "El id del consult es incorrecto"),
+                () -> assertEquals(mockMedicine.getId(), result.getMedicine().getId(),
+                        "El id de la medicina es incorrecto"),
+                () -> assertEquals(SALE_QUANTITY, result.getQuantity(), "La cantidad es incorrecta"));
 
-        SaleMedicine capturedSale = captor.getValue();
-        assertEquals(consult, capturedSale.getConsult());
-        assertEquals(medicine, capturedSale.getMedicine());
-        assertEquals(SALE_QUANTITY, capturedSale.getQuantity());
+        verify(saleMedicineRepository, times(1)).save(captor.capture());
+        SaleMedicine captured = captor.getValue();
 
-        verify(forConsultPort).findById(CONSULT_ID);
-        verify(forMedicinePort).getMedicine(MEDICINE_ID);
-        verify(forMedicinePort).subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY);
+        assertAll("Validación del objeto persistido en save",
+                () -> assertNotNull(captured.getConsult(), "El consult no debería ser null"),
+                () -> assertNotNull(captured.getMedicine(), "El medicine no debería ser null"),
+                () -> assertEquals(mockConsult.getId(), captured.getConsult().getId(),
+                        "El id del consult capturado es incorrecto"),
+                () -> assertEquals(mockMedicine.getId(), captured.getMedicine().getId(),
+                        "El id del medicine capturado es incorrecto"),
+                () -> assertEquals(SALE_QUANTITY, captured.getQuantity(), "La cantidad capturada es incorrecta"));
+
+        verify(forConsultPort, times(1)).findById(CONSULT_ID);
+        verify(forMedicinePort, times(1)).getMedicine(MEDICINE_ID);
+        verify(forMedicinePort, times(1)).subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY);
     }
 
     @Test
-    public void shouldThrowNotFoundWhenCreatingSaleMedicineWithConsultIfStockIsInsufficient() throws NotFoundException {
-        medicine.setQuantity(2);
+    public void shouldThrowNotFoundExceptionWhenConsultDoesNotExist() throws NotFoundException {
+        // Arrange
+        when(forConsultPort.findById(CONSULT_ID)).thenThrow(new NotFoundException("Consulta no encontrada"));
 
-        when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
-        when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(medicine);
+        // Act & Assert
+        assertThrows(NotFoundException.class, () -> {
+            saleMedicineService.createSaleMedicine(CONSULT_ID, MEDICINE_ID, SALE_QUANTITY);
+        });
 
-        assertThrows(NotFoundException.class,
-                () -> saleMedicineService.createSaleMedicine(CONSULT_ID, MEDICINE_ID, SALE_QUANTITY));
+        verify(forConsultPort, times(1)).findById(CONSULT_ID);
+        verify(forMedicinePort, times(0)).getMedicine(any());
+        verify(saleMedicineRepository, times(0)).save(any());
+    }
 
-        verify(forConsultPort).findById(CONSULT_ID);
-        verify(forMedicinePort).getMedicine(MEDICINE_ID);
-        verify(saleMedicineRepository, never()).save(any());
-        verify(forMedicinePort, never()).subtractStockMedicine(anyString(), any());
+    @Test
+    public void shouldThrowNotFoundExceptionWhenMedicineHasInsufficientStock() throws NotFoundException {
+        // Arrange
+        Consult mockConsult = new Consult();
+        mockConsult.setId(CONSULT_ID);
+
+        Medicine mockMedicine = new Medicine();
+        mockMedicine.setId(MEDICINE_ID);
+        mockMedicine.setQuantity(2);
+
+        when(forConsultPort.findById(CONSULT_ID)).thenReturn(mockConsult);
+        when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(mockMedicine);
+
+        // Act & Assert
+        assertThrows(NotFoundException.class, () -> {
+            saleMedicineService.createSaleMedicine(CONSULT_ID, MEDICINE_ID, SALE_QUANTITY);
+        });
+
+        verify(forConsultPort, times(1)).findById(CONSULT_ID);
+        verify(forMedicinePort, times(1)).getMedicine(MEDICINE_ID);
+        verify(saleMedicineRepository, times(0)).save(any());
+        verify(forMedicinePort, times(0)).subtractStockMedicine(any(), any());
     }
 
     @Test
