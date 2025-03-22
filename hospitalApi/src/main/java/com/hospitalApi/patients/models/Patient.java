@@ -26,13 +26,11 @@ public class Patient extends Auditor {
 
     @NotBlank(message = "El nombre del paciente es requerido")
     @Size(min = 1, max = 250, message = "El nombre del paciente debe tener entre 1 y 250 caracteres")
-    @Pattern(regexp = "^[a-zA-Z]+(\\s+[a-zA-Z]+)*$", message = "El nombre del paciente debe contener solo letras y espacios")
     @Column(nullable = false, length = 250)
     private String firstnames;
 
     @NotBlank(message = "Los apellidos del paciente son requeridos")
     @Size(min = 1, max = 250, message = "Los apellidos del paciente deben tener entre 1 y 250 caracteres")
-    @Pattern(regexp = "^[a-zA-Z]+(\\s+[a-zA-Z]+)*$", message = "Los apellidos del paciente deben contener solo letras y espacios")
     @Column(nullable = false, length = 250)
     private String lastnames;
 
@@ -60,7 +58,6 @@ public class Patient extends Auditor {
     }
 
     public Patient(CreatePatientRequestDTO createPatientRequestDTO) {
-        super();
         this.firstnames = createPatientRequestDTO.getFirstnames();
         this.lastnames = createPatientRequestDTO.getLastnames();
         this.dpi = createPatientRequestDTO.getDpi();
@@ -74,7 +71,6 @@ public class Patient extends Auditor {
      * @param dpi
      */
     public Patient(String firstnames, String lastnames, String dpi) {
-        super();
         this.firstnames = firstnames;
         this.lastnames = lastnames;
         this.dpi = dpi;

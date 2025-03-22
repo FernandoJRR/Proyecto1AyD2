@@ -58,13 +58,10 @@ public class PatientService implements ForPatientPort {
     }
 
     @Override
-    public List<Patient> getPatients() {
+    public List<Patient> getPatients(String query) {
+        if (query != null) {
+            return patientRespository.findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(query, query);
+        }
         return patientRespository.findAllByOrderByCreatedAtDesc();
     }
-
-    @Override
-    public List<Patient> searchPatients(String query) {
-        return patientRespository.findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(query, query);
-    }
-
 }
