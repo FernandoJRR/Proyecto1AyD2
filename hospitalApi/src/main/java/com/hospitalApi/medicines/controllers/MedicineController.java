@@ -65,6 +65,12 @@ public class MedicineController {
         return ResponseEntity.ok().body(response);
     }
 
+    @Operation(summary = "Obtener un medicamento", description = "Devuelve un medicamento en base a su id.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Medicamento obtenido exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = MedicineResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Recurso no encontrado, el medicamento no existe.", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<MedicineResponseDTO> getMedicine(
             @PathVariable("id") @NotBlank(message = "El id del medicamento es requerido") String id)

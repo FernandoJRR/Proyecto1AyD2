@@ -2,6 +2,8 @@ package com.hospitalApi.employees.models;
 
 import java.util.List;
 
+import com.hospitalApi.employees.dtos.CreateSpecialistEmpleoyeeRequestDTO;
+import com.hospitalApi.employees.dtos.UpdateSpecialistEmpleoyeeRequestDTO;
 import com.hospitalApi.shared.models.Auditor;
 import com.hospitalApi.surgery.models.SurgeryEmployee;
 
@@ -41,4 +43,22 @@ public class SpecialistEmployee extends Auditor {
     @OneToMany(mappedBy = "specialistEmployee")
     private List<SurgeryEmployee> surgeryEmployees;
 
+    public SpecialistEmployee(CreateSpecialistEmpleoyeeRequestDTO createSpecialistEmpleoyeeRequestDTO) {
+        this.nombres = createSpecialistEmpleoyeeRequestDTO.getNombres();
+        this.apellidos = createSpecialistEmpleoyeeRequestDTO.getApellidos();
+        this.dpi = createSpecialistEmpleoyeeRequestDTO.getDpi();
+    }
+
+    public SpecialistEmployee updateFromDTO(UpdateSpecialistEmpleoyeeRequestDTO updateSpecialistEmpleoyeeRequestDTO) {
+        if (updateSpecialistEmpleoyeeRequestDTO.getNombres() != null) {
+            this.nombres = updateSpecialistEmpleoyeeRequestDTO.getNombres();
+        }
+        if (updateSpecialistEmpleoyeeRequestDTO.getApellidos() != null) {
+            this.apellidos = updateSpecialistEmpleoyeeRequestDTO.getApellidos();
+        }
+        if (updateSpecialistEmpleoyeeRequestDTO.getDpi() != null) {
+            this.dpi = updateSpecialistEmpleoyeeRequestDTO.getDpi();
+        }
+        return this;
+    }
 }

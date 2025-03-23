@@ -4,12 +4,14 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.hospitalApi.employees.dtos.UpdateSpecialistEmpleoyeeRequestDTO;
 import com.hospitalApi.employees.models.SpecialistEmployee;
 import com.hospitalApi.employees.ports.ForSpecialistEmployeePort;
 import com.hospitalApi.employees.repositories.SpecialistEmployeeRepository;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -48,6 +50,24 @@ public class SpecialistEmployeeService implements ForSpecialistEmployeePort {
             return specialistEmployeeRepository.findAll();
         }
         return specialistEmployeeRepository.findByNombresAndApellidos(search, search);
+    }
+
+    @Override
+    @Transactional(rollbackOn = Exception.class)
+    public SpecialistEmployee updateSpecialistEmployee(
+            UpdateSpecialistEmpleoyeeRequestDTO updateSpecialistEmpleoyeeRequestDTO, String specialistEmployeeId)
+            throws NotFoundException, DuplicatedEntryException {
+        if (!specialistEmployeeRepository.existsById(specialistEmployeeId)) {
+            throw new NotFoundException("No se encontró el empleado con el ID " + specialistEmployeeId);
+        }
+        if (specialistEmployeeRepository.existsByDpiAndIdNot(updateSpecialistEmpleoyeeRequestDTO.getDpi(),
+                specialistEmployeeId)) {
+            throw new DuplicatedEntryException(
+                    "Ya existe un empleado con el DPI " + updateSpecialistEmpleoyeeRequestDTO.getDpi());
+        }
+        SpecialistEmployee specialistEmployee = specialistEmployeeRepository.findById(specialistEmployeeId).get();
+        specialistEmployee.updateFromDTO(updateSpecialistEmpleoyeeRequestDTO);
+        return specialistEmployeeRepository.save(specialistEmployee);
     }
 
 }

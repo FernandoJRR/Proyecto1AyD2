@@ -1,5 +1,6 @@
 package com.hospitalApi.employees.services;
 
+import com.hospitalApi.employees.dtos.UpdateSpecialistEmpleoyeeRequestDTO;
 import com.hospitalApi.employees.models.SpecialistEmployee;
 import com.hospitalApi.employees.repositories.SpecialistEmployeeRepository;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class SpecialistEmployeeServiceTest {
@@ -61,8 +63,7 @@ public class SpecialistEmployeeServiceTest {
                 () -> assertNotNull(result),
                 () -> assertEquals(DPI, captured.getDpi()),
                 () -> assertEquals(NOMBRES, captured.getNombres()),
-                () -> assertEquals(APELLIDOS, captured.getApellidos())
-        );
+                () -> assertEquals(APELLIDOS, captured.getApellidos()));
         verify(specialistEmployeeRepository, times(1)).existsByDpi(DPI);
         verify(specialistEmployeeRepository, times(1)).save(any(SpecialistEmployee.class));
     }
@@ -174,4 +175,93 @@ public class SpecialistEmployeeServiceTest {
         verify(specialistEmployeeRepository, times(1)).findByNombresAndApellidos(searchQuery, searchQuery);
         verify(specialistEmployeeRepository, times(0)).findAll();
     }
+
+    @Test
+    public void shouldUpdateSpecialistEmployeeSuccessfully() throws NotFoundException, DuplicatedEntryException {
+        // Arrange
+        String newName = "Luis Alberto";
+        String newLastName = "Martinez Gomez";
+        String newDpi = "9876543210987";
+
+        UpdateSpecialistEmpleoyeeRequestDTO updateDTO = new UpdateSpecialistEmpleoyeeRequestDTO(
+                newName, newLastName, newDpi);
+
+        SpecialistEmployee existingEmployee = new SpecialistEmployee();
+        existingEmployee.setId(SPECIALIST_ID);
+        existingEmployee.setNombres(NOMBRES);
+        existingEmployee.setApellidos(APELLIDOS);
+        existingEmployee.setDpi(DPI);
+
+        when(specialistEmployeeRepository.existsById(SPECIALIST_ID)).thenReturn(true);
+        when(specialistEmployeeRepository.existsByDpiAndIdNot(newDpi, SPECIALIST_ID)).thenReturn(false);
+        when(specialistEmployeeRepository.findById(SPECIALIST_ID)).thenReturn(Optional.of(existingEmployee));
+        when(specialistEmployeeRepository.save(any(SpecialistEmployee.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        SpecialistEmployee updatedEmployee = specialistEmployeeService.updateSpecialistEmployee(updateDTO,
+                SPECIALIST_ID);
+
+        // Assert
+        assertNotNull(updatedEmployee);
+
+        assertAll("Campos actualizados",
+                () -> assertEquals(newName, updatedEmployee.getNombres()),
+                () -> assertEquals(newLastName, updatedEmployee.getApellidos()),
+                () -> assertEquals(newDpi, updatedEmployee.getDpi()));
+
+        ArgumentCaptor<SpecialistEmployee> captor = ArgumentCaptor.forClass(SpecialistEmployee.class);
+        verify(specialistEmployeeRepository).save(captor.capture());
+
+        SpecialistEmployee capturedEmployee = captor.getValue();
+        assertEquals(newName, capturedEmployee.getNombres());
+        assertEquals(newLastName, capturedEmployee.getApellidos());
+        assertEquals(newDpi, capturedEmployee.getDpi());
+
+        verify(specialistEmployeeRepository, times(1)).existsById(SPECIALIST_ID);
+        verify(specialistEmployeeRepository, times(1)).existsByDpiAndIdNot(newDpi, SPECIALIST_ID);
+        verify(specialistEmployeeRepository, times(1)).findById(SPECIALIST_ID);
+        verify(specialistEmployeeRepository, times(1)).save(any(SpecialistEmployee.class));
+    }
+
+    @Test
+    public void shouldThrowNotFoundExceptionWhenSpecialistEmployeeDoesNotExist() {
+        // Arrange
+        UpdateSpecialistEmpleoyeeRequestDTO updateDTO = new UpdateSpecialistEmpleoyeeRequestDTO(
+                "Luis", "Martinez", "9876543210987");
+
+        when(specialistEmployeeRepository.existsById(SPECIALIST_ID)).thenReturn(false);
+
+        // Act & Assert
+        assertThrows(NotFoundException.class, () -> {
+            specialistEmployeeService.updateSpecialistEmployee(updateDTO, SPECIALIST_ID);
+        });
+
+        verify(specialistEmployeeRepository, times(1)).existsById(SPECIALIST_ID);
+        verify(specialistEmployeeRepository, never()).existsByDpiAndIdNot(any(), any());
+        verify(specialistEmployeeRepository, never()).findById(any());
+        verify(specialistEmployeeRepository, never()).save(any());
+    }
+
+    @Test
+    public void shouldThrowDuplicatedEntryExceptionWhenUpdatingWithExistingDpi() {
+        // Arrange
+        String duplicateDpi = "9876543210987";
+        UpdateSpecialistEmpleoyeeRequestDTO updateDTO = new UpdateSpecialistEmpleoyeeRequestDTO(
+                "Luis", "Martinez", duplicateDpi);
+
+        when(specialistEmployeeRepository.existsById(SPECIALIST_ID)).thenReturn(true);
+        when(specialistEmployeeRepository.existsByDpiAndIdNot(duplicateDpi, SPECIALIST_ID)).thenReturn(true);
+
+        // Act & Assert
+        assertThrows(DuplicatedEntryException.class, () -> {
+            specialistEmployeeService.updateSpecialistEmployee(updateDTO, SPECIALIST_ID);
+        });
+
+        verify(specialistEmployeeRepository, times(1)).existsById(SPECIALIST_ID);
+        verify(specialistEmployeeRepository, times(1)).existsByDpiAndIdNot(duplicateDpi, SPECIALIST_ID);
+        verify(specialistEmployeeRepository, never()).findById(any());
+        verify(specialistEmployeeRepository, never()).save(any());
+    }
+
 }
