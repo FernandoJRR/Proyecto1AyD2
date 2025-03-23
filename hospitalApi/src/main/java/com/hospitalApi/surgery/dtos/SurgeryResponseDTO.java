@@ -5,12 +5,12 @@ import java.util.List;
 import com.hospitalApi.surgery.models.Surgery;
 
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.Value;
 
-@NoArgsConstructor
 @AllArgsConstructor
 @Setter
+@Value
 public class SurgeryResponseDTO {
     private String id;
     private String consultId;
