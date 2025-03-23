@@ -228,4 +228,56 @@ public class SugeryServicesTest {
         verify(surgeryRepository, times(0)).deleteById(SURGERY_ID);
     }
 
+    @Test
+    void shouldReturnTotalSurgeriesByConsultSuccessfully() throws NotFoundException {
+        // Arrange
+        Double expectedTotal = 10000.0;
+        when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
+        when(surgeryRepository.sumSurgeryCostByConsultId(CONSULT_ID)).thenReturn(expectedTotal);
+
+        // Act
+        Double result = sugeryServices.totalSurgerisByConsult(CONSULT_ID);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(expectedTotal, result);
+
+        verify(forConsultPort, times(1)).findById(CONSULT_ID);
+        verify(surgeryRepository, times(1)).sumSurgeryCostByConsultId(CONSULT_ID);
+    }
+
+    @Test
+    void shouldReturnZeroWhenNoSurgeriesFoundForConsult() throws NotFoundException {
+        // Arrange
+        Double expectedTotal = 0.0;
+        when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
+        when(surgeryRepository.sumSurgeryCostByConsultId(CONSULT_ID)).thenReturn(expectedTotal);
+
+        // Act
+        Double result = sugeryServices.totalSurgerisByConsult(CONSULT_ID);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(expectedTotal, result);
+
+        verify(forConsultPort, times(1)).findById(CONSULT_ID);
+        verify(surgeryRepository, times(1)).sumSurgeryCostByConsultId(CONSULT_ID);
+    }
+
+    @Test
+    void shouldThrowNotFoundExceptionWhenConsultDoesNotExistOnTotalSurgeriesByConsult() throws NotFoundException {
+        // Arrange
+        when(forConsultPort.findById(CONSULT_ID)).thenThrow(new NotFoundException("Consulta no encontrada"));
+
+        // Act & Assert
+        NotFoundException ex = assertThrows(NotFoundException.class, () -> {
+            sugeryServices.totalSurgerisByConsult(CONSULT_ID);
+        });
+
+        assertEquals("Consulta no encontrada", ex.getMessage());
+
+        verify(forConsultPort, times(1)).findById(CONSULT_ID);
+        verify(surgeryRepository, never()).sumSurgeryCostByConsultId(any());
+    }
+
 }

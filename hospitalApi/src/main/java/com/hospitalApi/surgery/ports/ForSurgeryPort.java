@@ -14,4 +14,6 @@ public interface ForSurgeryPort {
     public Surgery createSurgery(String consultId, String surgeryTypeId) throws NotFoundException;
 
     public boolean deleteSurgery(String surgeryId) throws NotFoundException;
+
+    public Double totalSurgerisByConsult(String consultId) throws NotFoundException;
 }
