@@ -1,4 +1,4 @@
-package com.hospitalApi.medicines.controller;
+package com.hospitalApi.medicines.controllers;
 
 import java.util.List;
 
@@ -46,8 +46,9 @@ public class MedicineController {
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @GetMapping("/all")
-    public ResponseEntity<List<MedicineResponseDTO>> getAllMedicines() {
-        List<Medicine> medicineList = medicinePort.getAllMedicines();
+    public ResponseEntity<List<MedicineResponseDTO>> getAllMedicines(
+            @RequestParam(value = "query", required = false) String query) {
+        List<Medicine> medicineList = medicinePort.getAllMedicines(query);
         List<MedicineResponseDTO> response = medicineMapper.fromMedicineListToMedicineResponseDTOList(medicineList);
         return ResponseEntity.ok().body(response);
     }
@@ -64,6 +65,12 @@ public class MedicineController {
         return ResponseEntity.ok().body(response);
     }
 
+    @Operation(summary = "Obtener un medicamento", description = "Devuelve un medicamento en base a su id.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Medicamento obtenido exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = MedicineResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Recurso no encontrado, el medicamento no existe.", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<MedicineResponseDTO> getMedicine(
             @PathVariable("id") @NotBlank(message = "El id del medicamento es requerido") String id)
@@ -111,10 +118,4 @@ public class MedicineController {
         MedicineResponseDTO responseDTO = new MedicineResponseDTO(medicine);
         return ResponseEntity.status(HttpStatus.OK).body(responseDTO);
     }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> deleteMethodName(@RequestParam Long id) {
-        return ResponseEntity.ok().body(false);
-    }
-
 }

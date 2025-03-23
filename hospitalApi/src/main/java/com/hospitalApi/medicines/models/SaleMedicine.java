@@ -2,6 +2,7 @@ package com.hospitalApi.medicines.models;
 
 import org.hibernate.annotations.DynamicUpdate;
 
+import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.Column;
@@ -24,11 +25,15 @@ import lombok.NoArgsConstructor;
 @DynamicUpdate
 public class SaleMedicine extends Auditor {
 
+    @ManyToOne(optional = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "consult_id", nullable = true)
+    private Consult consult;
+
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "medicine_id", nullable = false)
     private Medicine medicine;
 
-    @NotBlank(message = "La cantidad del medicamento es requerida")
+    @NotNull(message = "La cantidad del medicamento es requerida")
     @Column(nullable = false)
     @Min(value = 1, message = "La cantidad del medicamento no puede ser menor a 1")
     private Integer quantity;
@@ -39,11 +44,27 @@ public class SaleMedicine extends Auditor {
     private Double price;
 
     /**
-     * Inicializa una nueva instancia de la clase SaleMedicine en base a un medicamento y una cantidad.
+     * Inicializa una nueva instancia de la clase SaleMedicine en base a un
+     * medicamento y una cantidad.
+     * 
      * @param medicine
      * @param quantity
      */
     public SaleMedicine(Medicine medicine, Integer quantity) {
+        this.medicine = medicine;
+        this.quantity = quantity;
+        this.price = medicine.getPrice();
+    }
+
+    /**
+     * Inicializa una nueva instancia de la clase SaleMedicine en base a una
+     * consulta, un medicamento y una cantidad.
+     * @param consult
+     * @param medicine
+     * @param quantity
+     */
+    public SaleMedicine(Consult consult, Medicine medicine, Integer quantity) {
+        this.consult = consult;
         this.medicine = medicine;
         this.quantity = quantity;
         this.price = medicine.getPrice();
