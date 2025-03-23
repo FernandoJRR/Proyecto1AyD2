@@ -1,10 +1,13 @@
 <template>
   <div class="m-6 ml-12">
-    <router-link to="/admin/personal">
-      <Button label="Ver Todos" icon="pi pi-arrow-left" text />
-    </router-link>
-    <h1 class="text-4xl">Crear Usuario</h1>
-    <div>
+    <div class="mb-6">
+      <router-link to="/admin/personal">
+        <Button label="Ver Todos" icon="pi pi-arrow-left" text />
+      </router-link>
+    </div>
+
+    <h1 class="text-4xl font-bold mb-6">Crear Usuario</h1>
+    <div class="space-y-8 bg-white shadow-md rounded-2xl p-6 border border-gray-200">
       <Form v-slot="$form" :initialValues :resolver @submit="onFormSubmit" class="mt-8 flex justify-center">
         <div class="flex flex-col gap-1">
           <h1 class="text-2xl font-semibold mb-6">Datos del Empleado</h1>
@@ -30,8 +33,8 @@
             <div>
               <FloatLabel>
                 <label>Salario</label>
-                <InputNumber name="salary" :min="1" :minFractionDigits="2" :maxFractionDigits="2" 
-                  mode="currency" currency="GTQ" placeholder="Salario" fluid />
+                <InputNumber name="salary" :min="1" :minFractionDigits="2" :maxFractionDigits="2" mode="currency"
+                  currency="GTQ" placeholder="Salario" fluid />
               </FloatLabel>
               <Message v-if="$form.salary?.invalid" severity="error" size="small" variant="simple">{{
                 $form.salary.error?.message }}</Message>
@@ -65,11 +68,13 @@
             <template v-if="userTypes.status === 'success'">
               <FloatLabel>
                 <label>Tipo de Usuario</label>
-                <Select name="type" v-model="selectedType" optionLabel="name" optionValue="id" 
-                  :options="userTypes.data" placeholder="Selecciona un tipo de usuario" fluid />
+                <Select name="type" v-model="selectedType" optionLabel="name" optionValue="id" :options="userTypes.data"
+                  placeholder="Selecciona un tipo de usuario" fluid />
               </FloatLabel>
             </template>
-            <Message v-if="$form.type?.invalid" severity="error" size="small" variant="simple">{{ $form.city.error.message }}</Message>
+            <Message v-if="$form.type?.invalid" severity="error" size="small" variant="simple">{{
+              $form.city.error.message }}
+            </Message>
           </div>
           <h1 class="text-2xl font-semibold mb-6">Datos del Usuario</h1>
           <div>
@@ -96,7 +101,7 @@
             <Message v-if="$form.password_repeat?.invalid" severity="error" size="small" variant="simple">{{
               $form.password_repeat.error?.message }}</Message>
           </div>
-          <Button type="submit" severity="secondary" label="Crear" />
+          <Button type="submit" severity="secondary" label="Crear" icon="pi pi-save" />
         </div>
       </Form>
     </div>
@@ -149,9 +154,9 @@ const resolver = ref(zodResolver(
 
     username: z.string().min(8, 'Debes ingresar un username con al menos 8 caracteres'),
     password: z.string().min(8, 'Debes ingresar un password con al menos 8 caracteres'),
-    password_repeat: z.string({message: 'Debes confirmar el password'})
+    password_repeat: z.string({ message: 'Debes confirmar el password' })
   }).superRefine((data, ctx) => {
-   if (data.has_porcentaje_iggs && (data.iggsPercentage === null || data.iggsPercentage === undefined || data.iggsPercentage === 0)) {
+    if (data.has_porcentaje_iggs && (data.iggsPercentage === null || data.iggsPercentage === undefined || data.iggsPercentage === 0)) {
       ctx.addIssue({
         path: ["iggsPercentage"],
         message: "Debe ingresar un porcentaje válido para IGGS.",
@@ -193,7 +198,7 @@ const onFormSubmit = (e: any) => {
   }
 };
 
-const {state: userTypes } = useQuery({
+const { state: userTypes } = useQuery({
   key: ['optionsTypes'],
   query: () => getAllEmployeeTypes()
 })
@@ -220,9 +225,9 @@ watch(
   () => userTypes.value.data,
   (data) => {
     if (data && data.length > 0) {
-      selectedType.value = data[0].id; 
+      selectedType.value = data[0].id;
       initialValues.type = data[0].id;
     }
-  }, {immediate: true}
+  }, { immediate: true }
 );
 </script>
