@@ -33,7 +33,7 @@ public class SugeryServicesTest {
     private SurgeryRepository surgeryRepository;
 
     @InjectMocks
-    private SugeryServices sugeryServices;
+    private SurgeryServices sugeryServices;
 
     // Constantes
     private static final String SURGERY_ID = "SURGERY-1234";

@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class SugeryServices implements ForSurgeryPort {
+public class SurgeryServices implements ForSurgeryPort {
 
     private final ForConsultPort forConsultPort;
     private final ForSurgeryTypePort forSurgeryTypePort;

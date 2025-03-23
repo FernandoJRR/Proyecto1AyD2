@@ -1,6 +1,7 @@
 package com.hospitalApi.surgery.models;
 
 import com.hospitalApi.shared.models.Auditor;
+import com.hospitalApi.surgery.dtos.CreateSurgeryTypeRequest;
 import com.hospitalApi.surgery.dtos.UpdateSurgeryTypeRequestDTO;
 
 import jakarta.persistence.Column;
@@ -67,5 +68,13 @@ public class SurgeryType extends Auditor {
             this.surgeryCost = updateSurgeryTypeRequestDTO.getSurgeryCost();
         }
         return this;
+    }
+
+    public SurgeryType(CreateSurgeryTypeRequest createSurgeryTypeRequestDTO) {
+        this.type = createSurgeryTypeRequestDTO.getType();
+        this.description = createSurgeryTypeRequestDTO.getDescription();
+        this.specialistPayment = createSurgeryTypeRequestDTO.getSpecialistPayment();
+        this.hospitalCost = createSurgeryTypeRequestDTO.getHospitalCost();
+        this.surgeryCost = createSurgeryTypeRequestDTO.getSurgeryCost();
     }
 }
