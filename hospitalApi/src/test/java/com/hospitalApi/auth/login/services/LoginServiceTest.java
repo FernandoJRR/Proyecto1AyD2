@@ -96,7 +96,7 @@ public class LoginServiceTest {
         // configuramos la respuesta que se da
         List<EmployeeHistoryResponseDTO> employeeHistoryResponseDTOs = Arrays.asList(
                     new EmployeeHistoryResponseDTO(
-                        new HistoryTypeResponseDTO(),
+                        new HistoryTypeResponseDTO(EMPLOYEE_TYPE),
                         EMPLOYEE_HISTORY_COMMENTARY,
                         EMPLOYEE_HISTORY_DATE
                     )

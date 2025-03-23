@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hospitalApi.employees.dtos.CompoundEmployeeResponseDTO;
 import com.hospitalApi.employees.dtos.CreateEmployeeRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeResponseDTO;
@@ -129,7 +130,7 @@ public class EmployeesController {
 
     })
     @GetMapping("/{employeeId}")
-    public ResponseEntity<EmployeeResponseDTO> findEmployeeById(
+    public ResponseEntity<CompoundEmployeeResponseDTO> findEmployeeById(
             @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
             throws NotFoundException {
 
@@ -137,9 +138,9 @@ public class EmployeesController {
         Employee result = employeesPort.findEmployeeById(employeeId);
 
         // convertir el Employee al dto
-        EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
+        EmployeeResponseDTO employeeResponseDTO = employeeMapper.fromEmployeeToResponse(result);
 
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return ResponseEntity.status(HttpStatus.OK).body(new CompoundEmployeeResponseDTO(employeeResponseDTO, result.getUser().getUsername()));
     }
 
     @Operation(summary = "Obtener todos los empleados", description = "Este endpoint permite la busqueda de todos los empleados.")
