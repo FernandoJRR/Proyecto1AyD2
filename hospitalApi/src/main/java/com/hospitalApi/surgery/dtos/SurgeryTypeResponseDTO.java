@@ -2,12 +2,11 @@ package com.hospitalApi.surgery.dtos;
 
 import com.hospitalApi.surgery.models.SurgeryType;
 
-import jakarta.persistence.Column;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import lombok.Value;
 
+@Value
 public class SurgeryTypeResponseDTO {
+    private String id;
     private String type;
     private String description;
     private Double specialistPayment;
@@ -15,6 +14,7 @@ public class SurgeryTypeResponseDTO {
     private Double surgeryCost;
 
     public SurgeryTypeResponseDTO(SurgeryType surgeryType) {
+        this.id = surgeryType.getId();
         this.type = surgeryType.getType();
         this.description = surgeryType.getDescription();
         this.specialistPayment = surgeryType.getSpecialistPayment();
