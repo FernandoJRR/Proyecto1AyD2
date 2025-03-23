@@ -33,7 +33,7 @@ public class PermissionController {
     })
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<PermissionResponseDTO> findEmployees() {
+    public List<PermissionResponseDTO> findPermissions() {
         // mandamos a traer todos los permisos
         List<Permission> result = forPermissionsPort.findAllPemrissions();
         // convertir el la lista a lista de dtos
