@@ -23,6 +23,10 @@ export interface Employee extends Entity {
   employeeHistories: Array<EmployeeHistory>
 }
 
+export interface EmployeeResponse {
+  employeeResponseDTO: Employee,
+  username: string
+}
 
 export interface UserPayload {
   username: string
@@ -51,7 +55,7 @@ export async function getAllEmployees(params?: {}) {
 }
 
 export async function getEmployeeById(employee_id: string) {
-  return await $api<Employee>(`${CURRENT_EMPLOYEE_URI}/${employee_id}`)
+  return await $api<EmployeeResponse>(`${CURRENT_EMPLOYEE_URI}/${employee_id}`)
 }
 
 export const createEmployee = async (data: EmployeePayload) => {

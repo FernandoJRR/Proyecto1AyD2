@@ -81,6 +81,6 @@ import { getEmployeeById } from '~/lib/api/admin/employee';
 
 const { state } = useQuery({
   key: ['usuario', useRoute().params.id as string],
-  query: () => getEmployeeById(useRoute().params.id as string)
+  query: () => getEmployeeById(useRoute().params.id as string).then((res) => res.employeeResponseDTO)
 })
 </script>
