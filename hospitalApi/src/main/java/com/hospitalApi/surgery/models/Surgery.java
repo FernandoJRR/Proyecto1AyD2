@@ -47,4 +47,11 @@ public class Surgery extends Auditor {
     @OneToMany(mappedBy = "surgery")
     private List<SurgeryEmployee> surgeryEmployees;
 
+    public Surgery(Consult consult, SurgeryType surgeryType, Double hospitalCost, Double surgeryCost) {
+        this.consult = consult;
+        this.surgeryType = surgeryType;
+        this.hospitalCost = hospitalCost;
+        this.surgeryCost = surgeryCost;
+    }
+
 }

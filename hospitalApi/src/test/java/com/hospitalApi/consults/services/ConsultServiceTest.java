@@ -1,4 +1,4 @@
-package com.hospitalApi.consults;
+package com.hospitalApi.consults.services;
 
 import com.hospitalApi.consults.dtos.UpdateConsultRequestDTO;
 import com.hospitalApi.consults.models.Consult;

@@ -1,6 +1,7 @@
 package com.hospitalApi.surgery.models;
 
 import com.hospitalApi.shared.models.Auditor;
+import com.hospitalApi.surgery.dtos.UpdateSurgeryTypeRequestDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,7 +22,7 @@ public class SurgeryType extends Auditor {
 
     @NotBlank(message = "El nombre del tipo de cirugía es requerido")
     @Size(min = 3, max = 100, message = "El nombre del tipo de cirugía debe tener entre 3 y 100 caracteres")
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 100, unique = true)
     private String type;
 
     @NotBlank(message = "La descripción del tipo de cirugía es requerida")
@@ -43,4 +44,28 @@ public class SurgeryType extends Auditor {
     @Column(nullable = false)
     private Double surgeryCost;
 
+    public SurgeryType updateFromDTO(UpdateSurgeryTypeRequestDTO updateSurgeryTypeRequestDTO) {
+        if (updateSurgeryTypeRequestDTO == null) {
+            return this;
+        }
+        if (updateSurgeryTypeRequestDTO.getType() != null) {
+            this.type = updateSurgeryTypeRequestDTO.getType();
+        }
+        if (updateSurgeryTypeRequestDTO.getDescription() != null) {
+            this.description = updateSurgeryTypeRequestDTO.getDescription();
+        }
+
+        if (updateSurgeryTypeRequestDTO.getSpecialistPayment() != null) {
+            this.specialistPayment = updateSurgeryTypeRequestDTO.getSpecialistPayment();
+        }
+
+        if (updateSurgeryTypeRequestDTO.getHospitalCost() != null) {
+            this.hospitalCost = updateSurgeryTypeRequestDTO.getHospitalCost();
+        }
+
+        if (updateSurgeryTypeRequestDTO.getSurgeryCost() != null) {
+            this.surgeryCost = updateSurgeryTypeRequestDTO.getSurgeryCost();
+        }
+        return this;
+    }
 }
