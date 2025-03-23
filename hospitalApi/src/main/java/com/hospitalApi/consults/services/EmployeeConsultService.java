@@ -11,7 +11,6 @@ import com.hospitalApi.consults.port.ForEmployeeConsultPort;
 import com.hospitalApi.consults.repositories.EmployeeConsultRepository;
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.ports.ForEmployeesPort;
-import com.hospitalApi.shared.exceptions.BadRequestException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
 import jakarta.validation.ConstraintViolationException;
@@ -46,7 +45,7 @@ public class EmployeeConsultService implements ForEmployeeConsultPort {
 
     @Override
     public List<EmployeeConsult> deleteEmployeeConsultsByConsultIdAndEmployeeId(String consultId, String employeeId)
-            throws NotFoundException, BadRequestException {
+            throws NotFoundException, IllegalStateException {
 
         if (!employeeConsultRepository.existsByConsultIdAndEmployeeId(consultId, employeeId)) {
             throw new NotFoundException("El empleado " + employeeId + " no está asignado a la consulta " + consultId);
@@ -55,7 +54,7 @@ public class EmployeeConsultService implements ForEmployeeConsultPort {
         // Debemos de verificar que la cantidad de empleados asignados a la consulta sea
         // mayor a 1
         if (employeeConsultRepository.countByConsultId(consultId) <= 1) {
-            throw new BadRequestException(
+            throw new IllegalStateException(
                     "No se puede eliminar el empleado " + employeeId + " de la consulta " + consultId
                             + " porque es el único empleado asignado a la consulta");
         }
