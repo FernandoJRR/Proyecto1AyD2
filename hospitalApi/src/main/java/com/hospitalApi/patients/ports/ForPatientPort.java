@@ -18,8 +18,5 @@ public interface ForPatientPort {
 
     public Patient getPatientByDpi(String dpi) throws NotFoundException;
 
-    public List<Patient> getPatients();
-
-    public List<Patient> searchPatients(String query);
-
+    public List<Patient> getPatients(String query);
 }

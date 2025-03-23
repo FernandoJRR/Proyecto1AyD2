@@ -224,13 +224,15 @@ public class PatientServiceTest {
 
         when(patientRespository.findAllByOrderByCreatedAtDesc()).thenReturn(patients);
 
-        List<Patient> result = patientService.getPatients();
+        List<Patient> result = patientService.getPatients(null);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(PATIENT_ID, result.get(0).getId());
 
         verify(patientRespository, times(1)).findAllByOrderByCreatedAtDesc();
+        verify(patientRespository, times(0))
+                .findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(null, null);
     }
 
     @Test
@@ -242,7 +244,7 @@ public class PatientServiceTest {
         when(patientRespository.findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(query, query))
                 .thenReturn(searchResults);
 
-        List<Patient> result = patientService.searchPatients(query);
+        List<Patient> result = patientService.getPatients(query);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -259,7 +261,7 @@ public class PatientServiceTest {
         when(patientRespository.findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(query, query))
                 .thenReturn(List.of());
 
-        List<Patient> result = patientService.searchPatients(query);
+        List<Patient> result = patientService.getPatients(query);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());

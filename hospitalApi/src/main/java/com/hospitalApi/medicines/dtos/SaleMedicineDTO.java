@@ -12,16 +12,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class SaleMedicineDTO {
-    MedicineResponseDTO medicine;
-    Integer quantity;
-    Double price;
-    String consultId;
+    private String id;
+    private MedicineResponseDTO medicine;
+    private Integer quantity;
+    private Double price;
+    private String consultId;
+    private Double total;
 
     public SaleMedicineDTO(SaleMedicine saleMedicine) {
+        this.id = saleMedicine.getId();
         this.medicine = new MedicineResponseDTO(saleMedicine.getMedicine());
         this.quantity = saleMedicine.getQuantity();
         this.price = saleMedicine.getPrice();
         this.consultId = null;
-        // this.consultId = saleMedicine.getConsultId();
+        this.total = this.price * this.quantity;
     }
 }

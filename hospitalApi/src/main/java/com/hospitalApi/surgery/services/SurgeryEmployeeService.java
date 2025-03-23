@@ -1,0 +1,92 @@
+package com.hospitalApi.surgery.services;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.hospitalApi.employees.models.Employee;
+import com.hospitalApi.employees.models.SpecialistEmployee;
+import com.hospitalApi.employees.ports.ForEmployeesPort;
+import com.hospitalApi.employees.ports.ForSpecialistEmployeePort;
+import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
+import com.hospitalApi.shared.exceptions.NotFoundException;
+import com.hospitalApi.surgery.models.Surgery;
+import com.hospitalApi.surgery.models.SurgeryEmployee;
+import com.hospitalApi.surgery.models.SurgeryType;
+import com.hospitalApi.surgery.ports.ForSurgeryEmployeePort;
+import com.hospitalApi.surgery.ports.ForSurgeryPort;
+import com.hospitalApi.surgery.ports.ForSurgeryTypePort;
+import com.hospitalApi.surgery.repositories.SurgeryEmployeeRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class SurgeryEmployeeService implements ForSurgeryEmployeePort {
+
+    private final ForSurgeryPort forSurgeryPort;
+    private final ForEmployeesPort forEmployeesPort;
+    private final ForSpecialistEmployeePort forSpecialistEmployeePort;
+    private final ForSurgeryTypePort forSurgeryTypePort;
+    private final SurgeryEmployeeRepository sugeryEmployeeRepository;
+
+    @Override
+    public List<SurgeryEmployee> getSurgeryEmployees(String surgeryId) throws NotFoundException {
+        Surgery surgery = forSurgeryPort.getSurgery(surgeryId);
+        return sugeryEmployeeRepository.findBySurgeryId(surgery.getId());
+    }
+
+    @Override
+    public List<SurgeryEmployee> addEmpleoyeeToSurgery(String surgeryId, String employeeId)
+            throws NotFoundException, DuplicatedEntryException {
+        Surgery surgery = forSurgeryPort.getSurgery(surgeryId);
+        Employee employee = forEmployeesPort.findEmployeeById(employeeId);
+        if (sugeryEmployeeRepository.existsBySurgeryIdAndEmployeeId(surgery.getId(), employeeId)) {
+            throw new DuplicatedEntryException("El empleado con id " + employeeId + " ya está asignado a la cirugía");
+        }
+        SurgeryEmployee surgeryEmployee = new SurgeryEmployee(surgery, employee, null, 0.00);
+        sugeryEmployeeRepository.save(surgeryEmployee);
+        return sugeryEmployeeRepository.findBySurgeryId(surgery.getId());
+    }
+
+    @Override
+    public List<SurgeryEmployee> removeEmployeeFromSurgery(String surgeryId, String employeeId)
+            throws NotFoundException {
+        Surgery surgery = forSurgeryPort.getSurgery(surgeryId);
+        Employee employee = forEmployeesPort.findEmployeeById(employeeId);
+        if (!sugeryEmployeeRepository.existsBySurgeryIdAndEmployeeId(surgery.getId(), employeeId)) {
+            throw new NotFoundException("El empleado con id " + employeeId + " no está asignado a la cirugía");
+        }
+        sugeryEmployeeRepository.deleteBySurgeryIdAndEmployeeId(surgery.getId(), employee.getId());
+        return sugeryEmployeeRepository.findBySurgeryId(surgery.getId());
+    }
+
+    @Override
+    public List<SurgeryEmployee> addSpecialistToSurgery(String surgeryId, String specialistId)
+            throws NotFoundException, DuplicatedEntryException {
+        Surgery surgery = forSurgeryPort.getSurgery(surgeryId);
+        SpecialistEmployee specialist = forSpecialistEmployeePort.getSpecialistEmployeeById(specialistId);
+        SurgeryType surgeryType = forSurgeryTypePort.getSurgeryType(surgery.getSurgeryType().getId());
+        if (sugeryEmployeeRepository.existsBySurgeryIdAndSpecialistEmployeeId(surgery.getId(), specialistId)) {
+            throw new DuplicatedEntryException(
+                    "El especialista con id " + specialistId + " ya está asignado a la cirugía");
+        }
+        SurgeryEmployee surgeryEmployee = new SurgeryEmployee(
+                surgery, null, specialist, surgeryType.getSpecialistPayment());
+        sugeryEmployeeRepository.save(surgeryEmployee);
+        return sugeryEmployeeRepository.findBySurgeryId(surgery.getId());
+    }
+
+    @Override
+    public List<SurgeryEmployee> removeSpecialistFromSurgery(String surgeryId, String specialistId)
+            throws NotFoundException {
+        Surgery surgery = forSurgeryPort.getSurgery(surgeryId);
+        SpecialistEmployee specialist = forSpecialistEmployeePort.getSpecialistEmployeeById(specialistId);
+        if (!sugeryEmployeeRepository.existsBySurgeryIdAndSpecialistEmployeeId(surgery.getId(), specialistId)) {
+            throw new NotFoundException("El especialista con id " + specialistId + " no está asignado a la cirugía");
+        }
+        sugeryEmployeeRepository.deleteBySurgeryIdAndSpecialistEmployeeId(surgery.getId(), specialist.getId());
+        return sugeryEmployeeRepository.findBySurgeryId(surgery.getId());
+    }
+
+}

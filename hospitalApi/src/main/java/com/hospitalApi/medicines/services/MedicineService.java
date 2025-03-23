@@ -61,12 +61,10 @@ public class MedicineService implements ForMedicinePort {
     }
 
     @Override
-    public boolean deleteMedicine(String id) {
-        return false;
-    }
-
-    @Override
-    public List<Medicine> getAllMedicines() {
+    public List<Medicine> getAllMedicines(String query) {
+        if (query != null) {
+            return medicineRepository.findByNameContainingIgnoreCase(query);
+        }
         return medicineRepository.findAll();
     }
 
