@@ -29,16 +29,16 @@
       }"
     >
       <template #error-icon>
-        <i name="lucide:alert-triangle" />
+        <i class="pi pi-exclamation-triangle" />
       </template>
       <template #info-icon>
-        <i name="lucide:info" />
+        <i class="pi pi-info-circle" />
       </template>
       <template #success-icon>
-        <i name="lucide:check" />
+        <i class="pi pi-check" />
       </template>
       <template #warning-icon>
-        <i name="lucide:alert-circle" />
+        <i class="pi pi-exclamation-circle" />
       </template>
     </Toaster>
   </main>
