@@ -27,7 +27,7 @@ public class JwtGeneratorUtil implements ForJwtGenerator {
 
         // Agregar claims personalizados
         claims.put("rol", "ROLE_USER");
-        claims.put("permissions", permissions);
+        claims.put("authorities", permissions);
 
         // Generar el token
         return createToken(claims, user.getUsername());
