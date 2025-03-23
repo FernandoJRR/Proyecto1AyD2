@@ -3,10 +3,10 @@ package com.hospitalApi.consults.services;
 import com.hospitalApi.consults.dtos.UpdateConsultRequestDTO;
 import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.consults.repositories.ConsultRepository;
-import com.hospitalApi.consults.services.ConsultService;
 import com.hospitalApi.patients.models.Patient;
 import com.hospitalApi.patients.ports.ForPatientPort;
 import com.hospitalApi.shared.exceptions.NotFoundException;
+import com.hospitalApi.surgery.ports.ForSurgeryCalculationPort;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,13 +28,23 @@ public class ConsultServiceTest {
     @Mock
     private ForPatientPort forPatientPort;
 
+    @Mock
+    private ForSurgeryCalculationPort forSurgeryCalculationService;
+
     @InjectMocks
     private ConsultService consultService;
 
-    private static final String CONSULT_ID = "CONSULT-001";
+    // Constantes para el paciente
     private static final String PATIENT_ID = "PATIENT-001";
+    private static final String PATIENT_NAME = "Jose";
+    private static final String PATIENT_LASTNAME = "Perez";
+    private static final String PATIENT_DPI = "123456789";
+
+    // Constantes para la consulta
+    private static final String CONSULT_ID = "CONSULT-001";
     private static final Double CONSULT_COST = 300.00;
     private static final Double UPDATED_CONSULT_COST = 500.00;
+    private static final Double SURGERY_TOTAL_COST = 700.00;
 
     private Patient patient;
     private Consult consult;
@@ -44,7 +54,7 @@ public class ConsultServiceTest {
     public void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        patient = new Patient("Jose", "Perez", "123456789");
+        patient = new Patient(PATIENT_NAME, PATIENT_LASTNAME, PATIENT_DPI);
         patient.setId(PATIENT_ID);
 
         consult = new Consult(CONSULT_ID, patient, false, CONSULT_COST, CONSULT_COST);
@@ -73,7 +83,10 @@ public class ConsultServiceTest {
         when(consultRepository.findById(CONSULT_ID)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(NotFoundException.class, () -> consultService.findById(CONSULT_ID));
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> consultService.findById(CONSULT_ID));
+
+        assertEquals("Consulta con id " + CONSULT_ID + " no encontrada", ex.getMessage());
         verify(consultRepository, times(1)).findById(CONSULT_ID);
     }
 
@@ -97,9 +110,9 @@ public class ConsultServiceTest {
         assertEquals(CONSULT_COST, result.getCostoConsulta());
 
         ArgumentCaptor<Consult> captor = ArgumentCaptor.forClass(Consult.class);
-        verify(consultRepository, times(1)).save(captor.capture());
-        Consult captured = captor.getValue();
+        verify(consultRepository).save(captor.capture());
 
+        Consult captured = captor.getValue();
         assertEquals(patient, captured.getPatient());
         assertEquals(CONSULT_COST, captured.getCostoConsulta());
         verify(forPatientPort, times(1)).getPatient(PATIENT_ID);
@@ -111,8 +124,10 @@ public class ConsultServiceTest {
         when(forPatientPort.getPatient(PATIENT_ID)).thenThrow(new NotFoundException("Paciente no encontrado"));
 
         // Act & Assert
-        assertThrows(NotFoundException.class, () -> consultService.createConsult(PATIENT_ID, CONSULT_COST));
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> consultService.createConsult(PATIENT_ID, CONSULT_COST));
 
+        assertEquals("Paciente no encontrado", ex.getMessage());
         verify(forPatientPort, times(1)).getPatient(PATIENT_ID);
         verify(consultRepository, never()).save(any());
     }
@@ -131,9 +146,9 @@ public class ConsultServiceTest {
         assertEquals(UPDATED_CONSULT_COST, result.getCostoConsulta());
 
         ArgumentCaptor<Consult> captor = ArgumentCaptor.forClass(Consult.class);
-        verify(consultRepository, times(1)).save(captor.capture());
-        Consult captured = captor.getValue();
+        verify(consultRepository).save(captor.capture());
 
+        Consult captured = captor.getValue();
         assertEquals(UPDATED_CONSULT_COST, captured.getCostoConsulta());
         verify(consultRepository, times(1)).findById(CONSULT_ID);
     }
@@ -144,40 +159,58 @@ public class ConsultServiceTest {
         when(consultRepository.findById(CONSULT_ID)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(NotFoundException.class, () -> consultService.updateConsult(CONSULT_ID, updateConsultRequestDTO));
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> consultService.updateConsult(CONSULT_ID, updateConsultRequestDTO));
 
+        assertEquals("Consulta con id " + CONSULT_ID + " no encontrada", ex.getMessage());
         verify(consultRepository, times(1)).findById(CONSULT_ID);
         verify(consultRepository, never()).save(any());
     }
 
     @Test
-    public void shouldObtainTotalConsultSuccessfully() throws NotFoundException {
+    public void shouldReturnTotalConsultaSuccessfully() throws NotFoundException {
         // Arrange
+        Double expectedTotal = CONSULT_COST + SURGERY_TOTAL_COST;
+
         when(consultRepository.findById(CONSULT_ID)).thenReturn(Optional.of(consult));
+        when(forSurgeryCalculationService.totalSurgerisByConsult(CONSULT_ID)).thenReturn(SURGERY_TOTAL_COST);
+        when(consultRepository.save(any(Consult.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        Double result = consultService.obtenerTotalConsulta(CONSULT_ID);
+        Double total = consultService.obtenerTotalConsulta(CONSULT_ID);
 
         // Assert
-        assertNotNull(result);
-        assertEquals(consult.getCostoTotal(), result);
+        assertNotNull(total);
+        assertEquals(expectedTotal, total);
+
+        ArgumentCaptor<Consult> captor = ArgumentCaptor.forClass(Consult.class);
+        verify(consultRepository).save(captor.capture());
+
+        Consult captured = captor.getValue();
+        assertEquals(expectedTotal, captured.getCostoTotal());
+
+        verify(forSurgeryCalculationService, times(1)).totalSurgerisByConsult(CONSULT_ID);
         verify(consultRepository, times(1)).findById(CONSULT_ID);
     }
 
     @Test
-    public void shouldThrowNotFoundExceptionWhenConsultNotExistOnGetTotal() {
+    public void shouldThrowNotFoundExceptionWhenGettingTotalConsultaAndConsultDoesNotExist() {
         // Arrange
         when(consultRepository.findById(CONSULT_ID)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(NotFoundException.class, () -> consultService.obtenerTotalConsulta(CONSULT_ID));
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> consultService.obtenerTotalConsulta(CONSULT_ID));
 
+        assertEquals("Consulta con id " + CONSULT_ID + " no encontrada", ex.getMessage());
         verify(consultRepository, times(1)).findById(CONSULT_ID);
+        verify(forSurgeryCalculationService, times(0)).totalSurgerisByConsult(any());
     }
 
     @Test
     public void shouldPayConsultSuccessfully() throws NotFoundException {
         // Arrange
+        consult.setIsPaid(false);
         when(consultRepository.findById(CONSULT_ID)).thenReturn(Optional.of(consult));
         when(consultRepository.save(any(Consult.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -189,10 +222,11 @@ public class ConsultServiceTest {
         assertTrue(result.getIsPaid());
 
         ArgumentCaptor<Consult> captor = ArgumentCaptor.forClass(Consult.class);
-        verify(consultRepository, times(1)).save(captor.capture());
-        Consult captured = captor.getValue();
+        verify(consultRepository).save(captor.capture());
 
+        Consult captured = captor.getValue();
         assertTrue(captured.getIsPaid());
+
         verify(consultRepository, times(1)).findById(CONSULT_ID);
     }
 
@@ -202,8 +236,25 @@ public class ConsultServiceTest {
         when(consultRepository.findById(CONSULT_ID)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(NotFoundException.class, () -> consultService.pagarConsulta(CONSULT_ID));
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> consultService.pagarConsulta(CONSULT_ID));
 
+        assertEquals("Consulta con id " + CONSULT_ID + " no encontrada", ex.getMessage());
+        verify(consultRepository, times(1)).findById(CONSULT_ID);
+        verify(consultRepository, never()).save(any());
+    }
+
+    @Test
+    public void shouldThrowIllegalStateExceptionWhenConsultIsAlreadyPaid() {
+        // Arrange
+        consult.setIsPaid(true);
+        when(consultRepository.findById(CONSULT_ID)).thenReturn(Optional.of(consult));
+
+        // Act & Assert
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> consultService.pagarConsulta(CONSULT_ID));
+
+        assertEquals("La consulta con id " + CONSULT_ID + " ya fue pagada", ex.getMessage());
         verify(consultRepository, times(1)).findById(CONSULT_ID);
         verify(consultRepository, never()).save(any());
     }

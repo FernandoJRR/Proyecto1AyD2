@@ -15,5 +15,4 @@ public interface ForSurgeryPort {
 
     public boolean deleteSurgery(String surgeryId) throws NotFoundException;
 
-    public Double totalSurgerisByConsult(String consultId) throws NotFoundException;
 }

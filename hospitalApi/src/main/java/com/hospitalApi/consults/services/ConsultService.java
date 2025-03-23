@@ -9,7 +9,9 @@ import com.hospitalApi.consults.repositories.ConsultRepository;
 import com.hospitalApi.patients.models.Patient;
 import com.hospitalApi.patients.ports.ForPatientPort;
 import com.hospitalApi.shared.exceptions.NotFoundException;
-
+import com.hospitalApi.surgery.ports.ForSurgeryCalculationPort;
+import com.hospitalApi.surgery.ports.ForSurgeryPort;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -18,6 +20,7 @@ public class ConsultService implements ForConsultPort {
 
     private final ConsultRepository consultRepository;
     private final ForPatientPort forPatientPort;
+    private final ForSurgeryCalculationPort forSurgeryCalculationService;
 
     @Override
     public Consult findById(String id) throws NotFoundException {
@@ -41,17 +44,24 @@ public class ConsultService implements ForConsultPort {
     }
 
     @Override
+    @Transactional(rollbackOn = Exception.class)
     public Double obtenerTotalConsulta(String id) throws NotFoundException {
-        Consult consult = consultRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Consulta con id " + id + " no encontrada"));
-        Double total = consult.getCostoTotal();
-        return total;
+        Consult consult = findById(id);
+        Double totalCirugias = forSurgeryCalculationService.totalSurgerisByConsult(id);
+        Double newTotalCost = consult.getCostoConsulta() + totalCirugias;
+        consult.setCostoTotal(newTotalCost);
+        consultRepository.save(consult);
+        return consult.getCostoTotal();
     }
 
     @Override
-    public Consult pagarConsulta(String id) throws NotFoundException {
+    public Consult pagarConsulta(String id) throws NotFoundException, IllegalStateException {
         Consult consult = consultRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Consulta con id " + id + " no encontrada"));
+        // Verificar si la consulta ya fue pagada
+        if (consult.getIsPaid()) {
+            throw new IllegalStateException("La consulta con id " + id + " ya fue pagada");
+        }
         consult.setIsPaid(true);
         return consultRepository.save(consult);
     }

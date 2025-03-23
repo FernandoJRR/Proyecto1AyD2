@@ -16,6 +16,6 @@ public interface ForConsultPort {
 
     public Double obtenerTotalConsulta(String id) throws NotFoundException;
 
-    public Consult pagarConsulta(String id) throws NotFoundException;
+    public Consult pagarConsulta(String id) throws NotFoundException, IllegalStateException;
 
 }

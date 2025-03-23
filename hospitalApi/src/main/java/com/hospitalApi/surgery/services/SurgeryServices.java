@@ -55,11 +55,4 @@ public class SurgeryServices implements ForSurgeryPort {
         surgeryRepository.deleteById(surgeryId);
         return true;
     }
-
-    @Override
-    public Double totalSurgerisByConsult(String consultId) throws NotFoundException {
-        forConsultPort.findById(consultId);
-        Double total = surgeryRepository.sumSurgeryCostByConsultId(consultId);
-        return total;
-    }
 }
