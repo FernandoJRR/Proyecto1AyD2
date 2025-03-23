@@ -1,5 +1,7 @@
 package com.hospitalApi.consults.services;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.hospitalApi.consults.dtos.UpdateConsultRequestDTO;
@@ -64,5 +66,17 @@ public class ConsultService implements ForConsultPort {
         }
         consult.setIsPaid(true);
         return consultRepository.save(consult);
+    }
+
+    @Override
+    public Consult addHabitacionToConsult(String id, String habitacionId)
+            throws NotFoundException, IllegalStateException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'addHabitacionToConsult'");
+    }
+
+    @Override
+    public List<Consult> getAllConsults() {
+        return consultRepository.findAll();
     }
 }

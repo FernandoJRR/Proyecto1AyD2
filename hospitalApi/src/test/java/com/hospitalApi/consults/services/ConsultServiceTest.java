@@ -15,9 +15,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class ConsultServiceTest {
@@ -258,4 +260,29 @@ public class ConsultServiceTest {
         verify(consultRepository, times(1)).findById(CONSULT_ID);
         verify(consultRepository, never()).save(any());
     }
+
+    @Test
+    public void shouldGetAllConsultsSuccessfully() {
+        // Arrange
+        Consult consult1 = new Consult("CONSULT-002", patient, false, 200.00, 200.00);
+        Consult consult2 = new Consult("CONSULT-003", patient, false, 400.00, 400.00);
+        List<Consult> consultList = List.of(consult, consult1, consult2);
+
+        when(consultRepository.findAll()).thenReturn(consultList);
+
+        // Act
+        List<Consult> result = consultService.getAllConsults();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(3, result.size());
+
+        assertAll(
+                () -> assertEquals(CONSULT_ID, result.get(0).getId()),
+                () -> assertEquals("CONSULT-002", result.get(1).getId()),
+                () -> assertEquals("CONSULT-003", result.get(2).getId()));
+
+        verify(consultRepository, times(1)).findAll();
+    }
+
 }
