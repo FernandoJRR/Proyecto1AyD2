@@ -97,4 +97,8 @@ public class Employee extends Auditor {
         this.user = user;
     }
 
+    public Employee(String id) {
+        super(id);
+    }
+
 }

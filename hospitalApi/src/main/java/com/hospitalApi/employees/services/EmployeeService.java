@@ -1,6 +1,7 @@
 package com.hospitalApi.employees.services;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -20,38 +21,38 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(rollbackOn = Exception.class)
 public class EmployeeService implements ForEmployeesPort {
 
     private final EmployeeRepository employeeRepository;
     private final ForEmployeeTypePort forEmployeeTypePort;
     private final ForUsersPort userService;
 
-    @Transactional(rollbackOn = Exception.class)
+    @Override
     public Employee createEmployee(Employee newEmployee, EmployeeType employeeType, User newUser)
             throws DuplicatedEntryException, NotFoundException {
         // veficar que el tipo de empleado si exista
-        forEmployeeTypePort.verifyExistsEmployeeTypeById(employeeType.getId());
+        EmployeeType existingEmployeeType = forEmployeeTypePort.findEmployeeTypeById(employeeType.getId());
         // mandar a guardar el usuario
         User user = userService.createUser(newUser);
 
         // guardar el empledo
         newEmployee.setUser(user);
-        newEmployee.setEmployeeType(employeeType);
+        newEmployee.setEmployeeType(existingEmployeeType);
         user.setEmployee(newEmployee);
 
         // guardar el historial del empleado inicial
         return employeeRepository.save(newEmployee);
     }
 
-    @Transactional(rollbackOn = Exception.class)
+    @Override
     public Employee updateEmployee(String currentId, Employee newData, EmployeeType employeeType)
             throws NotFoundException {
         // traer el empleado por id
         Employee currentEmployee = findEmployeeById(currentId);
 
-        // verificar que el tipo de empleado sí exista; si lanza excepción, entonces no
-        // existe
-        forEmployeeTypePort.verifyExistsEmployeeTypeById(employeeType.getId());
+        // traer el tipo de empleado que se desea asignar
+        EmployeeType existingEmployeeType = forEmployeeTypePort.findEmployeeTypeById(employeeType.getId());
 
         // editar el empleado existente con la información de newData
         currentEmployee.setFirstName(newData.getFirstName());
@@ -59,12 +60,12 @@ public class EmployeeService implements ForEmployeesPort {
         currentEmployee.setSalary(newData.getSalary());
         currentEmployee.setIgssPercentage(newData.getIgssPercentage());
         currentEmployee.setIrtraPercentage(newData.getIrtraPercentage());
-        currentEmployee.setEmployeeType(employeeType);
+        currentEmployee.setEmployeeType(existingEmployeeType);
 
         return employeeRepository.save(currentEmployee);
     }
 
-    @Transactional(rollbackOn = Exception.class)
+    @Override
     public Employee desactivateEmployee(String currentId)
             throws NotFoundException, IllegalStateException {
         // traer el empleado por id
@@ -82,15 +83,37 @@ public class EmployeeService implements ForEmployeesPort {
         return employeeRepository.save(currentEmployee);
     }
 
+    @Override
+    public Employee reassignEmployeeType(String employeeId, String employeeTypeId) throws NotFoundException {
+        Employee exisitingEmployee = findEmployeeById(employeeId);
+        EmployeeType existinEmployeeType = forEmployeeTypePort.findEmployeeTypeById(employeeTypeId);
+        exisitingEmployee.setEmployeeType(existinEmployeeType);
+        return exisitingEmployee;
+    }
+
+    @Override
+    public List<Employee> reassignEmployeeType(List<Employee> employeeIds, String employeeTypeId)
+            throws NotFoundException {
+        List<Employee> updatedEmployees = new ArrayList<>();
+        for (Employee employeeId : employeeIds) {
+            Employee reassignEmployeeType = reassignEmployeeType(employeeId.getId(), employeeTypeId);
+            updatedEmployees.add(reassignEmployeeType);
+        }
+        return updatedEmployees;
+    }
+
+    @Override
     public Employee findEmployeeById(String employeeId) throws NotFoundException {
+        String errorMessage = String.format("El id %s no pertenece a ningun empleado.", employeeId);
         // manda a traer el employee si el optional esta vacio entonces retorna un
         // notfound exception
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(
-                () -> new NotFoundException("El id especificado no pertenece a ningun empleado."));
+                () -> new NotFoundException(errorMessage));
 
         return employee;
     }
 
+    @Override
     public List<Employee> findEmployees() {
         // manda a traer el employee si el optional esta vacio entonces retorna un
         // notfound exception
