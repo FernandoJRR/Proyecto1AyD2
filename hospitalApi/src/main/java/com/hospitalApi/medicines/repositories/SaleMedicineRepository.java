@@ -11,42 +11,42 @@ import com.hospitalApi.medicines.models.SaleMedicine;
 
 public interface SaleMedicineRepository extends JpaRepository<SaleMedicine, String> {
 
-        public List<SaleMedicine> findByConsultId(String consultId);
+    public List<SaleMedicine> findByConsultId(String consultId);
 
-        public List<SaleMedicine> findByMedicineId(String medicineId);
+    public List<SaleMedicine> findByMedicineId(String medicineId);
 
-        @Query("""
-                            SELECT SUM(sm.price * sm.quantity)
-                            FROM sale_medicine sm
-                            WHERE sm.consult.id = :consultId
-                        """)
-        Double totalSalesMedicinesByConsult(@Param("consultId") String consultId);
+    @Query("""
+                SELECT SUM(sm.price * sm.quantity)
+                FROM  SaleMedicine sm
+                WHERE sm.consult.id = :consultId
+            """)
+    Double totalSalesMedicinesByConsult(@Param("consultId") String consultId);
 
-        public List<SaleMedicine> findAll();
+    public List<SaleMedicine> findAll();
 
-        @Query("SELECT SUM(sm.price * sm.quantity) FROM sale_medicine sm WHERE sm.medicine.id = :medicineId")
-        Double totalSalesMedicinesByMedicine(@Param("medicineId") String medicineId);
+    @Query("SELECT SUM(sm.price * sm.quantity) FROM SaleMedicine sm WHERE sm.medicine.id = :medicineId")
+    Double totalSalesMedicinesByMedicine(@Param("medicineId") String medicineId);
 
-        @Query("""
-                            SELECT SUM(sm.price * sm.quantity)
-                            FROM sale_medicine sm
-                            WHERE sm.medicine.id = :medicineId
-                            AND sm.createdAt BETWEEN :startDate AND :endDate
-                        """)
-        Double totalSalesMedicinesByMedicineBetweenDates(
-                        @Param("medicineId") String medicineId,
-                        @Param("startDate") LocalDate startDate,
-                        @Param("endDate") LocalDate endDate);
+    @Query("""
+                SELECT SUM(sm.price * sm.quantity)
+                FROM SaleMedicine sm
+                WHERE sm.medicine.id = :medicineId
+                AND sm.createdAt BETWEEN :startDate AND :endDate
+            """)
+    Double totalSalesMedicinesByMedicineBetweenDates(
+            @Param("medicineId") String medicineId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 
-        List<SaleMedicine> findByCreatedAtBetween(LocalDate startDate, LocalDate endDate);
+    List<SaleMedicine> findByCreatedAtBetween(LocalDate startDate, LocalDate endDate);
 
-        @Query("""
-                            SELECT SUM(sm.price * sm.quantity)
-                            FROM sale_medicine sm
-                            WHERE sm.createdAt BETWEEN :startDate AND :endDate
-                        """)
-        Double totalSalesMedicinesBetweenDates(
-                        @Param("startDate") LocalDate startDate,
-                        @Param("endDate") LocalDate endDate);
+    @Query("""
+                SELECT SUM(sm.price * sm.quantity)
+                FROM SaleMedicine sm
+                WHERE sm.createdAt BETWEEN :startDate AND :endDate
+            """)
+    Double totalSalesMedicinesBetweenDates(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 
 }

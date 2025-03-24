@@ -1,4 +1,4 @@
-package com.hospitalApi.usuarios.services;
+package com.hospitalApi.users.services;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,7 +23,6 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.shared.utils.PasswordEncoderUtil;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.repositories.UserRepository;
-import com.hospitalApi.users.services.UserService;
 
 public class UserServiceTest {
 

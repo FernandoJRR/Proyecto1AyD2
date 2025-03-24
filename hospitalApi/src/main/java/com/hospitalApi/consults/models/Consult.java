@@ -2,10 +2,10 @@ package com.hospitalApi.consults.models;
 
 import java.util.List;
 
-import com.hospitalApi.consults.dtos.CreateConsultRequestDTO;
 import com.hospitalApi.consults.dtos.UpdateConsultRequestDTO;
 import com.hospitalApi.medicines.models.SaleMedicine;
 import com.hospitalApi.patients.models.Patient;
+import com.hospitalApi.rooms.models.RoomUsage;
 import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.CascadeType;
@@ -14,6 +14,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -26,12 +27,12 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "consulta")
+@Entity
 public class Consult extends Auditor {
 
     @NotBlank(message = "El paciente es requerido")
     @ManyToOne
-    @JoinColumn(name = "patient_id")
+    @JoinColumn
     private Patient patient;
 
     @NotNull(message = "El estado de la consulta es requerido")
@@ -53,6 +54,10 @@ public class Consult extends Auditor {
 
     @OneToMany(mappedBy = "consult", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EmployeeConsult> employeeConsults;
+
+    @OneToOne(mappedBy = "consult", cascade = CascadeType.ALL, optional = true)
+    @JoinColumn(nullable = true)
+    private RoomUsage roomUsage;
 
     // Habitacion
     // private Habitacion habitacion;

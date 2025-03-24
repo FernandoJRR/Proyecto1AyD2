@@ -13,25 +13,25 @@ import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "cirugia")
+@Entity
 public class Surgery extends Auditor {
 
     @NotBlank(message = "La consulta es requerida")
     @OneToOne
-    @JoinColumn(name = "consulta_id", nullable = false)
+    @JoinColumn(nullable = false)
     private Consult consult;
 
     @NotBlank(message = "El tipo de cirugía es requerido")
     @OneToOne
-    @JoinColumn(name = "tipo_cirugia_id", nullable = false)
+    @JoinColumn(nullable = false)
     private SurgeryType surgeryType;
 
     @NotBlank(message = "El pago al especialista es requerido")

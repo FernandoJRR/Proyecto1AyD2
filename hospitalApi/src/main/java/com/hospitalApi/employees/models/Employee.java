@@ -31,7 +31,7 @@ import lombok.NoArgsConstructor;
  *
  * @author Luis Monterroso
  */
-@Entity(name = "employee")
+@Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
