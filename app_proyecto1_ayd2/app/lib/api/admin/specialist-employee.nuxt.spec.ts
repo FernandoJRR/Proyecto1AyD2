@@ -59,7 +59,7 @@ describe('SpecialistEmployee API Utilities', () => {
 
     const result = await getSpecialistEmployeeById(id)
 
-    expect(mockApi).toHaveBeenCalledWith(`/v1/specialist-employees/${id}`)
+    expect(mockApi).toHaveBeenCalledWith(`/v1/specialist-employees/id/${id}`)
     expect(result).toEqual(mockResponse)
   })
 

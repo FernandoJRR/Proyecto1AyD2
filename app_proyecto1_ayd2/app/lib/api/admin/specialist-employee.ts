@@ -34,7 +34,7 @@ export const createSpecialistEmployee = async (
 
 export const getSpecialistEmployeeById = async (id: string) => {
   const response = await $api<SpecialistEmployeeResponseDTO>(
-    `${CURRENT_SPECIALIST_EMPLOYEE_URI}/${id}`
+    `${CURRENT_SPECIALIST_EMPLOYEE_URI}/id/${id}`
   );
   return response;
 };
