@@ -114,7 +114,7 @@ import {
 } from "~/lib/api/admin/specialist-employee";
 
 const { state: specialistState } = useQuery({
-  key: ["specialist"],
+  key: ["specialist-edit",useRoute().params.id as string],
   query: () => getSpecialistEmployeeById(useRoute().params.id as string),
 });
 

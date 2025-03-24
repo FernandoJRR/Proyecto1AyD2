@@ -32,7 +32,7 @@ export const createPatient = async (data: CreatePatientRequestDTO) => {
 
 export const getPatient = async (id: string) => {
   const response = await $api<PatientResponseDTO>(
-    `${CURRENT_PATIENT_URI}/${id}`
+    `${CURRENT_PATIENT_URI}/id/${id}`
   );
   return response;
 };
@@ -57,3 +57,12 @@ export const updatePatient = async (
   );
   return response;
 };
+
+export const getAllPatients = async (search: string | null) => {
+  let url = `${CURRENT_PATIENT_URI}/all`
+  if (search) {
+    url = `${url}?query=${search}`
+  }
+  const response = await $api<PatientResponseDTO[]>(url)
+  return response
+}
