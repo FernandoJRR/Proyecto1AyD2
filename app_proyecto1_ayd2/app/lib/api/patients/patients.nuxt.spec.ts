@@ -61,7 +61,7 @@ describe('Patients API Utilities', () => {
 
     const result = await getPatient(id)
 
-    expect(mockApi).toHaveBeenCalledWith(`/v1/patients/${id}`)
+    expect(mockApi).toHaveBeenCalledWith(`/v1/patients/id/${id}`)
     expect(result).toEqual(mockResponse)
   })
 

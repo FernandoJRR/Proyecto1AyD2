@@ -165,7 +165,7 @@ import { useQuery } from '@pinia/colada';
 import { getMedicine, updateMedicine, type MedicineUpdatePayload } from '~/lib/api/medicines/medicine';
 
 const { state: medicineState } = useQuery({
-  key: ['medicine'],
+  key: ['medicine-edit',useRoute().params.id as string],
   query: () => getMedicine(useRoute().params.id as string),
 });
 
