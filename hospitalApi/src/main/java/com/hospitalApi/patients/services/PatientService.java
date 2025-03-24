@@ -47,10 +47,8 @@ public class PatientService implements ForPatientPort {
         Patient patient = patientRespository.findById(id)
                 .orElseThrow(() -> new NotFoundException("El paciente con id " + id + " no existe"));
         // Verificamos si el DPI es el mismo
-        if (!patient.getDpi().equals(updatePatientRequestDTO.getDpi())) {
-            if (patientRespository.existsByDpi(updatePatientRequestDTO.getDpi())) {
-                throw new DuplicatedEntryException("El DPI " + updatePatientRequestDTO.getDpi() + " ya existe");
-            }
+        if (patientRespository.existsByDpiAndIdNot(updatePatientRequestDTO.getDpi(), id)) {
+            throw new DuplicatedEntryException("El DPI " + updatePatientRequestDTO.getDpi() + " ya existe");
         }
         patient.updateFromDTO(updatePatientRequestDTO);
         return patientRespository.save(patient);

@@ -11,6 +11,8 @@ public interface PatientRespository extends JpaRepository<Patient, String> {
 
     public boolean existsByDpi(String dpi);
 
+    public boolean existsByDpiAndIdNot(String dpi, String id);
+
     public List<Patient> findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(String firstnames,
             String lastnames);
 
