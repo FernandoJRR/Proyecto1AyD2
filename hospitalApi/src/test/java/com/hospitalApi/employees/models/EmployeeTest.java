@@ -29,7 +29,7 @@ class EmployeeTest {
     private User user;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         employeeType = new EmployeeType(EMPLOYEE_TYPE_ID, EMPLOYEE_TYPE_NAME);
         user = new User(USER, PASSWORD);
     }
@@ -43,7 +43,7 @@ class EmployeeTest {
      * permanecen nulos.
      */
     @Test
-    void shouldCreateEmployeeWithMainConstructorWithoutId() {
+    public void shouldCreateEmployeeWithMainConstructorWithoutId() {
         // arrange y act
         Employee employee = new Employee(FIRST_NAME, LAST_NAME, SALARY, IGSS, IRTRA, RESIGN_DATE);
         // assert
@@ -66,7 +66,7 @@ class EmployeeTest {
      * ID permanece nulo.
      */
     @Test
-    void shouldCreateEmployeeWithAllFieldsConstructorExeptId() {
+    public void shouldCreateEmployeeWithAllFieldsConstructorExeptId() {
         // arrange y act
         Employee employee = new Employee(FIRST_NAME, LAST_NAME, SALARY, IGSS, IRTRA, RESIGN_DATE, employeeType, user);
         // asert
@@ -90,7 +90,7 @@ class EmployeeTest {
      * nulos.
      */
     @Test
-    void shouldCreateEmployeeWithIdOnly() {
+    public void shouldCreateEmployeeWithIdOnly() {
         // arrange y act
         Employee employee = new Employee(EMPLOYEE_ID);
         // assert

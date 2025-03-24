@@ -64,7 +64,7 @@ public class JwtAuthenticationFilterTest {
      * entonces: el usuario es autenticado y el filtro continúa la cadena.
      */
     @Test
-    void doFilterInternalShouldAuthenticateWhenTokenIsValid() throws Exception {
+    public void doFilterInternalShouldAuthenticateWhenTokenIsValid() throws Exception {
         // arrange
         // simulamos la extraccion corecta del header del token
         when(request.getHeader("Authorization")).thenReturn("Bearer " + JWT);
@@ -96,7 +96,7 @@ public class JwtAuthenticationFilterTest {
      * entonces: no se realiza autenticación y se continúa con el filtro.
      */
     @Test
-    void doFilterInternalShouldNotAuthenticateWhenNoTokenPresent() throws Exception {
+    public void doFilterInternalShouldNotAuthenticateWhenNoTokenPresent() throws Exception {
         // arrange
         when(request.getHeader("Authorization")).thenReturn(null);// extraccion no exitosa devulve el token nulo
         // act
@@ -113,7 +113,7 @@ public class JwtAuthenticationFilterTest {
      * entonces: no se realiza autenticación.
      */
     @Test
-    void doFilterInternalShouldNotAuthenticateWhenTokenIsInvalid() throws Exception {
+    public void doFilterInternalShouldNotAuthenticateWhenTokenIsInvalid() throws Exception {
         // arrange
         when(request.getHeader("Authorization")).thenReturn("Bearer " + JWT);// extraccion exitosa
         when(jwtManager.extractUsername(JWT)).thenReturn(USERNAME);// username extraccion exitosa
@@ -134,7 +134,7 @@ public class JwtAuthenticationFilterTest {
      * @throws IOException
      */
     @Test
-    void doFilterInternalShouldNotAuthenticateWhenUserNotFound()
+    public void doFilterInternalShouldNotAuthenticateWhenUserNotFound()
             throws UsernameNotFoundException, IOException, ServletException {
         // arrang
         when(request.getHeader("Authorization")).thenReturn("Bearer " + JWT);// extraccion exitosa del token
