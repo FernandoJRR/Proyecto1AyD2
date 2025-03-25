@@ -12,6 +12,8 @@ import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +32,7 @@ import com.hospitalApi.employees.ports.ForEmployeeTypePort;
 import com.hospitalApi.employees.ports.ForHistoryTypePort;
 import com.hospitalApi.employees.repositories.EmployeeRepository;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
+import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
@@ -58,6 +61,8 @@ public class EmployeesServicesTest {
 
     private User user;
     private HistoryType historyType;
+    private HistoryType historyTypeIncrease;
+    private HistoryType historyTypeDecrease;
     private EmployeeHistory employeeHistory;
     private Employee employee;
     private Employee updatedEmployee;
@@ -89,10 +94,25 @@ public class EmployeesServicesTest {
     /** Para el historial del empleado **/
     private static final String HISTORY_TYPE_ID = "fdsf-rtrer-bbvk";
     private static final String HISTORY_TYPE = "Contratacion";
+    private static final String HISTORY_TYPE_ID_INCREASE = "rewp-fkds-bbvk";
+    private static final String HISTORY_TYPE_INCREASE = "Aumento Salarial";
+    private static final String HISTORY_TYPE_ID_DECREASE = "dflm-fodp-bbvk";
+    private static final String HISTORY_TYPE_DECREASE = "Disminucion Salarial";
+
     private static final String EMPLOYEE_HISTORY_ID = "rewf-fdsa-fdsd";
-    private static final String EMPLOYEE_HISTORY_COMMENTARY = "Se realizo la contratacion";
+    private static final String EMPLOYEE_HISTORY_COMMENTARY = "Se realizo la contratacion con un salario de Q.7000";
     private static final LocalDate EMPLOYEE_HISTORY_LOCAL_DATE = LocalDate.of(2022, 11, 23);
 
+    private static final BigDecimal EMPLOYEE_STARTING_SALARY = new BigDecimal(1200);
+    private static final BigDecimal EMPLOYEE_NEW_SALARY = new BigDecimal(1500);
+    private static final String EMPLOYEE_NEW_SALARY_COMMENTARY = "1500";
+    private static final String EMPLOYEE_HISTORY_INCREASE_COMMENTARY = "Se realizo la contratacion con un salario de Q.1200";
+
+
+    private static final BigDecimal EMPLOYEE_STARTING_DECREASE_SALARY = new BigDecimal(1500);
+    private static final BigDecimal EMPLOYEE_NEW_SALARY_DECREASE = new BigDecimal(1200);
+    private static final String EMPLOYEE_NEW_SALARY_DECREASE_COMMENTARY = "1200";
+    private static final String EMPLOYEE_HISTORY_DECREASE_COMMENTARY = "Se realizo la contratacion con un salario de Q.1500";
     /**
      * este metodo se ejecuta antes de cualquier prueba individual, se hace para
      * inicializar los moks ademas del driver
@@ -122,6 +142,12 @@ public class EmployeesServicesTest {
 
         historyType = new HistoryType(HISTORY_TYPE);
         historyType.setId(HISTORY_TYPE_ID);
+
+        historyTypeIncrease = new HistoryType(HISTORY_TYPE_INCREASE);
+        historyTypeIncrease.setId(HISTORY_TYPE_ID_INCREASE);
+
+        historyTypeDecrease = new HistoryType(HISTORY_TYPE_DECREASE);
+        historyTypeDecrease.setId(HISTORY_TYPE_ID_DECREASE);
 
         employeeHistory = new EmployeeHistory(EMPLOYEE_HISTORY_COMMENTARY);
         employeeHistory.setHistoryDate(EMPLOYEE_HISTORY_LOCAL_DATE);
@@ -311,4 +337,109 @@ public class EmployeesServicesTest {
         });
     }
 
+    @Test
+    public void shouldUpdateEmployeeSalaryForIncrease() throws NotFoundException, InvalidPeriodException {
+
+        // ARRANGE
+        List<EmployeeHistory> histories = new ArrayList<>();
+
+        EmployeeHistory increaseHistory = new EmployeeHistory(EMPLOYEE_HISTORY_INCREASE_COMMENTARY);
+        increaseHistory.setHistoryDate(EMPLOYEE_HISTORY_LOCAL_DATE);
+        increaseHistory.setHistoryType(historyTypeIncrease);
+
+        histories.add(increaseHistory);
+
+        employee.setEmployeeHistories(histories);
+        employee.setSalary(EMPLOYEE_STARTING_SALARY);
+
+        LocalDate salaryDate = LocalDate.now();
+        BigDecimal newSalary = EMPLOYEE_NEW_SALARY;
+
+        // se crea el registro de un aumento salarial en el historial del empleado
+        EmployeeHistory salaryIncreaseHistory = new EmployeeHistory(EMPLOYEE_NEW_SALARY_COMMENTARY);
+        salaryIncreaseHistory.setHistoryDate(salaryDate);
+
+        // se hace que el ultimo salario del empleado este vacio
+        when(forEmployeeHistoryPort.getLastEmployeeSalaryUntilDate(employee, salaryDate))
+            .thenReturn(Optional.empty());
+
+        when(forEmployeeHistoryPort.createEmployeeHistorySalaryIncrease(employee, newSalary, salaryDate))
+            .thenReturn(salaryIncreaseHistory);
+
+        // se retorna el ultimo cambio de salario
+        when(forEmployeeHistoryPort.getMostRecentEmployeeSalary(employee))
+            .thenReturn(Optional.of(salaryIncreaseHistory));
+
+        when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
+        when(employeeRepository.save(employee)).thenReturn(employee);
+
+        // ACT
+        Employee updatedEmployee = employeeService.updateEmployeeSalary(employee.getId(), newSalary, salaryDate);
+
+
+        // ASSERT
+        assertAll(
+            () -> assertEquals(newSalary, updatedEmployee.getSalary()),
+            () -> assertEquals(2, updatedEmployee.getEmployeeHistories().size()),
+            () -> assertEquals(salaryIncreaseHistory, updatedEmployee.getEmployeeHistories().get(1))
+        );
+
+        verify(forEmployeeHistoryPort, times(1))
+            .createEmployeeHistorySalaryIncrease(employee, newSalary, salaryDate);
+        verify(forEmployeeHistoryPort, times(1)).getMostRecentEmployeeSalary(employee);
+        verify(employeeRepository, times(1)).save(employee);
+    }
+
+    @Test
+    public void shouldUpdateEmployeeSalaryForDecrease() throws NotFoundException, InvalidPeriodException {
+
+        // ARRANGE
+        List<EmployeeHistory> histories = new ArrayList<>();
+
+        EmployeeHistory decreaseHistory = new EmployeeHistory(EMPLOYEE_HISTORY_DECREASE_COMMENTARY);
+        decreaseHistory.setHistoryDate(EMPLOYEE_HISTORY_LOCAL_DATE);
+        decreaseHistory.setHistoryType(historyTypeDecrease);
+
+        histories.add(decreaseHistory);
+
+        employee.setEmployeeHistories(histories);
+        employee.setSalary(EMPLOYEE_STARTING_DECREASE_SALARY);
+
+        LocalDate salaryDate = LocalDate.now();
+        BigDecimal newSalary = EMPLOYEE_NEW_SALARY_DECREASE;
+
+        // se crea el registro de un aumento salarial en el historial del empleado
+        EmployeeHistory salaryDecreaseHistory = new EmployeeHistory(EMPLOYEE_NEW_SALARY_DECREASE_COMMENTARY);
+        salaryDecreaseHistory.setHistoryDate(salaryDate);
+
+        // se hace que el ultimo salario del empleado este vacio
+        when(forEmployeeHistoryPort.getLastEmployeeSalaryUntilDate(employee, salaryDate))
+            .thenReturn(Optional.empty());
+
+        when(forEmployeeHistoryPort.createEmployeeHistorySalaryDecrease(employee, newSalary, salaryDate))
+            .thenReturn(salaryDecreaseHistory);
+
+        // se retorna el ultimo cambio de salario
+        when(forEmployeeHistoryPort.getMostRecentEmployeeSalary(employee))
+            .thenReturn(Optional.of(salaryDecreaseHistory));
+
+        when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
+        when(employeeRepository.save(employee)).thenReturn(employee);
+
+        // ACT
+        Employee updatedEmployee = employeeService.updateEmployeeSalary(employee.getId(), newSalary, salaryDate);
+
+
+        // ASSERT
+        assertAll(
+            () -> assertEquals(newSalary, updatedEmployee.getSalary()),
+            () -> assertEquals(2, updatedEmployee.getEmployeeHistories().size()),
+            () -> assertEquals(salaryDecreaseHistory, updatedEmployee.getEmployeeHistories().get(1))
+        );
+
+        verify(forEmployeeHistoryPort, times(1))
+            .createEmployeeHistorySalaryDecrease(employee, newSalary, salaryDate);
+        verify(forEmployeeHistoryPort, times(1)).getMostRecentEmployeeSalary(employee);
+        verify(employeeRepository, times(1)).save(employee);
+    }
 }
