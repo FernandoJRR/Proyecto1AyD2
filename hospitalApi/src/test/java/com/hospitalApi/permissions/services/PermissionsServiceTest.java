@@ -16,15 +16,17 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.hospitalApi.permissions.models.Permission;
 import com.hospitalApi.permissions.repositories.PermissionRepository;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
+@ExtendWith(MockitoExtension.class)
 public class PermissionsServiceTest {
 
     @Mock
@@ -37,7 +39,6 @@ public class PermissionsServiceTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         permission = new Permission("NAME_MOCK", "ACTION_MOCK");
         permission.setId("qwe-qweq-wer");
 

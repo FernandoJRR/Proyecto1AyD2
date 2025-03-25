@@ -18,9 +18,10 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,6 +41,7 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
 
+@ExtendWith(MockitoExtension.class)
 public class LoginServiceTest {
 
     @Mock
@@ -85,7 +87,6 @@ public class LoginServiceTest {
 
     @BeforeEach
     private void setUp() {
-        MockitoAnnotations.openMocks(this);
         user = new User(USERNAME, PASSWORD);
         permissions = Set.of();
         employee = new Employee();

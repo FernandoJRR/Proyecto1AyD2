@@ -1,25 +1,34 @@
 package com.hospitalApi.employees.services;
 
-import com.hospitalApi.employees.dtos.UpdateSpecialistEmpleoyeeRequestDTO;
-import com.hospitalApi.employees.models.SpecialistEmployee;
-import com.hospitalApi.employees.repositories.SpecialistEmployeeRepository;
-import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
-import com.hospitalApi.shared.exceptions.NotFoundException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.hospitalApi.employees.dtos.UpdateSpecialistEmpleoyeeRequestDTO;
+import com.hospitalApi.employees.models.SpecialistEmployee;
+import com.hospitalApi.employees.repositories.SpecialistEmployeeRepository;
+import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
+import com.hospitalApi.shared.exceptions.NotFoundException;
+
+@ExtendWith(MockitoExtension.class)
 public class SpecialistEmployeeServiceTest {
 
     @Mock
@@ -36,7 +45,6 @@ public class SpecialistEmployeeServiceTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         specialistEmployee = new SpecialistEmployee();
         specialistEmployee.setId(SPECIALIST_ID);
         specialistEmployee.setNombres(NOMBRES);

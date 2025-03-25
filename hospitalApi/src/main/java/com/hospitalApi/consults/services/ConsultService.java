@@ -12,7 +12,7 @@ import com.hospitalApi.patients.models.Patient;
 import com.hospitalApi.patients.ports.ForPatientPort;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.surgery.ports.ForSurgeryCalculationPort;
-import com.hospitalApi.surgery.ports.ForSurgeryPort;
+
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 

@@ -1,5 +1,27 @@
 package com.hospitalApi.consults.services;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.hospitalApi.consults.dtos.UpdateConsultRequestDTO;
 import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.consults.repositories.ConsultRepository;
@@ -8,20 +30,7 @@ import com.hospitalApi.patients.ports.ForPatientPort;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.surgery.ports.ForSurgeryCalculationPort;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import java.util.List;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
+@ExtendWith(MockitoExtension.class)
 public class ConsultServiceTest {
 
     @Mock
@@ -54,8 +63,6 @@ public class ConsultServiceTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-
         patient = new Patient(PATIENT_NAME, PATIENT_LASTNAME, PATIENT_DPI);
         patient.setId(PATIENT_ID);
 

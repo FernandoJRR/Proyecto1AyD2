@@ -18,10 +18,11 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.models.EmployeeType;
@@ -33,6 +34,7 @@ import com.hospitalApi.shared.enums.EmployeeTypeEnum;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
+@ExtendWith(MockitoExtension.class)
 public class EmployeeTypeServiceTest {
 
     @Mock
@@ -66,7 +68,6 @@ public class EmployeeTypeServiceTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         employeeType1 = new EmployeeType(EMPLOYEETYPE_ID_1, EMPLOYEETYPE_NAME_1);
         employeeType2 = new EmployeeType(EMPLOYEETYPE_ID_2, EMPLOYEETYPE_NAME_2);
         permission1 = new Permission(PERMISSION_ID_1, PERMISSION_NAME_1);

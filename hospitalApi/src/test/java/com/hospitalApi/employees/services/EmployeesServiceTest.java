@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
@@ -13,17 +12,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.models.EmployeeType;
@@ -35,7 +34,8 @@ import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
 import com.hospitalApi.users.repositories.UserRepository;
 
-public class EmployeesServicesTest {
+@ExtendWith(MockitoExtension.class)
+public class EmployeesServiceTest {
     @Mock
     private EmployeeRepository employeeRepository;
     @Mock
@@ -84,7 +84,6 @@ public class EmployeesServicesTest {
      */
     @BeforeEach
     private void setUp() {
-        MockitoAnnotations.openMocks(this);
         employee = new Employee(
                 EMPLOYEE_FIRST_NAME,
                 EMPLOYEE_LAST_NAME,
@@ -119,8 +118,8 @@ public class EmployeesServicesTest {
         // ARRANGE
         // configuramos el mock para que lance el user cuando este sea creado
         when(forEmployeeTypePort.findEmployeeTypeById(anyString())).thenReturn(employeeType);
-        when(forUsersPort.createUser(any(User.class))).thenReturn(user);
-        when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
+        when(forUsersPort.createUser(any())).thenReturn(user);
+        when(employeeRepository.save(any())).thenReturn(employee);
         // ACT
         Employee result = employeeService.createEmployee(employee, employeeType, user);
 
@@ -464,7 +463,6 @@ public class EmployeesServicesTest {
         List<Employee> employees = List.of(employeeToReasignEmployeeType1, employeeToReasignEmployeeType2);
 
         when(employeeRepository.findById(EMPLOYEE_ID_1)).thenReturn(Optional.of(employeeToReasignEmployeeType1));
-        when(employeeRepository.findById(EMPLOYEE_ID_2)).thenReturn(Optional.of(employeeToReasignEmployeeType2));
 
         when(forEmployeeTypePort.findEmployeeTypeById(EMPLOYEE_TYPE_ID)).thenThrow(new NotFoundException(anyString()));
 

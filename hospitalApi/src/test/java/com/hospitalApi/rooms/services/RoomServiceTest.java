@@ -18,10 +18,11 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.hospitalApi.rooms.enums.RoomStatus;
 import com.hospitalApi.rooms.models.Room;
@@ -29,6 +30,7 @@ import com.hospitalApi.rooms.repositories.RoomRepository;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
+@ExtendWith(MockitoExtension.class)
 public class RoomServiceTest {
 
     @Mock
@@ -52,9 +54,6 @@ public class RoomServiceTest {
 
     @BeforeEach
     private void setUp() {
-        // abrimos los mocks en cada una de las prieba
-        MockitoAnnotations.openMocks(this);
-
         room = new Room(ROOM_NUMBER, DAILY_PRICE, MAINTENANCE_COST, null);
         updatedRoom = new Room(UPDATED_ROOM_NUMBER, UPDATED_DAILY_PRICE, UPDATED_MAINTENANCE_COST, null);
     }
