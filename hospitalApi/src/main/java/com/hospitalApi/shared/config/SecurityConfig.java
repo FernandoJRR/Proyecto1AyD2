@@ -8,7 +8,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,7 +23,6 @@ import com.hospitalApi.auth.jwt.filters.JwtAuthenticationFilter;
 import com.hospitalApi.auth.login.ports.ForUserLoader;
 import com.hospitalApi.permissions.enums.SystemPermissionEnum;
 
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -145,9 +143,11 @@ public class SecurityConfig {
      */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+
+        System.out.println(appProperties.getFrontURL());
         CorsConfiguration configuration = new CorsConfiguration();
         // agrega todas las rutas permitidas
-        configuration.setAllowedOrigins(List.of(appProperties.getFrontendLocal(), appProperties.getFrontendDev()));
+        configuration.setAllowedOrigins(List.of(appProperties.getFrontURL()));
 
         // decimos que operaciones http estan permitidos
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
