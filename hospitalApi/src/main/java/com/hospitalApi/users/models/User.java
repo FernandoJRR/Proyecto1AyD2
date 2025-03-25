@@ -18,7 +18,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "user")
+@Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
@@ -33,10 +33,16 @@ public class User extends Auditor {
     private LocalDate desactivatedAt;
 
     @OneToOne
-    @JoinColumn(name = "employee_id")
+    @JoinColumn
     private Employee employee;
 
     public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public User(String id, String username, String password) {
+        super(id);
         this.username = username;
         this.password = password;
     }

@@ -1,7 +1,7 @@
 <template>
   <div class="grid grid-cols-4 gap-4 m-8">
     <template v-for="menu in menus">
-      <MenuShortcutCard :menu="menu"/>
+      <MenuShortcutCard :menu="menu" />
     </template>
   </div>
 </template>
@@ -15,6 +15,16 @@ const menus = [
     route: '/admin/personal',
   },
   {
+    title: 'Medicos Especialistas',
+    description: 'Administracion de Medicos Especialistas',
+    route: '/admin/medicos-especialistas',
+  },
+  {
+    title: 'Roles',
+    description: 'Administracion de roles y permisos',
+    route: '/admin/tipos-de-empleado',
+  },
+  {
     title: 'Tarifas',
     description: 'Administracion de Tarifas',
     route: '/admin/tarifas',
@@ -23,4 +33,3 @@ const menus = [
 
 defineExpose({ menus })
 </script>
-

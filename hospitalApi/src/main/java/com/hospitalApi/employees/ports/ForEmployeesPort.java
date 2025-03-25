@@ -23,6 +23,11 @@ public interface ForEmployeesPort {
         public Employee updateEmployeeSalary(String currentId, BigDecimal newSalary, LocalDate salaryDate)
                         throws NotFoundException, InvalidPeriodException;
 
+        public Employee reassignEmployeeType(String employeeId, String employeeTypeId) throws NotFoundException;
+
+        public List<Employee> reassignEmployeeType(List<Employee> employeeIds, String employeeTypeId)
+                        throws NotFoundException;
+
         public Employee findEmployeeById(String employeeId) throws NotFoundException;
 
         public List<Employee> findEmployees();

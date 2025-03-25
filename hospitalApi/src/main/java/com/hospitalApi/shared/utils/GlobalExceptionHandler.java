@@ -1,22 +1,20 @@
 package com.hospitalApi.shared.utils;
 
-import jakarta.validation.ConstraintViolationException;
-
-import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.method.ParameterValidationResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
-import com.hospitalApi.shared.exceptions.BadRequestException;
+import org.springframework.security.access.AccessDeniedException;
+
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
+
+import jakarta.validation.ConstraintViolationException;
 
 /**
  *
@@ -26,80 +24,64 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(DuplicatedEntryException.class)
-    public ResponseEntity<?> handleDuplicatedEntryException(DuplicatedEntryException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<?> handleConstraintViolationException(ConstraintViolationException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(""
-                + "Error inesperado en la Base de Datos.");
-    }
-
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<?> handleBadCredentialsException(BadCredentialsException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                "Autenticación fallida: El correo electrónico o la contraseña son incorrectos."
-                        + " Por favor, verifica tus credenciales e intenta de nuevo.");
-    }
-
-    @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<?> handleUsernameNotFoundException(UsernameNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                "El nombre de usuario especificado no pertenece a ningun usuario dentro del sistema.");
-    }
-
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<?> handleBadRequestException(BadRequestException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
-    }
-
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<?> handleNotFoundException(NotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public String handleDuplicatedEntryException(DuplicatedEntryException ex) {
+        return ex.getMessage();
     }
 
     @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<?> handleNotFoundException(IllegalStateException ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public String handleNotFoundException(IllegalStateException ex) {
+        return ex.getMessage();
     }
 
-    /**
-     * Cubre las excepciones que se lanzan cuando @Valid no es cumplido y las
-     * validaciones no
-     * pasan.
-     * 
-     * @param ex
-     * @return
-     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleConstraintViolationException(ConstraintViolationException ex) {
+        return "Error inesperado en la Base de Datos.";
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleValidationExceptions(MethodArgumentNotValidException ex) {
         String menssage = "";
         // recorre los errores de validación y agregarlos al mensaje de respuesta
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
             menssage = menssage + String.format("- %s \n", error.getDefaultMessage());
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(menssage.trim());
+        return menssage;
     }
 
-    @ExceptionHandler(HandlerMethodValidationException.class)
-    public ResponseEntity<?> handleHandlerMethodValidationException(HandlerMethodValidationException ex) {
-        String menssage = "";
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public String handleBadCredentialsException(BadCredentialsException ex) {
+        return "Autenticación fallida, El correo electrónico o la contraseña son incorrectos."
+                + " Por favor, verifica tus credenciales e intenta de nuevo.";
+    }
 
-        // eecorre los errores de validación y los agrega al mensaje de respuesta
-        for (ParameterValidationResult result : ex.getAllValidationResults()) {
-            for (MessageSourceResolvable error : result.getResolvableErrors()) {
-                menssage = menssage + String.format("- %s \n", error.getDefaultMessage());
-            }
-        }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(menssage.trim());
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public String handleAccessDeniedException(AccessDeniedException ex) {
+        return "Acceso denegado, no tienes permisos suficientes para realizar esta acción.";
+    }
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleUsernameNotFoundException(UsernameNotFoundException ex) {
+        return "El nombre de usuario especificado no pertenece a ningun usuario dentro del sistema.";
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleNotFoundException(NotFoundException ex) {
+        return ex.getMessage();
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleGlobalException(Exception ex) {
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String handleGlobalException(Exception ex) {
         ex.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Ocurrió un error inesperado: " + ex.getMessage());
+        return "Ocurrió un error inesperado: " + ex.getMessage();
     }
 
 }

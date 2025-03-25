@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.hospitalApi.patients.dtos.CreatePatientRequestDTO;
 import com.hospitalApi.patients.dtos.UpdatePatientRequestDTO;
 import com.hospitalApi.patients.models.Patient;
 import com.hospitalApi.patients.ports.ForPatientPort;
@@ -48,23 +47,18 @@ public class PatientService implements ForPatientPort {
         Patient patient = patientRespository.findById(id)
                 .orElseThrow(() -> new NotFoundException("El paciente con id " + id + " no existe"));
         // Verificamos si el DPI es el mismo
-        if (!patient.getDpi().equals(updatePatientRequestDTO.getDpi())) {
-            if (patientRespository.existsByDpi(updatePatientRequestDTO.getDpi())) {
-                throw new DuplicatedEntryException("El DPI " + updatePatientRequestDTO.getDpi() + " ya existe");
-            }
+        if (patientRespository.existsByDpiAndIdNot(updatePatientRequestDTO.getDpi(), id)) {
+            throw new DuplicatedEntryException("El DPI " + updatePatientRequestDTO.getDpi() + " ya existe");
         }
         patient.updateFromDTO(updatePatientRequestDTO);
         return patientRespository.save(patient);
     }
 
     @Override
-    public List<Patient> getPatients() {
+    public List<Patient> getPatients(String query) {
+        if (query != null) {
+            return patientRespository.findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(query, query);
+        }
         return patientRespository.findAllByOrderByCreatedAtDesc();
     }
-
-    @Override
-    public List<Patient> searchPatients(String query) {
-        return patientRespository.findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(query, query);
-    }
-
 }

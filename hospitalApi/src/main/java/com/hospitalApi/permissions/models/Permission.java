@@ -16,4 +16,16 @@ public class Permission extends Auditor {
 
     @Column(unique = true, length = 100)
     private String name;
+    @Column(unique = true, length = 100)
+    private String action;
+
+    public Permission(String id) {
+        super(id);
+    }
+
+    public Permission(String name, String action) {
+        this.name = name;
+        this.action = action;
+    }
+
 }

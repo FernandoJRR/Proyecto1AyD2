@@ -1,5 +1,6 @@
 package com.hospitalApi.auth.login.service;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +15,8 @@ import com.hospitalApi.auth.login.ports.ForLogin;
 import com.hospitalApi.auth.login.ports.ForUserLoader;
 import com.hospitalApi.employees.dtos.EmployeeResponseDTO;
 import com.hospitalApi.employees.mappers.EmployeeMapper;
+import com.hospitalApi.permissions.dtos.PermissionResponseDTO;
+import com.hospitalApi.permissions.mappers.PermissionMapper;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
@@ -31,6 +34,7 @@ public class LoginService implements ForLogin {
 
     // mappers
     private final EmployeeMapper employeeMapper;
+    private final PermissionMapper permissionMapper;
 
     @Override
     public LoginResponseDTO login(String username, String password) throws NotFoundException, BadCredentialsException {
@@ -55,7 +59,9 @@ public class LoginService implements ForLogin {
         // construimos la respuesta
         EmployeeResponseDTO employeeResponseDTO = employeeMapper.fromEmployeeToResponse(user.getEmployee());
 
-        return new LoginResponseDTO(user.getUsername(), employeeResponseDTO, jwt);
+        List<PermissionResponseDTO> permissions = permissionMapper
+                .fromPermissionsToPermissionsReponseDtos(user.getEmployee().getEmployeeType().getPermissions());
+        return new LoginResponseDTO(user.getUsername(), employeeResponseDTO, jwt, permissions);
 
     }
 

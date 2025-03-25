@@ -1,4 +1,3 @@
-package com.hospitalApi.auth.login.services;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,6 +37,9 @@ import com.hospitalApi.employees.dtos.EmployeeResponseDTO;
 import com.hospitalApi.employees.dtos.EmployeeTypeResponseDTO;
 import com.hospitalApi.employees.dtos.HistoryTypeResponseDTO;
 import com.hospitalApi.employees.mappers.EmployeeMapper;
+import com.hospitalApi.employees.models.Employee;
+import com.hospitalApi.employees.models.EmployeeType;
+import com.hospitalApi.permissions.mappers.PermissionMapper;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
@@ -58,6 +60,9 @@ public class LoginServiceTest {
 
     @Mock
     private EmployeeMapper employeeMapper;
+
+    @Mock
+    private PermissionMapper permissionMapper;
 
     @InjectMocks
     private LoginService loginService;
@@ -80,6 +85,8 @@ public class LoginServiceTest {
 
     // objetos a devolver en las pruebas
     private User user;
+    private Employee employee;
+    private EmployeeType employeeType;
     private Set<GrantedAuthority> permissions;
     private EmployeeResponseDTO employeeResponseDTO;
 
@@ -87,13 +94,9 @@ public class LoginServiceTest {
     private void setUp() {
         MockitoAnnotations.openMocks(this);
         user = new User(USERNAME, PASSWORD);
-        // el usuairo siempre estara activo en las pruebas CAMBIARLO MANUAL
-        user.setDesactivatedAt(null);
-
-        // configuracion de permisos
-
         permissions = Set.of();
-        // configuramos la respuesta que se da
+        employee = new Employee();
+        employeeType = new EmployeeType();
         List<EmployeeHistoryResponseDTO> employeeHistoryResponseDTOs = Arrays.asList(
                     new EmployeeHistoryResponseDTO(
                         new HistoryTypeResponseDTO(EMPLOYEE_TYPE),
@@ -109,6 +112,13 @@ public class LoginServiceTest {
                 IRTRA_PERCENTAGE,
                 new EmployeeTypeResponseDTO(ID, EMPLOYEE_TYPE)
                 );
+                RESIGN_DATE, new EmployeeTypeResponseDTO(ID, "FARMACIA", List.of()));
+
+        user.setDesactivatedAt(null); // el usuairo siempre estara activo en las pruebas CAMBIARLO MANUAL
+        user.setEmployee(employee);
+        employee.setEmployeeType(employeeType);
+        employeeType.setPermissions(List.of());
+
     }
 
     /**
@@ -134,6 +144,7 @@ public class LoginServiceTest {
         when(forJwtGenerator.generateToken(user, permissions)).thenReturn(JWT_TOKEN);
         // cuando se trate de mapear el empleado devolver el mok
         when(employeeMapper.fromEmployeeToResponse(user.getEmployee())).thenReturn(employeeResponseDTO);
+        when(permissionMapper.fromPermissionsToPermissionsReponseDtos(any())).thenReturn(List.of());
 
         // ACT
         LoginResponseDTO result = loginService.login(user.getUsername(), user.getPassword());
@@ -169,7 +180,7 @@ public class LoginServiceTest {
 
         // ACT y ASSERT
         assertThrows(NotFoundException.class, () -> {
-            LoginResponseDTO result = loginService.login(user.getUsername(), user.getPassword());
+            loginService.login(user.getUsername(), user.getPassword());
         });
 
         verify(forUsersPort, times(1)).findUserByUsername(user.getUsername());

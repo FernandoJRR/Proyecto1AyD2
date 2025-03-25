@@ -23,7 +23,9 @@ public interface MedicineRepository extends JpaRepository<Medicine, String> {
      */
     public List<Medicine> findAll();
 
-    @Query("SELECT m FROM medicamento m WHERE m.quantity < m.minQuantity")
+    @Query("SELECT m FROM Medicine m WHERE m.quantity < m.minQuantity")
     List<Medicine> findMedicinesWithLowStock();
+
+    public List<Medicine> findByNameContainingIgnoreCase(String query);
 
 }

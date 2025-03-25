@@ -4,13 +4,16 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -137,8 +140,7 @@ public class EmployeesServicesTest {
                 UPDATED_EMPLOYEE_IRTRA
                 );
 
-        user = new User(USER_NAME, USER_PASSWORD);
-        user.setId(USER_ID);
+        user = new User(USER_ID, USER_NAME, USER_PASSWORD);
 
         historyType = new HistoryType(HISTORY_TYPE);
         historyType.setId(HISTORY_TYPE_ID);
@@ -155,6 +157,11 @@ public class EmployeesServicesTest {
 
         employeeType = new EmployeeType();
         employeeType.setId(EMPLOYEE_TYPE_ID);
+
+        // inicializamos los empleados que usaremos para la reasignacion del tipo de
+        // empleado
+        employeeToReasignEmployeeType1 = new Employee(EMPLOYEE_ID_1);
+        employeeToReasignEmployeeType2 = new Employee(EMPLOYEE_ID_2);
     }
 
     @Test
@@ -162,7 +169,7 @@ public class EmployeesServicesTest {
 
         // ARRANGE
         // configuramos el mock para que lance el user cuando este sea creado
-        when(forEmployeeTypePort.verifyExistsEmployeeTypeById(anyString())).thenReturn(true);
+        when(forEmployeeTypePort.findEmployeeTypeById(anyString())).thenReturn(employeeType);
         when(forUsersPort.createUser(any(User.class))).thenReturn(user);
         when(forHistoryTypePort.findHistoryTypeByName(anyString())).thenReturn(historyType);
         when(forEmployeeHistoryPort.createEmployeeHistoryHiring(any(Employee.class), any(LocalDate.class)))
@@ -201,7 +208,7 @@ public class EmployeesServicesTest {
     public void shouldNotInsertEmployeeWithExistantUsername() throws DuplicatedEntryException, NotFoundException {
 
         // ARRANGE
-        when(forEmployeeTypePort.verifyExistsEmployeeTypeById(anyString())).thenReturn(true);
+        when(forEmployeeTypePort.findEmployeeTypeById(anyString())).thenReturn(employeeType);
         when(forUsersPort.createUser(user)).thenThrow(DuplicatedEntryException.class);
 
         // ACT and Asserts
@@ -210,7 +217,7 @@ public class EmployeesServicesTest {
             employeeService.createEmployee(employee, employeeType, user, employeeHistory);
         });
 
-        verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(anyString());
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById(anyString());
         verify(forUsersPort, times(1)).createUser(any(User.class));
         verify(employeeRepository, times(0)).save(employee);
 
@@ -219,7 +226,7 @@ public class EmployeesServicesTest {
     @Test
     public void shouldNotInsertEmployeeWithInexistantEmployeeType() throws NotFoundException, DuplicatedEntryException {
         // ARRANGE
-        when(forEmployeeTypePort.verifyExistsEmployeeTypeById(anyString())).thenThrow(
+        when(forEmployeeTypePort.findEmployeeTypeById(anyString())).thenThrow(
                 NotFoundException.class);
 
         // ACT
@@ -229,7 +236,7 @@ public class EmployeesServicesTest {
         });
 
         // Asserts
-        verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(anyString());
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById(anyString());
         verify(forUsersPort, times(0)).createUser(any(User.class));
         verify(employeeRepository, times(0)).save(employee);
 
@@ -240,7 +247,7 @@ public class EmployeesServicesTest {
 
         // ARRANGE
         when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
-        when(forEmployeeTypePort.verifyExistsEmployeeTypeById(anyString())).thenReturn(true);
+        when(forEmployeeTypePort.findEmployeeTypeById(anyString())).thenReturn(employeeType);
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
 
         // ACT
@@ -258,13 +265,13 @@ public class EmployeesServicesTest {
 
         // Asegurar que se guardó en la base de datos
         verify(employeeRepository, times(1)).findById(anyString());
-        verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(anyString());
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById(anyString());
         verify(employeeRepository, times(1)).save(any(Employee.class));
 
     }
 
     @Test
-    public void shouldNotUpdateEmployeeWithInexistantEmployee() throws NotFoundException {
+    public void updateEmployeeShouldNotUpdateEmployeeWithInexistantEmployee() throws NotFoundException {
         // ARRANGE
         // cuando se busque el empleado por id entonces volvr vacio para que lance la
         // excepcion
@@ -277,18 +284,18 @@ public class EmployeesServicesTest {
 
         // Asserts
         verify(employeeRepository, times(1)).findById(anyString());
-        verify(forEmployeeTypePort, times(0)).verifyExistsEmployeeTypeById(anyString());
+        verify(forEmployeeTypePort, times(0)).existsEmployeeTypeById(anyString());
         verify(employeeRepository, times(0)).save(employee);
 
     }
 
     @Test
-    public void shouldNotUpdateEmployeeWithInexistantEmployeeType() throws NotFoundException {
+    public void updateEmployeeShouldNotUpdateEmployeeWithInexistantEmployeeType() throws NotFoundException {
         // ARRANGE
         // cuando se busque por id entonces devolver el employee
         when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
 
-        when(forEmployeeTypePort.verifyExistsEmployeeTypeById(anyString())).thenThrow(
+        when(forEmployeeTypePort.findEmployeeTypeById(anyString())).thenThrow(
                 NotFoundException.class);
         // ACT
         assertThrows(NotFoundException.class, () -> {
@@ -297,7 +304,7 @@ public class EmployeesServicesTest {
 
         // ASSERTS
         verify(employeeRepository, times(1)).findById(anyString());
-        verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(anyString());
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById(anyString());
         verify(employeeRepository, times(0)).save(employee);
 
     }
@@ -324,8 +331,30 @@ public class EmployeesServicesTest {
                 () -> assertEquals(date, capturedEmployee.getUser().getDesactivatedAt()));
     }
 
+    /**
+     * dado: que el empleado ya está desactivado en el sistema.
+     * cuando: se intenta desactivar nuevamente.
+     * entonces: se lanza una excepción IllegalStateException y no se realizan
+     * cambios.
+     */
     @Test
-    public void shouldNotDesactivateEmployeeWithInexistantEmployee() throws NotFoundException {
+    public void desactivateEmployeeShouldThrowIllegalStateExceptionWhenEmployeeIsAlreadyDeactivated()
+            throws NotFoundException {
+        // ARRANGE
+        employee.setUser(user); // aseguramos que el empleado tenga un usuario
+        // hacemos que el usuario ya este desactivado
+        employee.setDesactivatedAt(LocalDate.now());
+        when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
+
+        // ACT y ASSERT
+        assertThrows(IllegalStateException.class,
+                () -> {
+                    employeeService.desactivateEmployee(EMPLOYEE_ID);
+                });
+    }
+
+    @Test
+    public void desactivateEmployeeShouldNotDesactivateEmployeeWithInexistantEmployee() throws NotFoundException {
         // ARRANGE
         // cuando se busque por id mandamos vacio para que se lance la excepcion
         when(employeeRepository.findById(anyString())).thenReturn(Optional.empty());
@@ -442,4 +471,192 @@ public class EmployeesServicesTest {
         verify(forEmployeeHistoryPort, times(1)).getMostRecentEmployeeSalary(employee);
         verify(employeeRepository, times(1)).save(employee);
     }
+    /**
+     * dado: que el empleado y el tipo de empleado existen en la base de datos.
+     * cuando: se reasigna el tipo de empleado a un nuevo tipo válido.
+     * entonces: el empleado debe tener actualizado el nuevo tipo de empleado.
+     */
+    @Test
+    public void reassignEmployeeTypeShouldReassignEmployeeTypeSuccessfully() throws NotFoundException {
+
+        // ARRANGE
+        // cuando se busque por el id entonoces devolver nuestro mock de empleado
+        when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
+        // cuando se buswque e tipo de empleado a asignar entonces devolver nuestro mock
+        when(forEmployeeTypePort.findEmployeeTypeById(anyString())).thenReturn(employeeType);
+
+        // ACT
+        Employee result = employeeService.reassignEmployeeType(EMPLOYEE_ID, EMPLOYEE_TYPE_ID);
+
+        // ASSERT
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(employeeType, result.getEmployeeType()));
+
+        verify(employeeRepository, times(1)).findById(EMPLOYEE_ID);
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById(EMPLOYEE_TYPE_ID);
+    }
+
+    /**
+     * dado: que el empleado no existe en la base de datos.
+     * cuando: se intenta reasignar su tipo de empleado.
+     * entonces: se lanza una excepción `NotFoundException` y no se realizan
+     * cambios.
+     *
+     * @throws NotFoundException
+     */
+    @Test
+    public void shouldThrowNotFoundExceptionWhenEmployeeDoesNotExist() throws NotFoundException {
+        // ARRANGE
+        // al devolver el empty en el findBi entonces el metodo debe lanzar un not found
+        when(employeeRepository.findById(anyString())).thenReturn(Optional.empty());
+
+        // ACT &y ASSERT
+        assertThrows(NotFoundException.class,
+                () -> employeeService.reassignEmployeeType(EMPLOYEE_ID, EMPLOYEE_TYPE_ID));
+
+        verify(employeeRepository, times(1)).findById(EMPLOYEE_ID);
+        verify(forEmployeeTypePort, never()).findEmployeeTypeById(anyString());
+    }
+
+    /**
+     * dado: que el tipo de empleado no existe en la base de datos.
+     * cuando: se intenta reasignar el empleado a ese tipo de empleado inexistente.
+     * entonces: se lanza una excepción `NotFoundException` y no se realizan
+     * cambios.
+     *
+     * @throws NotFoundException
+     */
+    @Test
+    public void shouldThrowNotFoundExceptionWhenEmployeeTypeDoesNotExist() throws NotFoundException {
+        // ARRANGE
+        // si deolvemos el optional lleno
+        when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
+        // cuando mandemos a busqcar el tpio de empleado a asignar simulamos que este no
+        // se encontro
+        when(forEmployeeTypePort.findEmployeeTypeById(anyString()))
+                .thenThrow(new NotFoundException(anyString()));
+
+        // ACT y ASSERT
+        assertThrows(NotFoundException.class,
+                () -> employeeService.reassignEmployeeType(EMPLOYEE_ID, EMPLOYEE_TYPE_ID));
+
+        verify(employeeRepository, times(1)).findById(EMPLOYEE_ID);
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById(EMPLOYEE_TYPE_ID);
+
+    }
+
+    private static final String EMPLOYEE_ID_1 = "sdaf-asdf-sad";
+    private static final String EMPLOYEE_ID_2 = "";
+
+    Employee employeeToReasignEmployeeType1;
+    Employee employeeToReasignEmployeeType2;
+
+    /**
+     * dado: que una lista de empleados y un tipo de empleado existen en la base de
+     * datos.
+     * cuando: se reasignan todos los empleados a un nuevo tipo de empleado válido.
+     * entonces: todos los empleados deben tener actualizado el nuevo tipo de
+     * empleado.
+     */
+    @Test
+    public void shouldReassignEmployeeTypeForMultipleEmployeesSuccessfully() throws NotFoundException {
+        // ARRANGE
+        List<Employee> employees = List.of(employeeToReasignEmployeeType1, employeeToReasignEmployeeType2);
+
+        when(employeeRepository.findById(EMPLOYEE_ID_1)).thenReturn(Optional.of(employeeToReasignEmployeeType1));
+        when(employeeRepository.findById(EMPLOYEE_ID_2)).thenReturn(Optional.of(employeeToReasignEmployeeType2));
+        when(forEmployeeTypePort.findEmployeeTypeById(EMPLOYEE_TYPE_ID)).thenReturn(employeeType);
+
+        // ACT
+        List<Employee> result = employeeService.reassignEmployeeType(employees, EMPLOYEE_TYPE_ID);
+
+        // ASSERT
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(2, result.size()),
+                () -> assertEquals(employeeType, result.get(0).getEmployeeType()),
+                () -> assertEquals(employeeType, result.get(1).getEmployeeType()));
+
+        verify(employeeRepository, times(2)).findById(anyString());
+        verify(forEmployeeTypePort, times(2)).findEmployeeTypeById(EMPLOYEE_TYPE_ID);
+    }
+
+    /**
+     * dado: que al menos un empleado de la lista no existe en la base de datos.
+     * cuando: se intenta reasignar su tipo de empleado.
+     * entonces: se lanza una excepción `NotFoundException` y no se realizan cambios
+     * en ningún empleado.
+     *
+     * @throws NotFoundException
+     */
+    @Test
+    public void shouldThrowNotFoundExceptionWhenAnyEmployeeDoesNotExist() throws NotFoundException {
+        // ARRANGE
+        List<Employee> employees = List.of(employeeToReasignEmployeeType1, employeeToReasignEmployeeType2);
+
+        when(employeeRepository.findById(EMPLOYEE_ID_1)).thenReturn(Optional.of(employeeToReasignEmployeeType1));
+        // cuando busquemos el segundo id entonces devolvemos un Optional vacio para
+        // forzar el NotFound
+        when(employeeRepository.findById(EMPLOYEE_ID_2)).thenReturn(Optional.empty());
+
+        // ACT yASSERT
+        assertThrows(NotFoundException.class, () -> employeeService.reassignEmployeeType(employees, EMPLOYEE_TYPE_ID));
+
+        verify(employeeRepository, times(2)).findById(anyString());
+        // solo se debra hacer realizado una busqueda del tipo de empledo porque a la
+        // segunda vez ya habra fallado antes de llegar alli
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById(anyString());
+    }
+
+    /**
+     * dado: que el tipo de empleado no existe en la base de datos.
+     * cuando: se intenta reasignar una lista de empleados a ese tipo de empleado
+     * inexistente.
+     * entonces: se lanza una excepción `NotFoundException` y no se realizan cambios
+     * en ningún empleado.
+     *
+     * @throws NotFoundException
+     */
+    @Test
+    public void shouldThrowNotFoundExceptionWhenEmployeeTypeDoesNotExistForMultipleEmployees()
+            throws NotFoundException {
+        // ARRANGE
+        List<Employee> employees = List.of(employeeToReasignEmployeeType1, employeeToReasignEmployeeType2);
+
+        when(employeeRepository.findById(EMPLOYEE_ID_1)).thenReturn(Optional.of(employeeToReasignEmployeeType1));
+        when(employeeRepository.findById(EMPLOYEE_ID_2)).thenReturn(Optional.of(employeeToReasignEmployeeType2));
+
+        when(forEmployeeTypePort.findEmployeeTypeById(EMPLOYEE_TYPE_ID)).thenThrow(new NotFoundException(anyString()));
+
+        // ACT y ASSERT
+        assertThrows(NotFoundException.class, () -> employeeService.reassignEmployeeType(employees, EMPLOYEE_TYPE_ID));
+
+        // solo se debera realzar una vez porque fallara el buscar el tipo de empleado
+        verify(employeeRepository, times(1)).findById(anyString());
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById(EMPLOYEE_TYPE_ID);
+    }
+
+    /**
+     * dado: que existen empleados en la base de datos.
+     * cuando: se consulta la lista de empleados.
+     * entonces: el método devuelve una lista con los empleados existentes.
+     */
+    @Test
+    public void shouldReturnListOfEmployeesWhenEmployeesExist() {
+        // ARRANGE
+        List<Employee> employees = List.of(employee, updatedEmployee);
+        when(employeeRepository.findAll()).thenReturn(employees);
+
+        // ACT
+        List<Employee> result = employeeService.findEmployees();
+
+        // ASSERT
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(2, result.size()));
+
+        verify(employeeRepository, times(1)).findAll();
+    }
+
 }

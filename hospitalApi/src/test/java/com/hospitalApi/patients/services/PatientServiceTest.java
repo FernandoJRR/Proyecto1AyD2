@@ -169,7 +169,7 @@ public class PatientServiceTest {
     public void shouldUpdatePatientSuccessfully() throws DuplicatedEntryException, NotFoundException {
         // ARRANGE
         when(patientRespository.findById(PATIENT_ID)).thenReturn(Optional.of(patient));
-        when(patientRespository.existsByDpi(UPDATED_DPI)).thenReturn(false);
+        when(patientRespository.existsByDpiAndIdNot(UPDATED_DPI,PATIENT_ID)).thenReturn(false);
         when(patientRespository.save(any(Patient.class))).thenReturn(patient);
 
         // ACT
@@ -183,7 +183,7 @@ public class PatientServiceTest {
                 () -> assertEquals(UPDATED_DPI, updated.getDpi()));
 
         verify(patientRespository, times(1)).findById(PATIENT_ID);
-        verify(patientRespository, times(1)).existsByDpi(UPDATED_DPI);
+        verify(patientRespository, times(1)).existsByDpiAndIdNot(UPDATED_DPI,PATIENT_ID);
         verify(patientRespository, times(1)).save(any(Patient.class));
     }
 
@@ -206,7 +206,7 @@ public class PatientServiceTest {
         // ARRANGE
         // El paciente actual tiene un DPI diferente al nuevo DPI del DTO
         when(patientRespository.findById(PATIENT_ID)).thenReturn(Optional.of(patient));
-        when(patientRespository.existsByDpi(UPDATED_DPI)).thenReturn(true);
+        when(patientRespository.existsByDpiAndIdNot(UPDATED_DPI,PATIENT_ID)).thenReturn(true);
 
         // ACT & ASSERT
         assertThrows(DuplicatedEntryException.class, () -> {
@@ -214,7 +214,7 @@ public class PatientServiceTest {
         });
 
         verify(patientRespository, times(1)).findById(PATIENT_ID);
-        verify(patientRespository, times(1)).existsByDpi(UPDATED_DPI);
+        verify(patientRespository, times(1)).existsByDpiAndIdNot(UPDATED_DPI,PATIENT_ID);
         verify(patientRespository, times(0)).save(any(Patient.class));
     }
 
@@ -224,13 +224,15 @@ public class PatientServiceTest {
 
         when(patientRespository.findAllByOrderByCreatedAtDesc()).thenReturn(patients);
 
-        List<Patient> result = patientService.getPatients();
+        List<Patient> result = patientService.getPatients(null);
 
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(PATIENT_ID, result.get(0).getId());
 
         verify(patientRespository, times(1)).findAllByOrderByCreatedAtDesc();
+        verify(patientRespository, times(0))
+                .findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(null, null);
     }
 
     @Test
@@ -242,7 +244,7 @@ public class PatientServiceTest {
         when(patientRespository.findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(query, query))
                 .thenReturn(searchResults);
 
-        List<Patient> result = patientService.searchPatients(query);
+        List<Patient> result = patientService.getPatients(query);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -259,7 +261,7 @@ public class PatientServiceTest {
         when(patientRespository.findByFirstnamesContainingIgnoreCaseOrLastnamesContainingIgnoreCase(query, query))
                 .thenReturn(List.of());
 
-        List<Patient> result = patientService.searchPatients(query);
+        List<Patient> result = patientService.getPatients(query);
 
         assertNotNull(result);
         assertTrue(result.isEmpty());

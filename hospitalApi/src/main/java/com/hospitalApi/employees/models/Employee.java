@@ -9,16 +9,20 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.List;
 
 import org.hibernate.annotations.DynamicUpdate;
 
+import com.hospitalApi.consults.models.EmployeeConsult;
 import com.hospitalApi.shared.models.Auditor;
+import com.hospitalApi.surgery.models.SurgeryEmployee;
 import com.hospitalApi.users.models.User;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.Min;
@@ -31,7 +35,7 @@ import lombok.NoArgsConstructor;
  *
  * @author Luis Monterroso
  */
-@Entity(name = "employee")
+@Entity
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
@@ -61,6 +65,12 @@ public class Employee extends Auditor {
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
     private List<EmployeeHistory> employeeHistories;
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SurgeryEmployee> surgeryEmployees;
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EmployeeConsult> employeeConsults;
 
     /**
      * Para la creacion de nuevos empleados
@@ -94,6 +104,10 @@ public class Employee extends Auditor {
         //this.resignDate = resignDate;
         this.employeeType = employeeType;
         this.user = user;
+    }
+
+    public Employee(String id) {
+        super(id);
     }
 
 }

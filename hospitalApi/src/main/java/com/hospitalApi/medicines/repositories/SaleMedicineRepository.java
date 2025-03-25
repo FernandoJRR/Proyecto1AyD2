@@ -11,19 +11,25 @@ import com.hospitalApi.medicines.models.SaleMedicine;
 
 public interface SaleMedicineRepository extends JpaRepository<SaleMedicine, String> {
 
-    // public List<SaleMedicine> findByConsultId(String consultId);
+    public List<SaleMedicine> findByConsultId(String consultId);
+
     public List<SaleMedicine> findByMedicineId(String medicineId);
 
-    // public Double totalSalesMedicinesByConsult(String consultId);
+    @Query("""
+                SELECT SUM(sm.price * sm.quantity)
+                FROM  SaleMedicine sm
+                WHERE sm.consult.id = :consultId
+            """)
+    Double totalSalesMedicinesByConsult(@Param("consultId") String consultId);
 
     public List<SaleMedicine> findAll();
 
-    @Query("SELECT SUM(sm.price * sm.quantity) FROM sale_medicine sm WHERE sm.medicine.id = :medicineId")
+    @Query("SELECT SUM(sm.price * sm.quantity) FROM SaleMedicine sm WHERE sm.medicine.id = :medicineId")
     Double totalSalesMedicinesByMedicine(@Param("medicineId") String medicineId);
 
     @Query("""
                 SELECT SUM(sm.price * sm.quantity)
-                FROM sale_medicine sm
+                FROM SaleMedicine sm
                 WHERE sm.medicine.id = :medicineId
                 AND sm.createdAt BETWEEN :startDate AND :endDate
             """)
@@ -36,7 +42,7 @@ public interface SaleMedicineRepository extends JpaRepository<SaleMedicine, Stri
 
     @Query("""
                 SELECT SUM(sm.price * sm.quantity)
-                FROM sale_medicine sm
+                FROM SaleMedicine sm
                 WHERE sm.createdAt BETWEEN :startDate AND :endDate
             """)
     Double totalSalesMedicinesBetweenDates(

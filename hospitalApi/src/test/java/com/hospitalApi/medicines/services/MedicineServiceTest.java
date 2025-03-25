@@ -194,20 +194,49 @@ public class MedicineServiceTest {
     }
 
     @Test
-    public void shouldReturnAllMedicines() {
+    public void shouldReturnAllMedicinesWhenQueryIsNull() {
         // ARRANGE
         List<Medicine> medicines = new ArrayList<>();
         medicines.add(medicine);
+
         when(medicineRepository.findAll()).thenReturn(medicines);
 
         // ACT
-        List<Medicine> result = medicineService.getAllMedicines();
+        List<Medicine> result = medicineService.getAllMedicines(null);
 
         // ASSERT
+        assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(MEDICINE_NAME, result.get(0).getName());
 
+        // VERIFY
         verify(medicineRepository, times(1)).findAll();
+        verify(medicineRepository, times(0)).findByNameContainingIgnoreCase(any());
+    }
+
+    @Test
+    public void shouldReturnFilteredMedicinesWhenQueryIsProvided() {
+        // ARRANGE
+        String query = "Paraceta";
+        List<Medicine> filteredMedicines = new ArrayList<>();
+        filteredMedicines.add(medicine);
+
+        when(medicineRepository.findByNameContainingIgnoreCase(query)).thenReturn(filteredMedicines);
+
+        // ACT
+        List<Medicine> result = medicineService.getAllMedicines(query);
+
+        // ASSERT
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(MEDICINE_NAME, result.get(0).getName());
+
+        // VERIFY with ArgumentCaptor
+        ArgumentCaptor<String> queryCaptor = ArgumentCaptor.forClass(String.class);
+        verify(medicineRepository, times(1)).findByNameContainingIgnoreCase(queryCaptor.capture());
+        assertEquals(query, queryCaptor.getValue());
+
+        verify(medicineRepository, times(0)).findAll();
     }
 
     @Test
