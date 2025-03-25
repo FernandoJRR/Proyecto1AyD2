@@ -9,10 +9,13 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @Getter
-public class CreateEmployeeRequestDTO extends EmployeeRequestDTO { 
+public class CreateEmployeeRequestDTO extends EmployeeRequestDTO {
 
     @Valid
     @NotNull(message = "El createUserRequestDTO no puede ser nulo")
     private CreateUserRequestDTO createUserRequestDTO;
 
+    @Valid
+    @NotNull(message = "El employeeHistoryDateRequestDTO no puede ser nulo")
+    private EmployeeHistoryDateRequestDTO employeeHistoryDateRequestDTO;
 }

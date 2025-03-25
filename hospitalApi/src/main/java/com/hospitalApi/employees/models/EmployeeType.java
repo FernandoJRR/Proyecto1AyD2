@@ -15,7 +15,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-@Entity
+@Entity(name = "employeeType")
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor

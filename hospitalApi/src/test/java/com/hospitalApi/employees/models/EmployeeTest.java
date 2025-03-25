@@ -45,7 +45,7 @@ class EmployeeTest {
     @Test
     public void shouldCreateEmployeeWithMainConstructorWithoutId() {
         // arrange y act
-        Employee employee = new Employee(FIRST_NAME, LAST_NAME, SALARY, IGSS, IRTRA, RESIGN_DATE);
+        Employee employee = new Employee(FIRST_NAME, LAST_NAME, SALARY, IGSS, IRTRA);
         // assert
         assertAll(
                 () -> assertEquals(FIRST_NAME, employee.getFirstName()),
@@ -53,7 +53,6 @@ class EmployeeTest {
                 () -> assertEquals(SALARY, employee.getSalary()),
                 () -> assertEquals(IGSS, employee.getIgssPercentage()),
                 () -> assertEquals(IRTRA, employee.getIrtraPercentage()),
-                () -> assertEquals(RESIGN_DATE, employee.getResignDate()),
                 () -> assertNull(employee.getEmployeeType()),
                 () -> assertNull(employee.getUser()),
                 () -> assertNull(employee.getId()));
@@ -76,7 +75,6 @@ class EmployeeTest {
                 () -> assertEquals(SALARY, employee.getSalary()),
                 () -> assertEquals(IGSS, employee.getIgssPercentage()),
                 () -> assertEquals(IRTRA, employee.getIrtraPercentage()),
-                () -> assertEquals(RESIGN_DATE, employee.getResignDate()),
                 () -> assertEquals(employeeType, employee.getEmployeeType()),
                 () -> assertEquals(user, employee.getUser()),
                 () -> assertNull(employee.getId()));
@@ -101,7 +99,6 @@ class EmployeeTest {
                 () -> assertNull(employee.getSalary()),
                 () -> assertNull(employee.getIgssPercentage()),
                 () -> assertNull(employee.getIrtraPercentage()),
-                () -> assertNull(employee.getResignDate()),
                 () -> assertNull(employee.getDesactivatedAt()),
                 () -> assertNull(employee.getEmployeeType()),
                 () -> assertNull(employee.getUser()));

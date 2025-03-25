@@ -1,4 +1,3 @@
-package com.hospitalApi.auth.login.services;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,6 +12,8 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -30,8 +31,11 @@ import com.hospitalApi.auth.jwt.ports.ForJwtGenerator;
 import com.hospitalApi.auth.login.dtos.LoginResponseDTO;
 import com.hospitalApi.auth.login.ports.ForUserLoader;
 import com.hospitalApi.auth.login.service.LoginService;
+import com.hospitalApi.employees.dtos.EmployeeHistoriesResponseDTO;
+import com.hospitalApi.employees.dtos.EmployeeHistoryResponseDTO;
 import com.hospitalApi.employees.dtos.EmployeeResponseDTO;
 import com.hospitalApi.employees.dtos.EmployeeTypeResponseDTO;
+import com.hospitalApi.employees.dtos.HistoryTypeResponseDTO;
 import com.hospitalApi.employees.mappers.EmployeeMapper;
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.models.EmployeeType;
@@ -74,6 +78,9 @@ public class LoginServiceTest {
     private static final BigDecimal SALARY = new BigDecimal("5000.00");
     private static final BigDecimal IGSS_PERCENTAGE = new BigDecimal("4.83");
     private static final BigDecimal IRTRA_PERCENTAGE = new BigDecimal("1.00");
+    private static final String EMPLOYEE_TYPE = "FARMACIA";
+    private static final String EMPLOYEE_HISTORY_COMMENTARY = "Comentario";
+    private static final LocalDate EMPLOYEE_HISTORY_DATE = LocalDate.of(2022, 11, 22);
     private static final LocalDateTime RESIGN_DATE = null;
 
     // objetos a devolver en las pruebas
@@ -90,13 +97,21 @@ public class LoginServiceTest {
         permissions = Set.of();
         employee = new Employee();
         employeeType = new EmployeeType();
+        List<EmployeeHistoryResponseDTO> employeeHistoryResponseDTOs = Arrays.asList(
+                    new EmployeeHistoryResponseDTO(
+                        new HistoryTypeResponseDTO(EMPLOYEE_TYPE),
+                        EMPLOYEE_HISTORY_COMMENTARY,
+                        EMPLOYEE_HISTORY_DATE
+                    )
+        );
         employeeResponseDTO = new EmployeeResponseDTO(ID,
                 FIRST_NAME,
                 LAST_NAME,
                 SALARY,
                 IGSS_PERCENTAGE,
                 IRTRA_PERCENTAGE,
-                RESIGN_DATE, new EmployeeTypeResponseDTO(ID, "FARMACIA", List.of()));
+                new EmployeeTypeResponseDTO(ID, EMPLOYEE_TYPE, List.of())
+                );
 
         user.setDesactivatedAt(null); // el usuairo siempre estara activo en las pruebas CAMBIARLO MANUAL
         user.setEmployee(employee);

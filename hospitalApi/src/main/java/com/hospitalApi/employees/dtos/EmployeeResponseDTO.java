@@ -2,6 +2,7 @@ package com.hospitalApi.employees.dtos;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.Value;
 
@@ -20,7 +21,7 @@ public class EmployeeResponseDTO {
 
     BigDecimal irtraPercentage;
 
-    LocalDateTime resignDate;
+    //LocalDateTime resignDate;
 
     EmployeeTypeResponseDTO employeeType;
 
