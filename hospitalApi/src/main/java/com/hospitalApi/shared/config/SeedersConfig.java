@@ -22,7 +22,7 @@ import com.hospitalApi.users.models.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
-@Profile("dev || prod") // Solo se ejecutará si el perfil es "dev"
+@Profile("dev || prod || local")
 @RequiredArgsConstructor
 @Component
 public class SeedersConfig implements CommandLineRunner {
