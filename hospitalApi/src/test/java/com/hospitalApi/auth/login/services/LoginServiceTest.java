@@ -1,3 +1,4 @@
+package com.hospitalApi.auth.login.services;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
