@@ -12,6 +12,5 @@ import org.springframework.context.annotation.Configuration;
 @ConfigurationProperties(prefix = "app")
 public class AppProperties {
 
-    public String frontendLocal;
-    public String frontendDev;
+    private String frontURL;
 }
