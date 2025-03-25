@@ -54,7 +54,6 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "404", description = "No encontrado - Tipo de empleado no existe", content = @Content(mediaType = "application/json")),
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
-        @PreAuthorize("hasAuthority('CREAR_EMPLEADOS')")//el usuario necesita este permiso para entrar al endpoint
         @PostMapping
         public ResponseEntity<EmployeeResponseDTO> createEmployee(
                         @RequestBody @Valid CreateEmployeeRequestDTO request)

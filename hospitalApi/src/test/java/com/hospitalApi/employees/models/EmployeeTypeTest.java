@@ -21,7 +21,7 @@ class EmployeeTypeTest {
      * permanecen nulos.
      */
     @Test
-    void shouldCreateEmployeeTypeWithIdAndName() {
+    public void shouldCreateEmployeeTypeWithIdAndName() {
         // arrange y act
         EmployeeType employeeType = new EmployeeType(ID, NAME);
 
@@ -40,7 +40,7 @@ class EmployeeTypeTest {
      * campos permanecen nulos.
      */
     @Test
-    void shouldCreateEmployeeTypeWithNameAndPermissions() {
+    public void shouldCreateEmployeeTypeWithNameAndPermissions() {
         // arrange y act
         EmployeeType employeeType = new EmployeeType(NAME, PERMISSIONS);
 
@@ -59,7 +59,7 @@ class EmployeeTypeTest {
      * nulos.
      */
     @Test
-    void shouldCreateEmployeeTypeWithNameOnly() {
+    public void shouldCreateEmployeeTypeWithNameOnly() {
         // arrange y act
         EmployeeType employeeType = new EmployeeType(NAME);
 
