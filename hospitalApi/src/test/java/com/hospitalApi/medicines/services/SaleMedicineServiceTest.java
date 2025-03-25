@@ -391,4 +391,82 @@ public class SaleMedicineServiceTest {
         verify(forConsultPort).findById(CONSULT_ID);
         verify(saleMedicineRepository, never()).totalSalesMedicinesByConsult(anyString());
     }
+
+    @Test
+    public void shouldCreateMultipleSaleMedicinesForFarmaciaSuccessfully() throws NotFoundException {
+        // Arrange
+        List<CreateSaleMedicineFarmaciaRequestDTO> requestDTOs = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            CreateSaleMedicineFarmaciaRequestDTO dto = new CreateSaleMedicineFarmaciaRequestDTO(
+                    MEDICINE_ID,
+                    SALE_QUANTITY);
+            requestDTOs.add(dto);
+        }
+
+        when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(medicine);
+        when(forMedicinePort.subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY)).thenReturn(medicine);
+        when(saleMedicineRepository.save(any(SaleMedicine.class))).thenReturn(saleMedicine);
+
+        // Act
+        List<SaleMedicine> result = saleMedicineService.createSaleMedicines(requestDTOs);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        verify(forMedicinePort, times(3)).getMedicine(MEDICINE_ID);
+        verify(forMedicinePort, times(3)).subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY);
+        verify(saleMedicineRepository, times(3)).save(any(SaleMedicine.class));
+    }
+
+    @Test
+    public void shouldThrowNotFoundExceptionWhenOneMedicineIsInvalidInFarmaciaBatch() throws NotFoundException {
+        // Arrange
+        CreateSaleMedicineFarmaciaRequestDTO valid = new CreateSaleMedicineFarmaciaRequestDTO(MEDICINE_ID,
+                SALE_QUANTITY);
+        CreateSaleMedicineFarmaciaRequestDTO invalid = new CreateSaleMedicineFarmaciaRequestDTO("INVALID_ID",
+                SALE_QUANTITY);
+        List<CreateSaleMedicineFarmaciaRequestDTO> requestDTOs = List.of(valid, invalid);
+
+        when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(medicine);
+        when(forMedicinePort.getMedicine("INVALID_ID")).thenReturn(null);
+        when(forMedicinePort.subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY)).thenReturn(medicine);
+        when(saleMedicineRepository.save(any(SaleMedicine.class))).thenReturn(saleMedicine);
+
+        // Act & Assert
+        NotFoundException ex = assertThrows(NotFoundException.class, () -> {
+            saleMedicineService.createSaleMedicines(requestDTOs);
+        });
+
+        verify(saleMedicineRepository, times(1)).save(any()); // se llamó solo con el válido
+    }
+
+    @Test
+    public void shouldCreateMultipleSaleMedicinesForConsultSuccessfully() throws NotFoundException {
+        // Arrange
+        List<CreateSaleMedicineConsultRequestDTO> requestDTOs = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            CreateSaleMedicineConsultRequestDTO dto = new CreateSaleMedicineConsultRequestDTO(
+                    MEDICINE_ID,
+                    CONSULT_ID,
+                    SALE_QUANTITY);
+            requestDTOs.add(dto);
+        }
+
+        when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
+        when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(medicine);
+        when(forMedicinePort.subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY)).thenReturn(medicine);
+        when(saleMedicineRepository.save(any(SaleMedicine.class))).thenReturn(saleMedicine);
+
+        // Act
+        List<SaleMedicine> result = saleMedicineService.createSaleMedicinesForConsult(requestDTOs);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(3, result.size());
+        verify(forConsultPort, times(3)).findById(CONSULT_ID);
+        verify(forMedicinePort, times(3)).getMedicine(MEDICINE_ID);
+        verify(forMedicinePort, times(3)).subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY);
+        verify(saleMedicineRepository, times(3)).save(any(SaleMedicine.class));
+    }
+
 }

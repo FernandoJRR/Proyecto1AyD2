@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hospitalApi.consults.dtos.ConsultResponseDTO;
 import com.hospitalApi.consults.dtos.CreateConsultRequestDTO;
+import com.hospitalApi.consults.dtos.TotalConsultResponseDTO;
 import com.hospitalApi.consults.dtos.UpdateConsultRequestDTO;
 import com.hospitalApi.consults.mappers.ConsultMapper;
 import com.hospitalApi.consults.models.Consult;
@@ -119,11 +120,11 @@ public class ConsultController {
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @GetMapping("/total/{id}")
-    public ResponseEntity<Double> getTotalConsult(
+    public ResponseEntity<TotalConsultResponseDTO> getTotalConsult(
             @PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id)
             throws NotFoundException {
         Double total = consultPort.obtenerTotalConsulta(id);
-        return ResponseEntity.ok().body(total);
+        return ResponseEntity.ok().body(new TotalConsultResponseDTO(id, total));
     }
 
 }

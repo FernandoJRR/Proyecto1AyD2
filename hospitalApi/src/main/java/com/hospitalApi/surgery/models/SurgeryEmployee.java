@@ -11,26 +11,26 @@ import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "empleado_cirugia")
+@Entity
 public class SurgeryEmployee extends Auditor {
     @ManyToOne
-    @JoinColumn(name = "surgery_id", nullable = false)
+    @JoinColumn(nullable = false)
     private Surgery surgery;
 
     @ManyToOne
-    @JoinColumn(name = "employee_id", nullable = true)
+    @JoinColumn(nullable = true)
     private Employee employee;
 
     @ManyToOne
-    @JoinColumn(name = "specialist_employee_id", nullable = true)
+    @JoinColumn(nullable = true)
     private SpecialistEmployee specialistEmployee;
 
     @NotBlank(message = "El pago al especialista es requerido")

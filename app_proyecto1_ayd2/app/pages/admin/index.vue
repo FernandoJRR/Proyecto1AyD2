@@ -15,6 +15,11 @@ const menus = [
     route: '/admin/personal',
   },
   {
+    title: 'Medicos Especialistas',
+    description: 'Administracion de Medicos Especialistas',
+    route: '/admin/medicos-especialistas',
+  },
+  {
     title: 'Roles',
     description: 'Administracion de roles y permisos',
     route: '/admin/tipos-de-empleado',

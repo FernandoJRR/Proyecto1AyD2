@@ -43,7 +43,7 @@ public class JwtGeneratorUtilTest {
      *
      */
     @Test
-    void shouldGenerateValidJwtToken() {
+    public void shouldGenerateValidJwtToken() {
         // ACT
         String token = jwtGeneratorUtil.generateToken(user, permissions);
         // ASSERT

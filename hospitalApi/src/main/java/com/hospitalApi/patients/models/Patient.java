@@ -5,6 +5,7 @@ import java.util.List;
 import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.patients.dtos.CreatePatientRequestDTO;
 import com.hospitalApi.patients.dtos.UpdatePatientRequestDTO;
+import com.hospitalApi.rooms.models.RoomHistory;
 import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.CascadeType;
@@ -15,15 +16,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "paciente")
+@Entity
 public class Patient extends Auditor {
 
     @NotBlank(message = "El nombre del paciente es requerido")
@@ -43,6 +44,9 @@ public class Patient extends Auditor {
 
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Consult> consultas;
+
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RoomHistory> roomHistories;
 
     /**
      * Contructor de un paciente en base a su id, nombres, apellidos y dpi

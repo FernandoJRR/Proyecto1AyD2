@@ -20,6 +20,11 @@ const menus = [
     route: '/admin',
   },
   {
+    title: 'Pacientes',
+    description: 'Administracion de Pacientes',
+    route: '/pacientes',
+  },
+  {
     title: 'Farmacia',
     description: 'Administracion de Farmacia',
     route: '/farmacia',

@@ -3,25 +3,26 @@ package com.hospitalApi.consults.models;
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.shared.models.Auditor;
 
-import jakarta.persistence.*;
-
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "empleado_consulta")
+@Entity
 public class EmployeeConsult extends Auditor {
 
     @ManyToOne
-    @JoinColumn(name = "consult_id", nullable = false)
+    @JoinColumn(nullable = false)
     private Consult consult;
 
     @ManyToOne
-    @JoinColumn(name = "employee_id", nullable = false)
+    @JoinColumn( nullable = false)
     private Employee employee;
 }
