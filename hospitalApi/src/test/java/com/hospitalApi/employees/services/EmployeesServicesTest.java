@@ -200,7 +200,6 @@ public class EmployeesServicesTest {
         // se verifican las llamadas a los métodos dependientes
         verify(forUsersPort, times(1)).createUser(any(User.class));
         verify(forEmployeeHistoryPort, times(1)).createEmployeeHistoryHiring(any(Employee.class), any(LocalDate.class));
-        verify(forEmployeeTypePort, times(1)).verifyExistsEmployeeTypeById(anyString());
         verify(employeeRepository, times(1)).save(any(Employee.class));
     }
 

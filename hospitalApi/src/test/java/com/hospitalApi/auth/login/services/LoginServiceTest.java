@@ -110,9 +110,8 @@ public class LoginServiceTest {
                 SALARY,
                 IGSS_PERCENTAGE,
                 IRTRA_PERCENTAGE,
-                new EmployeeTypeResponseDTO(ID, EMPLOYEE_TYPE)
+                new EmployeeTypeResponseDTO(ID, EMPLOYEE_TYPE, List.of())
                 );
-                RESIGN_DATE, new EmployeeTypeResponseDTO(ID, "FARMACIA", List.of()));
 
         user.setDesactivatedAt(null); // el usuairo siempre estara activo en las pruebas CAMBIARLO MANUAL
         user.setEmployee(employee);
