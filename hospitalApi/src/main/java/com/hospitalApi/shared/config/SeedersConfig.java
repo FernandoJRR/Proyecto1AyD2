@@ -44,11 +44,12 @@ public class SeedersConfig implements CommandLineRunner {
         employeeTypeRepository.save(newEmployeeType);
 
         // se crean los tipos de historial
-        HistoryType historyTypeContratacion = new HistoryType(HistoryTypeEnum.CONTRATACION.name());
-        HistoryType historyTypeDespido = new HistoryType(HistoryTypeEnum.DESPIDO.name());
-        HistoryType historyTypeRecontratacion = new HistoryType(HistoryTypeEnum.RECONTRATACION.name());
-        HistoryType historyTypeAumentoSalarial = new HistoryType(HistoryTypeEnum.AUMENTO_SALARIAL.name());
-        HistoryType historyTypeDisminucionSalarial = new HistoryType(HistoryTypeEnum.DISMINUCION_SALARIAL.name());
+        HistoryType historyTypeContratacion = new HistoryType(HistoryTypeEnum.CONTRATACION.getType());
+        HistoryType historyTypeDespido = new HistoryType(HistoryTypeEnum.DESPIDO.getType());
+        HistoryType historyTypeRenuncia = new HistoryType(HistoryTypeEnum.RENUNCIA.getType());
+        HistoryType historyTypeRecontratacion = new HistoryType(HistoryTypeEnum.RECONTRATACION.getType());
+        HistoryType historyTypeAumentoSalarial = new HistoryType(HistoryTypeEnum.AUMENTO_SALARIAL.getType());
+        HistoryType historyTypeDisminucionSalarial = new HistoryType(HistoryTypeEnum.DISMINUCION_SALARIAL.getType());
 
         // creamos el usuario admin
         User newUser = new User("admin", passwordEncoderUtil.encode("admin"));
@@ -65,6 +66,7 @@ public class SeedersConfig implements CommandLineRunner {
 
         historyTypeRepository.save(historyTypeContratacion);
         historyTypeRepository.save(historyTypeDespido);
+        historyTypeRepository.save(historyTypeRenuncia);
         historyTypeRepository.save(historyTypeRecontratacion);
         historyTypeRepository.save(historyTypeAumentoSalarial);
         historyTypeRepository.save(historyTypeDisminucionSalarial);

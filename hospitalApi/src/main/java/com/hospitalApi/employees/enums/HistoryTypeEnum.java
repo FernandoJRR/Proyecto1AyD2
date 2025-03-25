@@ -8,6 +8,7 @@ import lombok.Getter;
 public enum HistoryTypeEnum {
     CONTRATACION ("Contratacion"),
     DESPIDO ("Despido"),
+    RENUNCIA ("Renuncia"),
     RECONTRATACION ("Recontratacion"),
     AUMENTO_SALARIAL ("Aumento Salarial"),
     DISMINUCION_SALARIAL ("Disminucion Salarial");

@@ -34,7 +34,7 @@
         </div>
         <h1 class="text-2xl font-semibold mt-2">Datos de Planilla</h1>
         <div class="flex flex-row gap-x-8 mt-2 gap-2 justify-center">
-          <Form v-slot="$salaryForm" :initialValues :resolver @submit="onFormSubmit" class="mt-8 flex justify-center">
+          <Form v-slot="$salaryForm" :initialValues :salaryResolver @submit="onSalaryFormSubmit" class="mt-8 flex justify-center">
             <div class="flex flex-col gap-2">
               <FloatLabel>
                 <label>Salario</label>
@@ -43,7 +43,10 @@
               </FloatLabel>
               <Message v-if="$salaryForm.salary?.invalid" severity="error" size="small" variant="simple">{{
                 $salaryForm.salary.error?.message }}</Message>
-              <Button class="w-full" type="submit" severity="secondary" label="Actualizar Salario" />
+              <InputGroup>
+                <DatePicker name="salaryDate" :maxDate="new Date()"/>
+                <Button class="w-full" type="submit" severity="secondary" label="Actualizar Salario" />
+              </InputGroup>
             </div>
           </Form>
           <Form v-slot="$benefitsForm" :initialValues :resolver @submit="onFormSubmit" class="mt-8 flex justify-center">
@@ -138,10 +141,10 @@
 </template>
 <script setup lang="ts">
 import { zodResolver } from '@primevue/forms/resolvers/zod';
-import { DatePicker, FloatLabel, InputNumber, Password, ToggleSwitch } from 'primevue';
+import { DatePicker, FloatLabel, InputGroup, InputNumber, Password, ToggleSwitch } from 'primevue';
 import { toast } from 'vue-sonner';
 import { z } from 'zod';
-import { createEmployee, getEmployeeById, type EmployeePayload } from '~/lib/api/admin/employee';
+import { createEmployee, getEmployeeById, updateEmployeeSalary, type EmployeePayload, type EmployeeSalaryUpdatePayload } from '~/lib/api/admin/employee';
 import { getAllEmployeeTypes } from '~/lib/api/admin/employee-type';
 
 const { state: foundUser } = useQuery({
@@ -153,6 +156,7 @@ const initialValues = reactive({
   firstName: foundUser.value.data?.firstName ?? '',
   lastName: foundUser.value.data?.lastName ?? '',
   salary: foundUser.value.data?.salary ?? 0,
+  salaryDate: new Date(),
 
   has_porcentaje_iggs: foundUser.value.data?.iggsPercentage != null,
   iggsPercentage: foundUser.value.data?.iggsPercentage ?? 0,
@@ -220,6 +224,13 @@ const resolver = ref(zodResolver(
   })
 ))
 
+const salaryResolver = ref(zodResolver(
+  z.object({
+    salary: z.number({ message: "El salario es obligatorio." }).min(1, 'El salario debe ser un numero positivo.'),
+    salaryDate: z.date().max(new Date())
+  })
+))
+
 const onFormSubmit = (e: any) => {
   if (e.valid) {
     console.log(e.values)
@@ -239,9 +250,35 @@ const onFormSubmit = (e: any) => {
   }
 };
 
+const onSalaryFormSubmit = (e: any) => {
+  if (e.valid) {
+    console.log(e.values)
+
+    updateSalary(e.values)
+  }
+};
+
 const { state: userTypes } = useQuery({
   key: ['optionsTypes'],
   query: () => getAllEmployeeTypes()
+})
+
+const { mutate: updateSalary } = useMutation({
+  mutation: (updateData: EmployeeSalaryUpdatePayload) => updateEmployeeSalary(updateData, useRoute().params.id as string),
+  onError(error) {
+    console.log(error)
+    console.log(error.message)
+    toast.error('Ocurrió un error al actualizar el salario.', {
+      description: `
+      Parece que los datos no son válidos:
+      ${(error)}
+      `
+    })
+  },
+  onSuccess() {
+    toast.success('Empleado creado correctamente')
+    navigateTo('/admin/personal')
+  }
 })
 
 const { mutate, asyncStatus } = useMutation({

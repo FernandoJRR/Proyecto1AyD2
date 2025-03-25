@@ -20,12 +20,12 @@ export interface Employee extends Entity {
   iggsPercentage: number
   irtraPercentage: number
   employeeType: EmployeeType
-  employeeHistories: Array<EmployeeHistory>
 }
 
 export interface EmployeeResponse {
   employeeResponseDTO: Employee,
-  username: string
+  username: string,
+  employeeHistories: Array<EmployeeHistory>
 }
 
 export interface UserPayload {
@@ -48,6 +48,11 @@ export interface EmployeePayload {
   employeeHistoryDateRequestDTO: EmployeeHistoryDatePayload
 }
 
+export interface EmployeeSalaryUpdatePayload {
+  salary: number
+  salaryDate: Date
+}
+
 export async function getAllEmployees(params?: {}) {
   return await $api<Employee[]>(`${CURRENT_EMPLOYEE_URI}/`, {
     params
@@ -61,6 +66,14 @@ export async function getEmployeeById(employee_id: string) {
 export const createEmployee = async (data: EmployeePayload) => {
   const response = await $api<Employee>(`${CURRENT_EMPLOYEE_URI}`, {
     method: 'POST',
+    body: data
+  })
+  return response
+}
+
+export const updateEmployeeSalary = async (data: EmployeeSalaryUpdatePayload, employeeId: string) => {
+  const response = await $api<Employee>(`${CURRENT_EMPLOYEE_URI}/${employeeId}/salary`, {
+    method: 'PATCH',
     body: data
   })
   return response

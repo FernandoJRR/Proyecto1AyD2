@@ -25,5 +25,4 @@ public class EmployeeResponseDTO {
 
     EmployeeTypeResponseDTO employeeType;
 
-    List<EmployeeHistoryResponseDTO> employeeHistories;
 }

@@ -1,16 +1,23 @@
 package com.hospitalApi.employees.services;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.hospitalApi.employees.enums.HistoryTypeEnum;
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.models.EmployeeHistory;
+import com.hospitalApi.employees.models.EmployeePeriod;
 import com.hospitalApi.employees.models.HistoryType;
 import com.hospitalApi.employees.ports.ForEmployeeHistoryPort;
 import com.hospitalApi.employees.ports.ForHistoryTypePort;
 import com.hospitalApi.employees.repositories.EmployeeHistoryRepository;
+import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -24,9 +31,10 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
 
     public EmployeeHistory createEmployeeHistoryHiring(Employee employee, LocalDate hiringDate)
             throws NotFoundException {
-        HistoryType historyTypeContratacion = forHistoryTypePort.findHistoryTypeByName(HistoryTypeEnum.CONTRATACION.name());
+        HistoryType historyTypeContratacion = forHistoryTypePort
+                .findHistoryTypeByName(HistoryTypeEnum.CONTRATACION.getType());
 
-        EmployeeHistory employeeHistory = new EmployeeHistory("Se realizo la contratacion");
+        EmployeeHistory employeeHistory = new EmployeeHistory("Se realizo la contratacion con un salario de Q."+employee.getSalary());
 
         employeeHistory.setHistoryType(historyTypeContratacion);
         employeeHistory.setEmployee(employee);
@@ -35,4 +43,131 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
         return employeeHistoryRepository.save(employeeHistory);
     }
 
+    public EmployeeHistory createEmployeeHistorySalaryIncrease(Employee employee, BigDecimal newSalary,
+            LocalDate increaseDate)
+            throws NotFoundException, InvalidPeriodException {
+
+        if (!isValidEmployeePeriod(employee, increaseDate)) {
+            throw new InvalidPeriodException("El incremento se realiza en un periodo invalido");
+        }
+
+        HistoryType historyTypeContratacion = forHistoryTypePort
+                .findHistoryTypeByName(HistoryTypeEnum.AUMENTO_SALARIAL.getType());
+
+        EmployeeHistory employeeHistory = new EmployeeHistory(newSalary.toString());
+
+        employeeHistory.setHistoryType(historyTypeContratacion);
+        employeeHistory.setEmployee(employee);
+        employeeHistory.setHistoryDate(increaseDate);
+
+        return employeeHistoryRepository.save(employeeHistory);
+    }
+
+    public EmployeeHistory createEmployeeHistorySalaryDecrease(Employee employee, BigDecimal newSalary,
+            LocalDate decreaseDate)
+            throws NotFoundException, InvalidPeriodException {
+
+        if (!isValidEmployeePeriod(employee, decreaseDate)) {
+            throw new InvalidPeriodException("El decremento se realiza en un periodo invalido");
+        }
+
+        HistoryType historyTypeContratacion = forHistoryTypePort
+                .findHistoryTypeByName(HistoryTypeEnum.DISMINUCION_SALARIAL.getType());
+
+        EmployeeHistory employeeHistory = new EmployeeHistory(newSalary.toString());
+
+        employeeHistory.setHistoryType(historyTypeContratacion);
+        employeeHistory.setEmployee(employee);
+        employeeHistory.setHistoryDate(decreaseDate);
+
+        return employeeHistoryRepository.save(employeeHistory);
+    }
+
+    public List<EmployeeHistory> getEmployeeHistory(Employee employee) throws NotFoundException {
+        return employeeHistoryRepository.findAllByEmployee_IdOrderByHistoryDateAsc(employee.getId());
+    }
+
+    public Optional<EmployeeHistory> getLastEmployeeSalaryUntilDate(Employee employee, LocalDate date)
+            throws NotFoundException {
+        HistoryType aumentoHistoryType = this.forHistoryTypePort
+                .findHistoryTypeByName(HistoryTypeEnum.AUMENTO_SALARIAL.getType());
+        HistoryType disminucionHistoryType = this.forHistoryTypePort
+                .findHistoryTypeByName(HistoryTypeEnum.DISMINUCION_SALARIAL.getType());
+        List<String> salaryHistoryTypes = Arrays.asList(aumentoHistoryType.getId(), disminucionHistoryType.getId());
+        return employeeHistoryRepository
+                .findFirstByEmployee_IdAndHistoryType_IdInAndHistoryDateLessThanEqualOrderByHistoryDateDesc(
+                        employee.getId(), salaryHistoryTypes, date);
+    }
+
+    public Optional<EmployeeHistory> getMostRecentEmployeeSalary(Employee employee) throws NotFoundException {
+        HistoryType aumentoHistoryType = this.forHistoryTypePort
+                .findHistoryTypeByName(HistoryTypeEnum.AUMENTO_SALARIAL.getType());
+        HistoryType disminucionHistoryType = this.forHistoryTypePort
+                .findHistoryTypeByName(HistoryTypeEnum.DISMINUCION_SALARIAL.getType());
+        List<String> salaryHistoryTypes = Arrays.asList(aumentoHistoryType.getId(), disminucionHistoryType.getId());
+        return employeeHistoryRepository
+                .findFirstByEmployee_IdAndHistoryType_IdInOrderByHistoryDateDesc(employee.getId(), salaryHistoryTypes);
+    }
+
+    public Optional<EmployeeHistory> getEmployeeHiringDate(Employee employee) throws NotFoundException {
+        return employeeHistoryRepository.findFirstByEmployee_IdOrderByHistoryDateAsc(employee.getId());
+    }
+
+    public boolean isValidEmployeePeriod(Employee employee, LocalDate date) {
+        List<String> startTypes = Arrays.asList(HistoryTypeEnum.CONTRATACION.getType(),
+                HistoryTypeEnum.RECONTRATACION.getType());
+        List<String> endTypes = Arrays.asList(HistoryTypeEnum.DESPIDO.getType(),
+                HistoryTypeEnum.RECONTRATACION.getType());
+
+        List<String> validTypes = new ArrayList<>();
+        validTypes.addAll(startTypes);
+        validTypes.addAll(endTypes);
+
+        // se obtienen los registros del empleado en orden
+        List<EmployeeHistory> registers = employeeHistoryRepository
+                .findByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateAsc(employee.getId(), validTypes);
+
+        // se crea una lista con todos los periodos en los que el empleado trabajo en el
+        // hospital
+        List<EmployeePeriod> periods = new ArrayList<>();
+        EmployeePeriod currentPeriod = null;
+        for (EmployeeHistory register : registers) {
+            String type = register.getHistoryType().getType();
+            LocalDate eventDate = register.getHistoryDate();
+
+            if (startTypes.contains(type)) {
+                // un periodo empieza con una contratacion o recontratacion
+                currentPeriod = new EmployeePeriod(eventDate);
+                periods.add(currentPeriod);
+            } else if (endTypes.contains(type)) {
+                // un periodo termina con una renuncia o despido
+                if (currentPeriod != null && currentPeriod.getEnd() == null) {
+                    currentPeriod.setEnd(eventDate);
+
+                    currentPeriod = null;
+                }
+            }
+        }
+
+        for (EmployeeHistory history : registers) {
+            System.out.println(history.getHistoryDate());
+            System.out.println(history.getHistoryType());
+        }
+
+        // se itera sobre todos los periodos para ver si la fecha entra en alguno
+        for (EmployeePeriod period : periods) {
+            // si no tiene fecha de fin el periodo es el actual
+            if (period.getEnd() == null) {
+                if (!date.isBefore(period.getStart())) {
+                    // si la fecha es mayor al periodo actual es valida
+                    return true;
+                }
+            } else if (!date.isBefore(period.getStart()) && !date.isAfter(period.getEnd())) {
+                // si la fecha entra en un periodo pasado es valida
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
