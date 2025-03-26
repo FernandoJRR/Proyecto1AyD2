@@ -30,6 +30,9 @@
             <RouterLink :to="`/admin/personal/${slotProps.data.id}`">
               <Button label="Ver" severity="info" rounded text/>
             </RouterLink>
+            <RouterLink :to="`/admin/personal/editar-${slotProps.data.id}`">
+              <Button label="Editar" severity="warn" rounded text/>
+            </RouterLink>
           <Button v-if="slotProps.data.firstName !== null" label="Deshabilitar" severity="danger" rounded text />
         </template>
       </Column>

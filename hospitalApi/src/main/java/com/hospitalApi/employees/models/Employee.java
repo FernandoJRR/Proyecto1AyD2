@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.List;
 
 import org.hibernate.annotations.DynamicUpdate;
 
@@ -22,7 +23,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -48,9 +52,9 @@ public class Employee extends Auditor {
     private BigDecimal igssPercentage;
     @Column(precision = 5, scale = 2, nullable = true)
     private BigDecimal irtraPercentage;
+    //@Column(nullable = true)
+    //private LocalDateTime resignDate;
     @Column(nullable = true)
-    private LocalDateTime resignDate;
-
     private LocalDate desactivatedAt;
 
     @ManyToOne
@@ -58,6 +62,9 @@ public class Employee extends Auditor {
 
     @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
     private User user;
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+    private List<EmployeeHistory> employeeHistories;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SurgeryEmployee> surgeryEmployees;
@@ -67,7 +74,7 @@ public class Employee extends Auditor {
 
     /**
      * Para la creacion de nuevos empleados
-     * 
+     *
      * @param firstName
      * @param lastName
      * @param salary
@@ -75,14 +82,16 @@ public class Employee extends Auditor {
      * @param irtraPercentage
      */
     public Employee(String firstName, String lastName, BigDecimal salary, BigDecimal igssPercentage,
-            BigDecimal irtraPercentage, LocalDateTime resignDate) {
+            BigDecimal irtraPercentage
+            //LocalDateTime resignDate
+            ) {
         super();
         this.firstName = firstName;
         this.lastName = lastName;
         this.salary = salary;
         this.igssPercentage = igssPercentage;
         this.irtraPercentage = irtraPercentage;
-        this.resignDate = resignDate;
+        //this.resignDate = resignDate;
     }
 
     public Employee(String firstName, String lastName, BigDecimal salary, BigDecimal igssPercentage,
@@ -92,7 +101,7 @@ public class Employee extends Auditor {
         this.salary = salary;
         this.igssPercentage = igssPercentage;
         this.irtraPercentage = irtraPercentage;
-        this.resignDate = resignDate;
+        //this.resignDate = resignDate;
         this.employeeType = employeeType;
         this.user = user;
     }

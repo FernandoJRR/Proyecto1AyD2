@@ -1,5 +1,6 @@
 package com.hospitalApi.employees.controllers;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -13,15 +14,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hospitalApi.employees.dtos.CompoundEmployeeResponseDTO;
 import com.hospitalApi.employees.dtos.CreateEmployeeRequestDTO;
+import com.hospitalApi.employees.dtos.EmployeeHistoryResponseDTO;
 import com.hospitalApi.employees.dtos.EmployeeRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeResponseDTO;
+import com.hospitalApi.employees.dtos.EmployeeSalaryRequestDTO;
+import com.hospitalApi.employees.mappers.EmployeeHistoryMapper;
 import com.hospitalApi.employees.mappers.EmployeeMapper;
 import com.hospitalApi.employees.mappers.EmployeeTypeMapper;
 import com.hospitalApi.employees.models.Employee;
+import com.hospitalApi.employees.models.EmployeeHistory;
 import com.hospitalApi.employees.models.EmployeeType;
+import com.hospitalApi.employees.ports.ForEmployeeHistoryPort;
 import com.hospitalApi.employees.ports.ForEmployeesPort;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
+import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.mappers.UserMapper;
 import com.hospitalApi.users.models.User;
@@ -32,6 +40,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -40,11 +49,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EmployeesController {
 
-        private final ForEmployeesPort employeesPort;
+    private final ForEmployeesPort employeesPort;
+    private final ForEmployeeHistoryPort employeeHistoryPort;
 
-        private final EmployeeTypeMapper employeeTypeMapper;
-        private final EmployeeMapper employeeMapper;
-        private final UserMapper userMapper;
+    private final EmployeeTypeMapper employeeTypeMapper;
+    private final EmployeeMapper employeeMapper;
+    private final UserMapper userMapper;
+    private final EmployeeHistoryMapper employeeHistoryMapper;
 
         @Operation(summary = "Crear un nuevo empleado", description = "Este endpoint permite la creación de un nuevo empleado en el sistema.")
         @ApiResponses(value = {
@@ -63,9 +74,11 @@ public class EmployeesController {
                 EmployeeType employeeType = employeeTypeMapper
                                 .fromIdRequestDtoToEmployeeType(request.getEmployeeTypeId());
                 User newUser = userMapper.fromCreateUserRequestDtoToUser(request.getCreateUserRequestDTO());
+        EmployeeHistory employeeHistoryDate = employeeHistoryMapper
+            .fromEmployeeHistoryDateRequestDtoToEmployeeHistory(request.getEmployeeHistoryDateRequestDTO());
 
-                // mandar a crear el employee al port
-                Employee result = employeesPort.createEmployee(newEmployee, employeeType, newUser);
+        // mandar a crear el employee al port
+        Employee result = employeesPort.createEmployee(newEmployee, employeeType, newUser, employeeHistoryDate);
 
                 // convertir el Employee al dto
                 EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
@@ -99,8 +112,30 @@ public class EmployeesController {
                 // convertir el Employee al dto
                 EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
 
-                return ResponseEntity.status(HttpStatus.OK).body(response);
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @Operation(summary = "Edita el salario de un empleado", description = "Este endpoint permite la edición del salario de un empleado en el sistema.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Empleado editado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "Recursos no econtrados, el usuario a editar no existe o el tipo de empleado no existe.", content = @Content(mediaType = "application/json")),
+
+    })
+    @PatchMapping("/{employeeId}/salary")
+    public ResponseEntity<EmployeeResponseDTO> updateEmployeeSalary(
+            @RequestBody @Valid EmployeeSalaryRequestDTO request,
+            @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
+            throws NotFoundException, InvalidPeriodException {
+
+        // mandar a editar el employee al port
+        Employee result = employeesPort.updateEmployeeSalary(employeeId, request.getSalary(), request.getSalaryDate());
+
+        // convertir el Employee al dto
+        EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
 
         @Operation(summary = "Edita un empleado", description = "Este endpoint permite la cambiar el estado de desactivatedAt de un empleado en el sistema segun su id.")
         @ApiResponses(value = {
@@ -130,18 +165,23 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
         @GetMapping("/{employeeId}")
-        public ResponseEntity<EmployeeResponseDTO> findEmployeeById(
+        public ResponseEntity<CompoundEmployeeResponseDTO> findEmployeeById(
                         @PathVariable("employeeId") String employeeId)
                         throws NotFoundException {
 
-                // mandar a crear el employee al port
-                Employee result = employeesPort.findEmployeeById(employeeId);
+        // mandar a crear el employee al port
+        Employee result = employeesPort.findEmployeeById(employeeId);
 
-                // convertir el Employee al dto
-                EmployeeResponseDTO response = employeeMapper.fromEmployeeToResponse(result);
+        List<EmployeeHistory> historyEmployee = employeeHistoryPort.getEmployeeHistory(result);
+        List<EmployeeHistoryResponseDTO> employeeHistories = employeeHistoryMapper.fromEmployeeHistoriesToEmployeeHistoryDtoList(historyEmployee);
 
-                return ResponseEntity.status(HttpStatus.OK).body(response);
-        }
+        // convertir el Employee al dto
+        EmployeeResponseDTO employeeResponseDTO = employeeMapper.fromEmployeeToResponse(result);
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+            new CompoundEmployeeResponseDTO(employeeResponseDTO, result.getUser().getUsername(), employeeHistories)
+        );
+    }
 
         @Operation(summary = "Obtener todos los empleados", description = "Este endpoint permite la busqueda de todos los empleados.")
         @ApiResponses(value = {
