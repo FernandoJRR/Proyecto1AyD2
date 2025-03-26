@@ -14,9 +14,10 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
@@ -24,6 +25,7 @@ import com.hospitalApi.shared.utils.PasswordEncoderUtil;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.repositories.UserRepository;
 
+@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
     @Mock
@@ -41,13 +43,8 @@ public class UserServiceTest {
 
     private final String USER_ID = "123";
 
-    /**
-     * este metodo se ejecuta antes de cualquier prueba individual, se hace para
-     * inicializar los moks
-     */
     @BeforeEach
     private void setUp() {
-        MockitoAnnotations.openMocks(this);
         user = new User(USER_USERNAME, USER_PASSWORD);
         user.setId(USER_ID);
     }

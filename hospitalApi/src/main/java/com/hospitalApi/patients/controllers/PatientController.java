@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,12 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hospitalApi.medicines.dtos.CreateMedicineRequestDTO;
-import com.hospitalApi.medicines.dtos.MedicineResponseDTO;
-import com.hospitalApi.medicines.dtos.UpdateMedicineRequestDTO;
-import com.hospitalApi.medicines.mappers.MedicineMapper;
-import com.hospitalApi.medicines.models.Medicine;
-import com.hospitalApi.medicines.ports.ForMedicinePort;
 import com.hospitalApi.patients.dtos.CreatePatientRequestDTO;
 import com.hospitalApi.patients.dtos.PatientResponseDTO;
 import com.hospitalApi.patients.dtos.UpdatePatientRequestDTO;

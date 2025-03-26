@@ -48,6 +48,20 @@ public class RoomService implements ForRoomPort {
         return roomRepository.save(existingRoom);
     }
 
+    public Room toggleRoomAvailability(String roomId) throws NotFoundException {
+        // mandamos atraer por su id
+        Room existingRoom = findRoomById(roomId);
+        // mandamos a hacer el toggle de la availability
+        existingRoom.toggleAvailability();
+        return roomRepository.save(existingRoom);
+    }
+
+    public Room findRoomByNumber(String number) throws NotFoundException {
+        String errorMessage = String.format("No se encontró una habitación con el número %s", number);
+        return roomRepository.findByNumber(number)
+                .orElseThrow(() -> new NotFoundException(errorMessage));
+    }
+
     public Room findRoomById(String id) throws NotFoundException {
         String errorMessage = String.format("No se encontró una habitación con el ID %s", id);
         return roomRepository.findById(id)

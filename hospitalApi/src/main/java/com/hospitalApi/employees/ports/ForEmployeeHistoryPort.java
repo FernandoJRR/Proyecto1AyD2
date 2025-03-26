@@ -7,7 +7,6 @@ import java.util.Optional;
 
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.models.EmployeeHistory;
-import com.hospitalApi.employees.models.HistoryType;
 import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 

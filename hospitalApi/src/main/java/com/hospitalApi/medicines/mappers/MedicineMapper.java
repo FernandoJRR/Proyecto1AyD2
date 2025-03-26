@@ -1,15 +1,14 @@
 package com.hospitalApi.medicines.mappers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.mapstruct.Mapper;
 
-import com.hospitalApi.medicines.dtos.CreateSaleMedicineFarmaciaRequestDTO;
 import com.hospitalApi.medicines.dtos.MedicineResponseDTO;
 import com.hospitalApi.medicines.dtos.SaleMedicineDTO;
 import com.hospitalApi.medicines.models.Medicine;
 import com.hospitalApi.medicines.models.SaleMedicine;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface MedicineMapper {

@@ -1,3 +1,4 @@
+package com.hospitalApi.auth.login.services;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -12,16 +13,16 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,7 +32,6 @@ import com.hospitalApi.auth.jwt.ports.ForJwtGenerator;
 import com.hospitalApi.auth.login.dtos.LoginResponseDTO;
 import com.hospitalApi.auth.login.ports.ForUserLoader;
 import com.hospitalApi.auth.login.service.LoginService;
-import com.hospitalApi.employees.dtos.EmployeeHistoriesResponseDTO;
 import com.hospitalApi.employees.dtos.EmployeeHistoryResponseDTO;
 import com.hospitalApi.employees.dtos.EmployeeResponseDTO;
 import com.hospitalApi.employees.dtos.EmployeeTypeResponseDTO;
@@ -44,6 +44,7 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
 
+@ExtendWith(MockitoExtension.class)
 public class LoginServiceTest {
 
     @Mock
@@ -92,26 +93,22 @@ public class LoginServiceTest {
 
     @BeforeEach
     private void setUp() {
-        MockitoAnnotations.openMocks(this);
         user = new User(USERNAME, PASSWORD);
         permissions = Set.of();
         employee = new Employee();
         employeeType = new EmployeeType();
         List<EmployeeHistoryResponseDTO> employeeHistoryResponseDTOs = Arrays.asList(
-                    new EmployeeHistoryResponseDTO(
+                new EmployeeHistoryResponseDTO(
                         new HistoryTypeResponseDTO(EMPLOYEE_TYPE),
                         EMPLOYEE_HISTORY_COMMENTARY,
-                        EMPLOYEE_HISTORY_DATE
-                    )
-        );
+                        EMPLOYEE_HISTORY_DATE));
         employeeResponseDTO = new EmployeeResponseDTO(ID,
                 FIRST_NAME,
                 LAST_NAME,
                 SALARY,
                 IGSS_PERCENTAGE,
                 IRTRA_PERCENTAGE,
-                new EmployeeTypeResponseDTO(ID, EMPLOYEE_TYPE, List.of())
-                );
+                new EmployeeTypeResponseDTO(ID, EMPLOYEE_TYPE, List.of()));
 
         user.setDesactivatedAt(null); // el usuairo siempre estara activo en las pruebas CAMBIARLO MANUAL
         user.setEmployee(employee);

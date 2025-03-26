@@ -9,12 +9,14 @@ import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.core.GrantedAuthority;
 
 import com.hospitalApi.users.models.User;
 
+@ExtendWith(MockitoExtension.class)
 public class JwtGeneratorUtilTest {
 
     @InjectMocks
@@ -29,7 +31,6 @@ public class JwtGeneratorUtilTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
         user = new User(USERNAME, PASSWORD);
         permissions = Set.of();
     }

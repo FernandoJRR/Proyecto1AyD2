@@ -13,7 +13,6 @@ import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.ports.ForEmployeesPort;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
-import jakarta.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 
 @Service

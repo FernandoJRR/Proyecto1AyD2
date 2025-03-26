@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
@@ -13,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +19,11 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.models.EmployeeHistory;
@@ -41,7 +40,8 @@ import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
 import com.hospitalApi.users.repositories.UserRepository;
 
-public class EmployeesServicesTest {
+@ExtendWith(MockitoExtension.class)
+public class EmployeesServiceTest {
     @Mock
     private EmployeeRepository employeeRepository;
     @Mock
@@ -111,25 +111,23 @@ public class EmployeesServicesTest {
     private static final String EMPLOYEE_NEW_SALARY_COMMENTARY = "1500";
     private static final String EMPLOYEE_HISTORY_INCREASE_COMMENTARY = "Se realizo la contratacion con un salario de Q.1200";
 
-
     private static final BigDecimal EMPLOYEE_STARTING_DECREASE_SALARY = new BigDecimal(1500);
     private static final BigDecimal EMPLOYEE_NEW_SALARY_DECREASE = new BigDecimal(1200);
     private static final String EMPLOYEE_NEW_SALARY_DECREASE_COMMENTARY = "1200";
     private static final String EMPLOYEE_HISTORY_DECREASE_COMMENTARY = "Se realizo la contratacion con un salario de Q.1500";
+
     /**
      * este metodo se ejecuta antes de cualquier prueba individual, se hace para
      * inicializar los moks ademas del driver
      */
     @BeforeEach
     private void setUp() {
-        MockitoAnnotations.openMocks(this);
         employee = new Employee(
                 EMPLOYEE_FIRST_NAME,
                 EMPLOYEE_LAST_NAME,
                 EMPLOYEE_SALARY,
                 EMPLOYEE_IGSS,
-                EMPLOYEE_IRTRA
-                );
+                EMPLOYEE_IRTRA);
         employee.setId(EMPLOYEE_ID);
 
         updatedEmployee = new Employee(
@@ -137,8 +135,7 @@ public class EmployeesServicesTest {
                 UPDATED_EMPLOYEE_LAST_NAME,
                 UPDATED_EMPLOYEE_SALARY,
                 UPDATED_EMPLOYEE_IGSS,
-                UPDATED_EMPLOYEE_IRTRA
-                );
+                UPDATED_EMPLOYEE_IRTRA);
 
         user = new User(USER_ID, USER_NAME, USER_PASSWORD);
 
@@ -170,10 +167,11 @@ public class EmployeesServicesTest {
         // ARRANGE
         // configuramos el mock para que lance el user cuando este sea creado
         when(forEmployeeTypePort.findEmployeeTypeById(anyString())).thenReturn(employeeType);
+        when(forUsersPort.createUser(any())).thenReturn(user);
+        when(employeeRepository.save(any())).thenReturn(employee);
         when(forUsersPort.createUser(any(User.class))).thenReturn(user);
-        when(forHistoryTypePort.findHistoryTypeByName(anyString())).thenReturn(historyType);
         when(forEmployeeHistoryPort.createEmployeeHistoryHiring(any(Employee.class), any(LocalDate.class)))
-            .thenReturn(employeeHistory);
+                .thenReturn(employeeHistory);
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
         // ACT
         Employee result = employeeService.createEmployee(employee, employeeType, user, employeeHistory);
@@ -389,14 +387,14 @@ public class EmployeesServicesTest {
 
         // se hace que el ultimo salario del empleado este vacio
         when(forEmployeeHistoryPort.getLastEmployeeSalaryUntilDate(employee, salaryDate))
-            .thenReturn(Optional.empty());
+                .thenReturn(Optional.empty());
 
         when(forEmployeeHistoryPort.createEmployeeHistorySalaryIncrease(employee, newSalary, salaryDate))
-            .thenReturn(salaryIncreaseHistory);
+                .thenReturn(salaryIncreaseHistory);
 
         // se retorna el ultimo cambio de salario
         when(forEmployeeHistoryPort.getMostRecentEmployeeSalary(employee))
-            .thenReturn(Optional.of(salaryIncreaseHistory));
+                .thenReturn(Optional.of(salaryIncreaseHistory));
 
         when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
         when(employeeRepository.save(employee)).thenReturn(employee);
@@ -404,16 +402,14 @@ public class EmployeesServicesTest {
         // ACT
         Employee updatedEmployee = employeeService.updateEmployeeSalary(employee.getId(), newSalary, salaryDate);
 
-
         // ASSERT
         assertAll(
-            () -> assertEquals(newSalary, updatedEmployee.getSalary()),
-            () -> assertEquals(2, updatedEmployee.getEmployeeHistories().size()),
-            () -> assertEquals(salaryIncreaseHistory, updatedEmployee.getEmployeeHistories().get(1))
-        );
+                () -> assertEquals(newSalary, updatedEmployee.getSalary()),
+                () -> assertEquals(2, updatedEmployee.getEmployeeHistories().size()),
+                () -> assertEquals(salaryIncreaseHistory, updatedEmployee.getEmployeeHistories().get(1)));
 
         verify(forEmployeeHistoryPort, times(1))
-            .createEmployeeHistorySalaryIncrease(employee, newSalary, salaryDate);
+                .createEmployeeHistorySalaryIncrease(employee, newSalary, salaryDate);
         verify(forEmployeeHistoryPort, times(1)).getMostRecentEmployeeSalary(employee);
         verify(employeeRepository, times(1)).save(employee);
     }
@@ -442,14 +438,14 @@ public class EmployeesServicesTest {
 
         // se hace que el ultimo salario del empleado este vacio
         when(forEmployeeHistoryPort.getLastEmployeeSalaryUntilDate(employee, salaryDate))
-            .thenReturn(Optional.empty());
+                .thenReturn(Optional.empty());
 
         when(forEmployeeHistoryPort.createEmployeeHistorySalaryDecrease(employee, newSalary, salaryDate))
-            .thenReturn(salaryDecreaseHistory);
+                .thenReturn(salaryDecreaseHistory);
 
         // se retorna el ultimo cambio de salario
         when(forEmployeeHistoryPort.getMostRecentEmployeeSalary(employee))
-            .thenReturn(Optional.of(salaryDecreaseHistory));
+                .thenReturn(Optional.of(salaryDecreaseHistory));
 
         when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
         when(employeeRepository.save(employee)).thenReturn(employee);
@@ -457,19 +453,18 @@ public class EmployeesServicesTest {
         // ACT
         Employee updatedEmployee = employeeService.updateEmployeeSalary(employee.getId(), newSalary, salaryDate);
 
-
         // ASSERT
         assertAll(
-            () -> assertEquals(newSalary, updatedEmployee.getSalary()),
-            () -> assertEquals(2, updatedEmployee.getEmployeeHistories().size()),
-            () -> assertEquals(salaryDecreaseHistory, updatedEmployee.getEmployeeHistories().get(1))
-        );
+                () -> assertEquals(newSalary, updatedEmployee.getSalary()),
+                () -> assertEquals(2, updatedEmployee.getEmployeeHistories().size()),
+                () -> assertEquals(salaryDecreaseHistory, updatedEmployee.getEmployeeHistories().get(1)));
 
         verify(forEmployeeHistoryPort, times(1))
-            .createEmployeeHistorySalaryDecrease(employee, newSalary, salaryDate);
+                .createEmployeeHistorySalaryDecrease(employee, newSalary, salaryDate);
         verify(forEmployeeHistoryPort, times(1)).getMostRecentEmployeeSalary(employee);
         verify(employeeRepository, times(1)).save(employee);
     }
+
     /**
      * dado: que el empleado y el tipo de empleado existen en la base de datos.
      * cuando: se reasigna el tipo de empleado a un nuevo tipo válido.
@@ -624,7 +619,6 @@ public class EmployeesServicesTest {
         List<Employee> employees = List.of(employeeToReasignEmployeeType1, employeeToReasignEmployeeType2);
 
         when(employeeRepository.findById(EMPLOYEE_ID_1)).thenReturn(Optional.of(employeeToReasignEmployeeType1));
-        when(employeeRepository.findById(EMPLOYEE_ID_2)).thenReturn(Optional.of(employeeToReasignEmployeeType2));
 
         when(forEmployeeTypePort.findEmployeeTypeById(EMPLOYEE_TYPE_ID)).thenThrow(new NotFoundException(anyString()));
 
