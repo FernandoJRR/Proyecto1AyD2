@@ -27,13 +27,16 @@
       </Column>
       <Column header="Acciones">
         <template #body="slotProps">
+          <div v-if="slotProps.data.id !== employee?.id">
             <RouterLink :to="`/admin/personal/${slotProps.data.id}`">
-              <Button label="Ver" severity="info" rounded text/>
+              <Button label="Ver" severity="info" rounded text />
             </RouterLink>
             <RouterLink :to="`/admin/personal/editar-${slotProps.data.id}`">
-              <Button label="Editar" severity="warn" rounded text/>
+              <Button label="Editar" severity="warn" rounded text />
             </RouterLink>
-          <Button v-if="slotProps.data.firstName !== null" label="Deshabilitar" severity="danger" rounded text />
+            <Button v-if="slotProps.data.firstName !== null" label="Deshabilitar" severity="danger" rounded text />
+          </div>
+          <div v-else class="font-semibold">Eres este usuario</div>
         </template>
       </Column>
       <template #footer> Hay en total {{ state.data ? (state.data as any[]).length : 0 }} usuarios. </template>
@@ -44,6 +47,8 @@
 import { useQuery } from '@pinia/colada';
 import { RouterLink } from 'vue-router';
 import { getAllEmployees, type Employee } from '~/lib/api/admin/employee';
+
+const { employee } = storeToRefs(useAuthStore())
 
 const { state, asyncStatus } = useQuery({
   key: ['empleados'],
