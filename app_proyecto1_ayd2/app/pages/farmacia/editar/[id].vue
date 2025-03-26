@@ -164,7 +164,7 @@ import { toast } from 'vue-sonner';
 import { useQuery } from '@pinia/colada';
 import { getMedicine, updateMedicine, type MedicineUpdatePayload } from '~/lib/api/medicines/medicine';
 
-const { state: medicineState } = useQuery({
+const { state: medicineState } = useCustomQuery({
   key: ['medicine-edit',useRoute().params.id as string],
   query: () => getMedicine(useRoute().params.id as string),
 });
@@ -232,7 +232,7 @@ const { mutate, asyncStatus } = useMutation({
   onError(error) {
     console.error(error);
     toast.error('Ocurrió un error al actualizar el medicamento', {
-      description: `Parece que los datos no son válidos: ${error}`,
+      description: error,
     });
   },
   onSuccess() {

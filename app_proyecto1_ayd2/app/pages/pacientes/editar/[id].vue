@@ -118,7 +118,7 @@ import {
   type UpdatePatientRequestDTO
 } from '~/lib/api/patients/patients'
 
-const { state: patientState } = useQuery({
+const { state: patientState } = useCustomQuery({
   key: ['patient-edit', useRoute().params.id as string],
   query: () => getPatient(useRoute().params.id as string),
 })
@@ -168,7 +168,7 @@ const { mutate, asyncStatus } = useMutation({
   onError(error) {
     console.error(error)
     toast.error('Ocurrió un error al actualizar el paciente', {
-      description: `Parece que los datos no son válidos: ${error}`
+      description: error
     })
   },
   onSuccess() {

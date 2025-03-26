@@ -210,7 +210,7 @@ const onFormSubmit = (e: any) => {
   }
 };
 
-const { state: userTypes } = useQuery({
+const { state: userTypes } = useCustomQuery({
   key: ['optionsTypes'],
   query: () => getAllEmployeeTypes()
 })
@@ -221,10 +221,7 @@ const { mutate, asyncStatus } = useMutation({
     console.log(error)
     console.log(error.message)
     toast.error('Ocurrió un error al crear el empleado', {
-      description: `
-      Parece que los datos no son válidos:
-      ${(error)}
-      `
+      description: error.message
     })
   },
   onSuccess() {
