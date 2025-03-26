@@ -49,7 +49,7 @@ export const useAuthStore = defineStore('auth', {
         this.loading = false
         return { response, error: false }
       } catch (error: any) {
-        toast.error(error.response._data)
+        toast.error(error.message)
         this.loading = false
         return
       }

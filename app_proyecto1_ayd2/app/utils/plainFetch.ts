@@ -16,4 +16,14 @@ export const $api = $fetch.create({
     const userAuth = getCookie('proyecto1ayd2-user-token')
     options.headers.set('Authorization',userAuth ? `Bearer ${userAuth}` : '')
   },
+  async onResponseError({response}) {
+    const errorData = await response._data;
+    console.error(errorData)
+
+    if (errorData.message) {
+      throw new Error(errorData.message)
+    } else {
+      console.error('Ha ocurrido un error al hacer la peticion')
+    }
+  }
 })
