@@ -112,7 +112,7 @@ import { z } from 'zod';
 import { createEmployee, getEmployeeById, updateEmployee, updateEmployeeSalary, type EmployeePayload, type EmployeeSalaryUpdatePayload, type EmployeeUpdatePayload } from '~/lib/api/admin/employee';
 import { getAllEmployeeTypes } from '~/lib/api/admin/employee-type';
 
-const { state: foundUser } = useQuery({
+const { state: foundUser } = useCustomQuery({
   key: ['usuario-editar', useRoute().params.id as string],
   query: () => getEmployeeById(useRoute().params.id as string).then((res) => { return { ...res.employeeResponseDTO, username: res.username } })
 })
@@ -242,7 +242,7 @@ const onBenefitsFormSubmit = (e: any) => {
   }
 };
 
-const { state: userTypes } = useQuery({
+const { state: userTypes } = useCustomQuery({
   key: ['optionsTypes'],
   query: () => getAllEmployeeTypes()
 })
@@ -251,10 +251,7 @@ const { mutate: updateEmployeeMutation } = useMutation({
   mutation: (updateData: EmployeeUpdatePayload) => updateEmployee(updateData, useRoute().params.id as string),
   onError(error) {
     toast.error('Ocurrió un error al actualizar al empleado.', {
-      description: `
-      Parece que los datos no son válidos:
-      ${(error)}
-      `
+      description: error
     })
   },
   onSuccess() {
@@ -267,10 +264,7 @@ const { mutate: updateSalary } = useMutation({
   mutation: (updateData: EmployeeSalaryUpdatePayload) => updateEmployeeSalary(updateData, useRoute().params.id as string),
   onError(error) {
     toast.error('Ocurrió un error al actualizar el salario.', {
-      description: `
-      Parece que los datos no son válidos:
-      ${(error)}
-      `
+      description: error
     })
   },
   onSuccess() {
@@ -283,10 +277,7 @@ const { mutate } = useMutation({
   mutation: (employeeData: EmployeePayload) => createEmployee(employeeData),
   onError(error) {
     toast.error('Ocurrió un error al crear el empleado', {
-      description: `
-      Parece que los datos no son válidos:
-      ${(error)}
-      `
+      description: error
     })
   },
   onSuccess() {

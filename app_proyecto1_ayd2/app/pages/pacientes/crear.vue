@@ -130,7 +130,7 @@ const { mutate, asyncStatus } = useMutation({
   onError(error) {
     console.error(error)
     toast.error('Ocurrió un error al crear el paciente', {
-      description: `Parece que los datos no son válidos:\n${error}`
+      description: error
     })
   },
   onSuccess() {

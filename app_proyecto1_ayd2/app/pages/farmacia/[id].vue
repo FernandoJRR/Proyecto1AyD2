@@ -62,7 +62,7 @@
 import { useQuery } from "@pinia/colada";
 import { getMedicine, type Medicine } from "~/lib/api/medicines/medicine";
 
-const { state: medicineState } = useQuery({
+const { state: medicineState } = useCustomQuery({
   key: ["medicine", useRoute().params.id as string],
   query: () => getMedicine(useRoute().params.id as string),
 });

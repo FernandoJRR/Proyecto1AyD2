@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { toast } from 'vue-sonner';
 
-const {state, asyncStatus, status} = useQuery({
+const {state, asyncStatus, status} = useCustomQuery({
   key: ['test1'],
   query: () => $api('/names')
 })

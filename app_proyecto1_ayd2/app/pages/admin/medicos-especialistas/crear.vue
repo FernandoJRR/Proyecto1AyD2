@@ -130,7 +130,7 @@ const { mutate, asyncStatus } = useMutation({
   onError(error) {
     console.log(error);
     toast.error("Ocurrió un error al crear el médico especialista", {
-      description: `Parece que los datos no son válidos: ${error}`,
+      description: error,
     });
   },
   onSuccess() {

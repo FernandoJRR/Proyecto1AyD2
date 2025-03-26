@@ -39,7 +39,7 @@
 import { useQuery } from "@pinia/colada";
 import { getSpecialistEmployeeById } from "~/lib/api/admin/specialist-employee";
 
-const { state: specialistState } = useQuery({
+const { state: specialistState } = useCustomQuery({
   key: ["specialist", useRoute().params.id as string],
   query: () => getSpecialistEmployeeById(useRoute().params.id as string),
 });

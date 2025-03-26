@@ -12,18 +12,24 @@ function getCookie(name: string): string | null {
 
 export const $api = $fetch.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  onRequest({ request, options, error }) {
+  onRequest({ options }) {
     const userAuth = getCookie('proyecto1ayd2-user-token')
-    options.headers.set('Authorization',userAuth ? `Bearer ${userAuth}` : '')
+    options.headers.set('Authorization', userAuth ? `Bearer ${userAuth}` : '')
   },
-  async onResponseError({response}) {
-    const errorData = await response._data;
-    console.error(errorData)
+  async onResponseError({ response }) {
+    const errorData = await response._data
+    console.error('API Error:', response)
 
-    if (errorData.message) {
-      throw new Error(errorData.message)
-    } else {
-      console.error('Ha ocurrido un error al hacer la peticion')
-    }
+    throw createError({
+      statusCode: response.status,
+      message: errorData?.message || 'Ha ocurrido un error'
+    })
+  },
+  async onRequestError({ request }) {
+    console.error('API Error:', request)
+
+    throw createError({
+      message: 'Ha ocurrido un error'
+    })
   }
 })

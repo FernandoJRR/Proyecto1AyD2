@@ -44,14 +44,14 @@
   </div>
 </template>
 <script setup lang="ts">
-import { useQuery } from '@pinia/colada';
 import { RouterLink } from 'vue-router';
 import { getAllEmployees, type Employee } from '~/lib/api/admin/employee';
 
 const { employee } = storeToRefs(useAuthStore())
 
-const { state, asyncStatus } = useQuery({
+const { state, asyncStatus } = useCustomQuery({
   key: ['empleados'],
   query: () => getAllEmployees()
 })
+
 </script>
