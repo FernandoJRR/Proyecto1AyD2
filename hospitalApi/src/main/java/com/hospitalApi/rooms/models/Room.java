@@ -6,6 +6,7 @@ import java.util.List;
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.hospitalApi.rooms.enums.RoomStatus;
+import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.CascadeType;
@@ -58,6 +59,18 @@ public class Room extends Auditor {
         this.dailyPrice = dailyPrice;
         this.dailyMaintenanceCost = dailyMaintenanceCost;
         this.status = status;
+    }
+
+    public void toggleAvailability() throws IllegalStateException {
+        if (status == RoomStatus.OCCUPIED) {
+            throw new IllegalStateException(
+                    "La habitación " + number + " está ocupada. No se puede cambiar su estado mientras esté en uso.");
+        }
+        if (status == RoomStatus.AVAILABLE) {
+            status = RoomStatus.OUT_OF_SERVICE;
+            return;
+        }
+        status = RoomStatus.AVAILABLE;
     }
 
 }

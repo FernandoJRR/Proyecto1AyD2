@@ -45,4 +45,27 @@ public interface ForRoomPort {
      * @return una lista de habitaciones
      */
     List<Room> findAllRooms();
+
+    /**
+     * Cambia el estado de disponibilidad de una habitación entre AVAILABLE y
+     * OUT_OF_SERVICE.
+     * Si la habitación está ocupada, se lanza una excepción.
+     *
+     * @param roomId ID de la habitación a modificar.
+     * @return La habitación con el nuevo estado actualizado.
+     * @throws NotFoundException     si no se encuentra la habitación con el ID
+     *                               proporcionado.
+     * @throws IllegalStateException si la habitación está ocupada y no se puede
+     *                               cambiar su estado.
+     */
+    public Room toggleRoomAvailability(String roomId) throws NotFoundException;
+
+    /**
+     * Busca una habitación por su number.
+     *
+     * @param number el number de la habitación
+     * @return la habitación encontrada
+     * @throws NotFoundException si no se encuentra la habitación
+     */
+    public Room findRoomByNumber(String number) throws NotFoundException;
 }

@@ -2,6 +2,7 @@ package com.hospitalApi.rooms.services;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -256,6 +257,65 @@ public class RoomServiceTest {
                 () -> assertTrue(result.contains(room)),
                 () -> assertTrue(result.contains(updatedRoom)));
 
+    }
+
+    /**
+     * dado: que la habitación existe y su estado es AVAILABLE.
+     * cuando: se llama al método toggleRoomAvailability().
+     * entonces: el estado cambia a OUT_OF_SERVICE y se guarda la habitación
+     * actualizada.
+     */
+    @Test
+    public void shouldToggleRoomAvailabilityFromAvailableToOutOfService() throws NotFoundException {
+        // arrange
+        // le damos el estado available al room
+        room.setStatus(RoomStatus.AVAILABLE);
+
+        when(roomRepository.findById(anyString())).thenReturn(Optional.of(room));
+        when(roomRepository.save(any())).thenReturn(room);
+
+        // act
+        Room result = roomService.toggleRoomAvailability(ROOM_ID);
+
+        // assert ahora el estado ya n debe ser avilable
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertNotEquals(RoomStatus.AVAILABLE, result.getStatus()));
+
+        verify(roomRepository, times(1)).save(room);
+    }
+
+    /**
+     * dado: que existe una habitación con el número solicitado.
+     * cuando: se llama al método findRoomByNumber().
+     * entonces: se retorna la habitación encontrada.
+     */
+    @Test
+    public void shouldReturnRoomWhenNumberExists() throws NotFoundException {
+
+        when(roomRepository.findByNumber(anyString())).thenReturn(Optional.of(room));
+
+        Room result = roomService.findRoomByNumber(ROOM_NUMBER);
+
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(ROOM_NUMBER, result.getNumber()));
+
+        verify(roomRepository, times(1)).findByNumber(ROOM_NUMBER);
+    }
+
+    /**
+     * dado: que no existe una habitación con el número solicitado.
+     * cuando: se llama al método findRoomByNumber().
+     * entonces: se lanza una excepción NotFoundException con el mensaje esperado.
+     */
+    @Test
+    public void shouldThrowNotFoundExceptionWhenRoomNumberDoesNotExist() throws NotFoundException {
+        when(roomRepository.findByNumber(anyString())).thenReturn(Optional.empty());
+
+        assertThrows(
+                NotFoundException.class,
+                () -> roomService.findRoomByNumber(ROOM_NUMBER));
     }
 
 }
