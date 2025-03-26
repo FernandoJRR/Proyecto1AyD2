@@ -149,11 +149,6 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
             }
         }
 
-        for (EmployeeHistory history : registers) {
-            System.out.println(history.getHistoryDate());
-            System.out.println(history.getHistoryType());
-        }
-
         // se itera sobre todos los periodos para ver si la fecha entra en alguno
         for (EmployeePeriod period : periods) {
             // si no tiene fecha de fin el periodo es el actual
