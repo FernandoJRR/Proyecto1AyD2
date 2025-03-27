@@ -33,6 +33,7 @@ import com.hospitalApi.employees.ports.ForEmployeeHistoryPort;
 import com.hospitalApi.employees.ports.ForEmployeeTypePort;
 import com.hospitalApi.employees.ports.ForHistoryTypePort;
 import com.hospitalApi.employees.repositories.EmployeeRepository;
+import com.hospitalApi.shared.enums.EmployeeTypeEnum;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
@@ -70,6 +71,7 @@ public class EmployeesServiceTest {
     private Employee employee;
     private Employee updatedEmployee;
     private EmployeeType employeeType;
+    private EmployeeType employeeTypeFind;
 
     /** Para el nuevo empleado */
     private static final String EMPLOYEE_ID = "adsfgdh-arsgdfhg-adfgh";
@@ -86,6 +88,7 @@ public class EmployeesServiceTest {
 
     /** Para el objeto tipo de empleado */
     private static final String EMPLOYEE_TYPE_ID = "dasdd-asdasd-asdasd";
+    private static final String EMPLOYEE_TYPE_ID_2 = "sdfg-sdfg-sdfg";
 
     /** Para actualizaciones */
     private static final String UPDATED_EMPLOYEE_FIRST_NAME = "Carlos";
@@ -154,6 +157,10 @@ public class EmployeesServiceTest {
 
         employeeType = new EmployeeType();
         employeeType.setId(EMPLOYEE_TYPE_ID);
+
+        employeeTypeFind = new EmployeeType();
+        employeeTypeFind.setId(EMPLOYEE_TYPE_ID_2);
+        employeeTypeFind.setName(EmployeeTypeEnum.DOCTOR.name());
 
         // inicializamos los empleados que usaremos para la reasignacion del tipo de
         // empleado
@@ -650,6 +657,72 @@ public class EmployeesServiceTest {
                 () -> assertEquals(2, result.size()));
 
         verify(employeeRepository, times(1)).findAll();
+    }
+
+    @Test
+    public void shouldReturnEmployeesByTypeSuccessfully() throws NotFoundException {
+        // Arrange
+        List<Employee> expectedEmployees = List.of(employee, updatedEmployee);
+        when(forEmployeeTypePort.findEmployeeTypeById(EMPLOYEE_TYPE_ID)).thenReturn(employeeType);
+        when(employeeRepository.findByEmployeeTypeId(EMPLOYEE_TYPE_ID)).thenReturn(expectedEmployees);
+
+        // Act
+        List<Employee> result = employeeService.getEmployeesByType(EMPLOYEE_TYPE_ID);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(expectedEmployees.size(), result.size());
+        assertEquals(expectedEmployees, result);
+        verify(forEmployeeTypePort).findEmployeeTypeById(EMPLOYEE_TYPE_ID);
+        verify(employeeRepository).findByEmployeeTypeId(EMPLOYEE_TYPE_ID);
+    }
+
+    @Test
+    public void shouldThrowNotFoundExceptionWhenEmployeeTypeNotFoundInGetEmployeesByType() throws NotFoundException {
+        // Arrange
+        when(forEmployeeTypePort.findEmployeeTypeById(EMPLOYEE_TYPE_ID))
+                .thenThrow(new NotFoundException("Tipo no encontrado"));
+
+        // Act & Assert
+        assertThrows(NotFoundException.class, () -> {
+            employeeService.getEmployeesByType(EMPLOYEE_TYPE_ID);
+        });
+
+        verify(forEmployeeTypePort).findEmployeeTypeById(EMPLOYEE_TYPE_ID);
+        verify(employeeRepository, never()).findByEmployeeTypeId(any());
+    }
+
+    @Test
+    public void shouldReturnDoctorEmployeesSuccessfully() throws NotFoundException {
+        // Arrange
+        List<Employee> expectedDoctors = List.of(employee);
+        when(forEmployeeTypePort.findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name())).thenReturn(employeeTypeFind);
+        when(employeeRepository.findByEmployeeTypeId(EMPLOYEE_TYPE_ID_2)).thenReturn(expectedDoctors);
+
+        // Act
+        List<Employee> result = employeeService.getDoctors();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(expectedDoctors.size(), result.size());
+        assertEquals(expectedDoctors, result);
+        verify(forEmployeeTypePort).findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name());
+        verify(employeeRepository).findByEmployeeTypeId(EMPLOYEE_TYPE_ID_2);
+    }
+
+    @Test
+    public void shouldThrowNotFoundExceptionWhenDoctorTypeNotFound() throws NotFoundException {
+        // Arrange
+        when(forEmployeeTypePort.findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name()))
+                .thenThrow(new NotFoundException("Tipo no encontrado"));
+
+        // Act & Assert
+        assertThrows(NotFoundException.class, () -> {
+            employeeService.getDoctors();
+        });
+
+        verify(forEmployeeTypePort).findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name());
+        verify(employeeRepository, never()).findByEmployeeTypeId(any());
     }
 
 }
