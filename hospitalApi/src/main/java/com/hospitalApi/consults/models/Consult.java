@@ -30,7 +30,6 @@ import lombok.Setter;
 @Entity
 public class Consult extends Auditor {
 
-    @NotBlank(message = "El paciente es requerido")
     @ManyToOne
     @JoinColumn
     private Patient patient;
