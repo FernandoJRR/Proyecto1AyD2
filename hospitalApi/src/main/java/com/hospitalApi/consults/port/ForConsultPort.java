@@ -10,7 +10,7 @@ public interface ForConsultPort {
 
         public Consult findById(String id) throws NotFoundException;
 
-        public Consult createConsult(String patientId, Double costoConsulta)
+        public Consult createConsult(String patientId, String employeeId, Double costoConsulta)
                         throws NotFoundException;
 
         public Consult updateConsult(String id, UpdateConsultRequestDTO updateConsultRequestDTO)

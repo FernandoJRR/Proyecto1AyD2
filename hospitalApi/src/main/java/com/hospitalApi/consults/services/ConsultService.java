@@ -2,6 +2,7 @@ package com.hospitalApi.consults.services;
 
 import java.util.List;
 
+import com.hospitalApi.consults.port.ForEmployeeConsultPort;
 import org.springframework.stereotype.Service;
 
 import com.hospitalApi.consults.dtos.UpdateConsultRequestDTO;
@@ -23,6 +24,7 @@ public class ConsultService implements ForConsultPort {
     private final ConsultRepository consultRepository;
     private final ForPatientPort forPatientPort;
     private final ForSurgeryCalculationPort forSurgeryCalculationService;
+    private final ForEmployeeConsultPort forEmployeeConsultPort;
 
     @Override
     public Consult findById(String id) throws NotFoundException {
@@ -31,10 +33,15 @@ public class ConsultService implements ForConsultPort {
     }
 
     @Override
-    public Consult createConsult(String patientId, Double costoConsulta) throws NotFoundException {
+    @Transactional(rollbackOn = Exception.class)
+    public Consult createConsult(String patientId, String employeeId, Double costoConsulta) throws NotFoundException {
+        // Creamos la consulta con el paciente
         Patient patient = forPatientPort.getPatient(patientId);
         Consult consult = new Consult(patient, costoConsulta);
-        return consultRepository.save(consult);
+        Consult savedConsult = consultRepository.save(consult);
+        // Asociamos la consulta con el empleado
+        forEmployeeConsultPort.createEmployeeConsult(savedConsult, employeeId);
+        return savedConsult;
     }
 
     @Override

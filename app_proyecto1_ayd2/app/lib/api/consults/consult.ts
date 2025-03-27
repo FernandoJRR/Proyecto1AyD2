@@ -15,6 +15,7 @@ export interface ConsultResponseDTO {
 export interface CreateConsultRequestDTO {
   patientId: string;
   costoConsulta: number;
+  employeeId: string;
 }
 
 export interface UpdateConsultRequestDTO {

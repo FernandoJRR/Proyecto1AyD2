@@ -42,8 +42,8 @@ public class ConsultController {
 
     @Operation(summary = "Obtener todas las consultas", description = "Este endpoint devuelve una lista con todas las consultas registradas en el sistema.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Consultas obtenidas exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+            @ApiResponse(responseCode = "200", description = "Consultas obtenidas exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @GetMapping("/all")
     public ResponseEntity<List<ConsultResponseDTO>> getAllConsults() {
@@ -53,9 +53,9 @@ public class ConsultController {
 
     @Operation(summary = "Obtener una consulta por ID", description = "Este endpoint permite obtener una consulta por su identificador único.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Consulta obtenida exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
-        @ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+            @ApiResponse(responseCode = "200", description = "Consulta obtenida exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @GetMapping("/{id}")
     public ResponseEntity<ConsultResponseDTO> getConsult(
@@ -67,10 +67,10 @@ public class ConsultController {
 
     @Operation(summary = "Crear una nueva consulta", description = "Este endpoint permite registrar una nueva consulta para un paciente.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "201", description = "Consulta creada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida, error en los datos de entrada", content = @Content(mediaType = "application/json")),
-        @ApiResponse(responseCode = "404", description = "Paciente no encontrado", content = @Content(mediaType = "application/json")),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+            @ApiResponse(responseCode = "201", description = "Consulta creada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida, error en los datos de entrada", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "Paciente no encontrado", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PostMapping("/create")
     public ResponseEntity<ConsultResponseDTO> createConsult(
@@ -78,16 +78,17 @@ public class ConsultController {
             throws NotFoundException {
 
         Consult consult = consultPort.createConsult(createConsultRequestDTO.getPatientId(),
+                createConsultRequestDTO.getEmployeeId(),
                 createConsultRequestDTO.getCostoConsulta());
         return ResponseEntity.status(HttpStatus.CREATED).body(new ConsultResponseDTO(consult));
     }
 
     @Operation(summary = "Actualizar una consulta", description = "Este endpoint permite actualizar la información de una consulta existente.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Consulta actualizada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida, error en los datos de entrada", content = @Content(mediaType = "application/json")),
-        @ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+            @ApiResponse(responseCode = "200", description = "Consulta actualizada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Solicitud inválida, error en los datos de entrada", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PatchMapping("/{id}")
     public ResponseEntity<ConsultResponseDTO> updateConsult(
@@ -100,10 +101,10 @@ public class ConsultController {
 
     @Operation(summary = "Pagar una consulta", description = "Este endpoint permite pagar una consulta, cambiando su estado a pagada.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Consulta pagada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
-        @ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
-        @ApiResponse(responseCode = "409", description = "La consulta ya se encuentra pagada", content = @Content(mediaType = "application/json")),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+            @ApiResponse(responseCode = "200", description = "Consulta pagada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "409", description = "La consulta ya se encuentra pagada", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @PostMapping("/pay/{id}")
     public ResponseEntity<ConsultResponseDTO> payConsult(
@@ -115,9 +116,9 @@ public class ConsultController {
 
     @Operation(summary = "Obtener el total de una consulta", description = "Este endpoint devuelve el costo total de una consulta incluyendo posibles cirugías.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Total obtenido exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Double.class))),
-        @ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+            @ApiResponse(responseCode = "200", description = "Total obtenido exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Double.class))),
+            @ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @GetMapping("/total/{id}")
     public ResponseEntity<TotalConsultResponseDTO> getTotalConsult(

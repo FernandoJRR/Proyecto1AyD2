@@ -219,6 +219,8 @@ import { RouterLink } from "vue-router";
 import { getAllPatients } from "~/lib/api/patients/patients";
 import { getDoctors } from "~/lib/api/admin/employee";
 import { InputText, Button } from "primevue";
+import { toast } from 'vue-sonner'
+import { createConsult, type CreateConsultRequestDTO } from "~/lib/api/consults/consult";
 
 const { employee } = storeToRefs(useAuthStore());
 
@@ -294,8 +296,28 @@ const puedeCrearConsulta = computed(() => {
 });
 
 const crearConsulta = () => {
-  console.log("Paciente:", pacienteSeleccionado.value);
-  console.log("Doctor:", doctorSeleccionado.value);
-  // Aquí iría la lógica para guardar la consulta
+  const payload: CreateConsultRequestDTO = {
+    costoConsulta: initialValues.costoConsulta,
+    patientId: pacienteSeleccionado.value.id,
+    employeeId: isAdmin.value ? doctorSeleccionado.value.id : null,
+  };
+  console.log("Payload:", payload);
+  
 };
+
+const { mutate: createConsultMutation, asyncStatus: asyncCreateConsultStatus } =
+  useMutation({
+    mutation: (consultData: CreateConsultRequestDTO) =>
+      createConsult(consultData),
+    onError(error) {
+      console.error(error);
+      toast.error("Ocurrió un error al crear la consulta", {
+        description: error,
+      });
+    },
+    onSuccess() {
+      toast.success("Consulta creada con éxito");
+      navigateTo("/consultas");
+    },
+  });
 </script>
