@@ -1,5 +1,8 @@
 package com.hospitalApi.employees.services;
 
+import org.springframework.data.jpa.domain.Specification;
+import static org.mockito.ArgumentMatchers.argThat;
+
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -71,7 +75,7 @@ public class EmployeesServiceTest {
     private Employee employee;
     private Employee updatedEmployee;
     private EmployeeType employeeType;
-    private EmployeeType employeeTypeFind;
+    private EmployeeType employeeTypeDoctor;
 
     /** Para el nuevo empleado */
     private static final String EMPLOYEE_ID = "adsfgdh-arsgdfhg-adfgh";
@@ -158,9 +162,9 @@ public class EmployeesServiceTest {
         employeeType = new EmployeeType();
         employeeType.setId(EMPLOYEE_TYPE_ID);
 
-        employeeTypeFind = new EmployeeType();
-        employeeTypeFind.setId(EMPLOYEE_TYPE_ID_2);
-        employeeTypeFind.setName(EmployeeTypeEnum.DOCTOR.name());
+        employeeTypeDoctor = new EmployeeType();
+        employeeTypeDoctor.setId(EMPLOYEE_TYPE_ID_2);
+        employeeTypeDoctor.setName(EmployeeTypeEnum.DOCTOR.name());
 
         // inicializamos los empleados que usaremos para la reasignacion del tipo de
         // empleado
@@ -659,70 +663,75 @@ public class EmployeesServiceTest {
         verify(employeeRepository, times(1)).findAll();
     }
 
+    /**
+     * dado: que existe un tipo de empleado válido en la base de datos.
+     * cuando: se busca a los empleados por ese tipo y se proporciona un término de
+     * búsqueda.
+     * entonces: se devuelve una lista con los empleados que coinciden con el nombre
+     * o apellido buscado.
+     */
     @Test
-    public void shouldReturnEmployeesByTypeSuccessfully() throws NotFoundException {
-        // Arrange
-        List<Employee> expectedEmployees = List.of(employee, updatedEmployee);
+    public void shouldReturnEmployeesByTypeWithMatchingSearch() throws NotFoundException {
+        // ARRANGE
+        String search = "Luis";
+        List<Employee> expectedEmployees = List.of(employee);
+
         when(forEmployeeTypePort.findEmployeeTypeById(EMPLOYEE_TYPE_ID)).thenReturn(employeeType);
-        when(employeeRepository.findByEmployeeTypeId(EMPLOYEE_TYPE_ID)).thenReturn(expectedEmployees);
+        when(employeeRepository.findAll(ArgumentMatchers.<Specification<Employee>>any())).thenReturn(expectedEmployees);
 
-        // Act
-        List<Employee> result = employeeService.getEmployeesByType(EMPLOYEE_TYPE_ID);
+        // ACT
+        List<Employee> result = employeeService.getEmployeesByType(EMPLOYEE_TYPE_ID, search);
 
-        // Assert
-        assertNotNull(result);
-        assertEquals(expectedEmployees.size(), result.size());
-        assertEquals(expectedEmployees, result);
-        verify(forEmployeeTypePort).findEmployeeTypeById(EMPLOYEE_TYPE_ID);
-        verify(employeeRepository).findByEmployeeTypeId(EMPLOYEE_TYPE_ID);
+        // ASSERT
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(1, result.size()),
+                () -> assertEquals(employee.getFirstName(), result.get(0).getFirstName()));
+
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById(EMPLOYEE_TYPE_ID);
+        verify(employeeRepository, times(1)).findAll(ArgumentMatchers.<Specification<Employee>>any());
     }
 
+    /**
+     * dado: que el tipo de empleado no existe en la base de datos.
+     * cuando: se intenta obtener empleados por ese tipo.
+     * entonces: se lanza una excepción `NotFoundException` y no se realiza ninguna
+     * consulta a la base de datos.
+     */
     @Test
-    public void shouldThrowNotFoundExceptionWhenEmployeeTypeNotFoundInGetEmployeesByType() throws NotFoundException {
-        // Arrange
-        when(forEmployeeTypePort.findEmployeeTypeById(EMPLOYEE_TYPE_ID))
-                .thenThrow(new NotFoundException("Tipo no encontrado"));
+    public void shouldThrowNotFoundExceptionWhenTypeNotFoundInGetEmployeesByType() throws NotFoundException {
+        // ARRANGE
+        when(forEmployeeTypePort.findEmployeeTypeById(anyString()))
+                .thenThrow(new NotFoundException("Tipo de empleado no encontrado"));
 
-        // Act & Assert
+        // ACT & ASSERT
         assertThrows(NotFoundException.class, () -> {
-            employeeService.getEmployeesByType(EMPLOYEE_TYPE_ID);
+            employeeService.getEmployeesByType("invalid-id", "Luis");
         });
 
-        verify(forEmployeeTypePort).findEmployeeTypeById(EMPLOYEE_TYPE_ID);
-        verify(employeeRepository, never()).findByEmployeeTypeId(any());
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById("invalid-id");
+        verify(employeeRepository, never()).findAll(ArgumentMatchers.<Specification<Employee>>any());
     }
 
-    @Test
-    public void shouldReturnDoctorEmployeesSuccessfully() throws NotFoundException {
-        // Arrange
-        List<Employee> expectedDoctors = List.of(employee);
-        when(forEmployeeTypePort.findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name())).thenReturn(employeeTypeFind);
-        when(employeeRepository.findByEmployeeTypeId(EMPLOYEE_TYPE_ID_2)).thenReturn(expectedDoctors);
-
-        // Act
-        List<Employee> result = employeeService.getDoctors();
-
-        // Assert
-        assertNotNull(result);
-        assertEquals(expectedDoctors.size(), result.size());
-        assertEquals(expectedDoctors, result);
-        verify(forEmployeeTypePort).findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name());
-        verify(employeeRepository).findByEmployeeTypeId(EMPLOYEE_TYPE_ID_2);
-    }
-
+    /**
+     * dado: que el tipo de empleado "Doctor" no existe en la base de datos.
+     * cuando: se intenta obtener doctores con un término de búsqueda.
+     * entonces: se lanza una excepción `NotFoundException` y no se consulta el
+     * repositorio.
+     */
     @Test
     public void shouldThrowNotFoundExceptionWhenDoctorTypeNotFound() throws NotFoundException {
-        // Arrange
+        // ARRANGE
         when(forEmployeeTypePort.findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name()))
-                .thenThrow(new NotFoundException("Tipo no encontrado"));
+                .thenThrow(new NotFoundException("Tipo Doctor no encontrado"));
 
-        // Act & Assert
+        // ACT & ASSERT
         assertThrows(NotFoundException.class, () -> {
-            employeeService.getDoctors();
+            employeeService.getDoctors("Luis");
         });
 
-        verify(forEmployeeTypePort).findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name());
-        verify(employeeRepository, never()).findByEmployeeTypeId(any());
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name());
+        verify(employeeRepository, never()).findAll(ArgumentMatchers.<Specification<Employee>>any());
     }
 
 }

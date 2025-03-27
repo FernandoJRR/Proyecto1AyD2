@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.core.annotation.MergedAnnotations.Search;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.hospitalApi.employees.models.Employee;
@@ -15,6 +17,7 @@ import com.hospitalApi.employees.ports.ForEmployeeHistoryPort;
 import com.hospitalApi.employees.ports.ForEmployeeTypePort;
 import com.hospitalApi.employees.ports.ForEmployeesPort;
 import com.hospitalApi.employees.repositories.EmployeeRepository;
+import com.hospitalApi.employees.specifications.EmployeeSpecifications;
 import com.hospitalApi.shared.enums.EmployeeTypeEnum;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.InvalidPeriodException;
@@ -194,19 +197,23 @@ public class EmployeeService implements ForEmployeesPort {
     }
 
     @Override
-    public List<Employee> getEmployeesByType(String employeeTypeId) throws NotFoundException {
+    public List<Employee> getEmployeesByType(String employeeTypeId, String search) throws NotFoundException {
         // Verificamos si existe el tipo de empleado
-        forEmployeeTypePort.findEmployeeTypeById(employeeTypeId);
-        // Traemos los empleados por el tipo de empleado
-        List<Employee> employees = employeeRepository.findByEmployeeTypeId(employeeTypeId);
+        EmployeeType employeeType = forEmployeeTypePort.findEmployeeTypeById(employeeTypeId);
+        Specification<Employee> spec = Specification
+                .where(EmployeeSpecifications.hasEmployeeTypeId(employeeType.getId()))
+                .and(EmployeeSpecifications.hasFirstName(search))
+                .and(EmployeeSpecifications.hasLastName(search))
+                .and(EmployeeSpecifications.isActive(true));
+        List<Employee> employees = employeeRepository.findAll(spec);
         return employees;
     }
 
     @Override
-    public List<Employee> getDoctors() throws NotFoundException {
+    public List<Employee> getDoctors(String search) throws NotFoundException {
         // Traemos los empleados por el tipo de empleado
         EmployeeType employeeType = forEmployeeTypePort.findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name());
-        List<Employee> employees = getEmployeesByType(employeeType.getId());
+        List<Employee> employees = getEmployeesByType(employeeType.getId(), search);
         return employees;
     }
 }
