@@ -1,5 +1,8 @@
 package com.hospitalApi.employees.services;
 
+import org.springframework.data.jpa.domain.Specification;
+import static org.mockito.ArgumentMatchers.argThat;
+
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -33,6 +37,7 @@ import com.hospitalApi.employees.ports.ForEmployeeHistoryPort;
 import com.hospitalApi.employees.ports.ForEmployeeTypePort;
 import com.hospitalApi.employees.ports.ForHistoryTypePort;
 import com.hospitalApi.employees.repositories.EmployeeRepository;
+import com.hospitalApi.shared.enums.EmployeeTypeEnum;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
@@ -70,6 +75,7 @@ public class EmployeesServiceTest {
     private Employee employee;
     private Employee updatedEmployee;
     private EmployeeType employeeType;
+    private EmployeeType employeeTypeDoctor;
 
     /** Para el nuevo empleado */
     private static final String EMPLOYEE_ID = "adsfgdh-arsgdfhg-adfgh";
@@ -86,6 +92,7 @@ public class EmployeesServiceTest {
 
     /** Para el objeto tipo de empleado */
     private static final String EMPLOYEE_TYPE_ID = "dasdd-asdasd-asdasd";
+    private static final String EMPLOYEE_TYPE_ID_2 = "sdfg-sdfg-sdfg";
 
     /** Para actualizaciones */
     private static final String UPDATED_EMPLOYEE_FIRST_NAME = "Carlos";
@@ -154,6 +161,10 @@ public class EmployeesServiceTest {
 
         employeeType = new EmployeeType();
         employeeType.setId(EMPLOYEE_TYPE_ID);
+
+        employeeTypeDoctor = new EmployeeType();
+        employeeTypeDoctor.setId(EMPLOYEE_TYPE_ID_2);
+        employeeTypeDoctor.setName(EmployeeTypeEnum.DOCTOR.name());
 
         // inicializamos los empleados que usaremos para la reasignacion del tipo de
         // empleado
@@ -650,6 +661,77 @@ public class EmployeesServiceTest {
                 () -> assertEquals(2, result.size()));
 
         verify(employeeRepository, times(1)).findAll();
+    }
+
+    /**
+     * dado: que existe un tipo de empleado válido en la base de datos.
+     * cuando: se busca a los empleados por ese tipo y se proporciona un término de
+     * búsqueda.
+     * entonces: se devuelve una lista con los empleados que coinciden con el nombre
+     * o apellido buscado.
+     */
+    @Test
+    public void shouldReturnEmployeesByTypeWithMatchingSearch() throws NotFoundException {
+        // ARRANGE
+        String search = "Luis";
+        List<Employee> expectedEmployees = List.of(employee);
+
+        when(forEmployeeTypePort.findEmployeeTypeById(EMPLOYEE_TYPE_ID)).thenReturn(employeeType);
+        when(employeeRepository.findAll(ArgumentMatchers.<Specification<Employee>>any())).thenReturn(expectedEmployees);
+
+        // ACT
+        List<Employee> result = employeeService.getEmployeesByType(EMPLOYEE_TYPE_ID, search);
+
+        // ASSERT
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(1, result.size()),
+                () -> assertEquals(employee.getFirstName(), result.get(0).getFirstName()));
+
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById(EMPLOYEE_TYPE_ID);
+        verify(employeeRepository, times(1)).findAll(ArgumentMatchers.<Specification<Employee>>any());
+    }
+
+    /**
+     * dado: que el tipo de empleado no existe en la base de datos.
+     * cuando: se intenta obtener empleados por ese tipo.
+     * entonces: se lanza una excepción `NotFoundException` y no se realiza ninguna
+     * consulta a la base de datos.
+     */
+    @Test
+    public void shouldThrowNotFoundExceptionWhenTypeNotFoundInGetEmployeesByType() throws NotFoundException {
+        // ARRANGE
+        when(forEmployeeTypePort.findEmployeeTypeById(anyString()))
+                .thenThrow(new NotFoundException("Tipo de empleado no encontrado"));
+
+        // ACT & ASSERT
+        assertThrows(NotFoundException.class, () -> {
+            employeeService.getEmployeesByType("invalid-id", "Luis");
+        });
+
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById("invalid-id");
+        verify(employeeRepository, never()).findAll(ArgumentMatchers.<Specification<Employee>>any());
+    }
+
+    /**
+     * dado: que el tipo de empleado "Doctor" no existe en la base de datos.
+     * cuando: se intenta obtener doctores con un término de búsqueda.
+     * entonces: se lanza una excepción `NotFoundException` y no se consulta el
+     * repositorio.
+     */
+    @Test
+    public void shouldThrowNotFoundExceptionWhenDoctorTypeNotFound() throws NotFoundException {
+        // ARRANGE
+        when(forEmployeeTypePort.findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name()))
+                .thenThrow(new NotFoundException("Tipo Doctor no encontrado"));
+
+        // ACT & ASSERT
+        assertThrows(NotFoundException.class, () -> {
+            employeeService.getDoctors("Luis");
+        });
+
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name());
+        verify(employeeRepository, never()).findAll(ArgumentMatchers.<Specification<Employee>>any());
     }
 
 }
