@@ -226,9 +226,11 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
             return false;
         }
 
-        // si la fecha a desactivar es antes que la ultima desactivacion
-        if (lastDeactivationHistoryOptional.get().getHistoryDate().isAfter(deactivationDate)) {
-            return false;
+        if (lastDeactivationHistoryOptional.isPresent()) {
+            // si la fecha a desactivar es antes que la ultima desactivacion
+            if (lastDeactivationHistoryOptional.get().getHistoryDate().isAfter(deactivationDate)) {
+                return false;
+            }
         }
 
         return true;

@@ -13,4 +13,5 @@ public interface HistoryTypeMapper {
     HistoryTypeResponseDTO fromHistoryTypeToHistoryTypeResponseDTO(HistoryType historyType);
     HistoryType fromHistoryTypeDtoToHistoryType(HistoryTypeResponseDTO historyTypeResponseDTO);
     HistoryType fromIdRequestDtoToHistoryType(IdRequestDTO idRequestDTO);
+    List<HistoryTypeResponseDTO> fromHistoryTypesToHistoryTypeResponseDTOs(List<HistoryType> historyTypes);
 }
