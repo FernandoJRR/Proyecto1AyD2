@@ -51,6 +51,10 @@ public class EmployeeHistoryServiceTest {
     private HistoryType historyType;
     private HistoryType historyTypeIncrease;
     private HistoryType historyTypeDecrease;
+    private HistoryType deactivationReason;
+    private HistoryType historyTypeDeactivationDummy;
+    private HistoryType reactivationHistoryType;
+    private EmployeeHistory employeeHistoryLastDeactivation;
 
     private static final String HISTORY_TYPE_ID = "fdsf-rtrer-bbvk";
     private static final String HISTORY_TYPE = "Contratacion";
@@ -75,8 +79,20 @@ public class EmployeeHistoryServiceTest {
     private static final String HISTORY_TYPE_INCREASE = "Aumento Salarial";
     private static final String HISTORY_TYPE_ID_DECREASE = "dflm-fodp-bbvk";
     private static final String HISTORY_TYPE_DECREASE = "Disminucion Salarial";
+    private static final String HISTORY_TYPE_ID_REACTIVATION = "sdll-fjis-mkdc";
+    private static final String HISTORY_TYPE_REACTIVATION = "Empleado recontratado.";
+
+    private static final LocalDate EMPLOYEE_REACTIVATION_DATE = LocalDate.of(2023, 2, 1);
 
     private static final String EMPLOYEE_NEW_SALARY = "1500";
+
+    private static final LocalDate EMPLOYEE_DEACTIVATION_LOCAL_DATE = LocalDate.of(2022, 12, 23);
+
+    private static final String HISTORY_TYPE_FIRING = "Despido";
+    private static final String HISTORY_TYPE_ID_FIRING = "fdsj-ewoi-dsml";
+
+    private static final String EMPLOYEE_HISTORY_FIRING_COMMENTARY = "Se despidio al empleado.";
+    private static final LocalDate EMPLOYEE_HISTORY_FIRING_LOCAL_DATE = LocalDate.of(2022, 12, 1);
 
     @BeforeEach
     private void setUp() {
@@ -99,6 +115,12 @@ public class EmployeeHistoryServiceTest {
         historyTypeIncrease = new HistoryType(HISTORY_TYPE_INCREASE);
         historyTypeIncrease.setId(HISTORY_TYPE_ID_INCREASE);
 
+        deactivationReason = new HistoryType(HISTORY_TYPE_FIRING);
+        deactivationReason.setId(HISTORY_TYPE_ID_FIRING);
+
+        historyTypeDeactivationDummy = new HistoryType(HISTORY_TYPE_FIRING);
+        historyTypeDeactivationDummy.setId(HISTORY_TYPE_ID_FIRING);
+
         employeeHistoryHiring = new EmployeeHistory(EMPLOYEE_HISTORY_HIRING_COMMENTARY);
         employeeHistoryHiring.setHistoryType(historyType);
         employeeHistoryHiring.setHistoryDate(EMPLOYEE_HISTORY_LOCAL_DATE);
@@ -113,6 +135,14 @@ public class EmployeeHistoryServiceTest {
         employeeHistoryDecrease.setHistoryType(historyTypeDecrease);
         employeeHistoryDecrease.setHistoryDate(EMPLOYEE_HISTORY_LOCAL_DATE_DECREASE);
         employeeHistoryDecrease.setId(EMPLOYEE_HISTORY_ID_DECREASE);
+
+        employeeHistoryLastDeactivation = new EmployeeHistory(EMPLOYEE_HISTORY_FIRING_COMMENTARY);
+        employeeHistoryLastDeactivation.setHistoryDate(EMPLOYEE_HISTORY_FIRING_LOCAL_DATE);
+        employeeHistoryLastDeactivation.setHistoryType(historyTypeDeactivationDummy);
+
+        reactivationHistoryType = new HistoryType(HISTORY_TYPE_REACTIVATION);
+        reactivationHistoryType.setId(HISTORY_TYPE_ID_REACTIVATION);
+
     }
 
     @Test
@@ -291,6 +321,77 @@ public class EmployeeHistoryServiceTest {
         assertAll(
             () -> assertNotNull(result),
             () -> assertEquals(expectedHistory, result.get())
+        );
+    }
+
+    @Test
+    public void shouldCreateDeactivationHistorySuccessfully() throws NotFoundException, InvalidPeriodException {
+        // ARRANGE
+        when(employeeHistoryRepository.findFirstByEmployee_IdOrderByHistoryDateAsc(eq(employee.getId())))
+             .thenReturn(Optional.of(employeeHistoryHiring));
+
+        when(employeeHistoryRepository.findFirstByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateDesc(
+             eq(employee.getId()), anyList()))
+             .thenReturn(Optional.of(employeeHistoryLastDeactivation));
+
+        when(forHistoryTypePort.findHistoryTypeById(deactivationReason.getId())).thenReturn(deactivationReason);
+
+        when(employeeHistoryRepository.save(any(EmployeeHistory.class)))
+             .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // ACT
+        EmployeeHistory result = employeeHistoryService
+                .createEmployeeHistoryDeactivation(employee, EMPLOYEE_DEACTIVATION_LOCAL_DATE, deactivationReason);
+
+        // ASSERT
+        ArgumentCaptor<EmployeeHistory> captor = ArgumentCaptor.forClass(EmployeeHistory.class);
+        verify(employeeHistoryRepository).save(captor.capture());
+        EmployeeHistory capturedHistory = captor.getValue();
+
+        String expectedCommentary = "El empleado se ha desactivado por " + deactivationReason.getType();
+
+        assertAll(
+            () -> assertNotNull(result),
+            () -> assertEquals(expectedCommentary, capturedHistory.getCommentary()),
+            () -> assertEquals(EMPLOYEE_DEACTIVATION_LOCAL_DATE, capturedHistory.getHistoryDate()),
+            () -> assertEquals(deactivationReason, capturedHistory.getHistoryType()),
+            () -> assertEquals(employee, capturedHistory.getEmployee())
+        );
+    }
+
+    @Test
+    public void shouldCreateReactivationHistorySuccessfully() throws NotFoundException, InvalidPeriodException {
+        // ARRANGE
+        when(employeeHistoryRepository.findFirstByEmployee_IdOrderByHistoryDateAsc(eq(employee.getId())))
+            .thenReturn(Optional.of(employeeHistoryHiring)); // employeeHistoryHiring.date is 2022-11-23
+
+        when(employeeHistoryRepository.findFirstByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateDesc(
+            eq(employee.getId()), anyList()))
+            .thenReturn(Optional.of(employeeHistoryLastDeactivation));
+
+        when(forHistoryTypePort.findHistoryTypeByName(HistoryTypeEnum.RECONTRATACION.getType()))
+            .thenReturn(reactivationHistoryType);
+
+        // Stub saving: simply return the passed EmployeeHistory.
+        when(employeeHistoryRepository.save(any(EmployeeHistory.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // ACT
+        EmployeeHistory result = employeeHistoryService.createEmployeeHistoryReactivation(employee, EMPLOYEE_REACTIVATION_DATE);
+
+        // ASSERT
+        ArgumentCaptor<EmployeeHistory> captor = ArgumentCaptor.forClass(EmployeeHistory.class);
+        verify(employeeHistoryRepository).save(captor.capture());
+        EmployeeHistory capturedHistory = captor.getValue();
+
+        String expectedCommentary = "El empleado se ha recontratado.";
+
+        assertAll(
+            () -> assertNotNull(result),
+            () -> assertEquals(expectedCommentary, capturedHistory.getCommentary()),
+            () -> assertEquals(EMPLOYEE_REACTIVATION_DATE, capturedHistory.getHistoryDate()),
+            () -> assertEquals(reactivationHistoryType, capturedHistory.getHistoryType()),
+            () -> assertEquals(employee, capturedHistory.getEmployee())
         );
     }
 }

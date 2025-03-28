@@ -99,7 +99,7 @@ public class LoginServiceTest {
         employeeType = new EmployeeType();
         List<EmployeeHistoryResponseDTO> employeeHistoryResponseDTOs = Arrays.asList(
                 new EmployeeHistoryResponseDTO(
-                        new HistoryTypeResponseDTO(EMPLOYEE_TYPE),
+                        new HistoryTypeResponseDTO(null, EMPLOYEE_TYPE),
                         EMPLOYEE_HISTORY_COMMENTARY,
                         EMPLOYEE_HISTORY_DATE));
         employeeResponseDTO = new EmployeeResponseDTO(ID,
@@ -108,6 +108,7 @@ public class LoginServiceTest {
                 SALARY,
                 IGSS_PERCENTAGE,
                 IRTRA_PERCENTAGE,
+                null,
                 new EmployeeTypeResponseDTO(ID, EMPLOYEE_TYPE, List.of()));
 
         user.setDesactivatedAt(null); // el usuairo siempre estara activo en las pruebas CAMBIARLO MANUAL

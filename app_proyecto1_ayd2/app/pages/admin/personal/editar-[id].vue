@@ -94,7 +94,7 @@
                     :options="userTypes.data" placeholder="Selecciona un tipo de usuario" fluid />
                 </FloatLabel>
                 <Message v-if="$areaForm.type?.invalid" severity="error" size="small" variant="simple">{{
-                  $areaForm.city.error.message }}</Message>
+                  $areaForm.type.error?.message }}</Message>
               </template>
             </div>
             <Button class="w-full mt-2" type="submit" severity="secondary" label="Actualizar Area" />

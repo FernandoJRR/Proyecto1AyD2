@@ -83,6 +83,44 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
         return employeeHistoryRepository.save(employeeHistory);
     }
 
+    public EmployeeHistory createEmployeeHistoryDeactivation(Employee employee, LocalDate deactivationDate, HistoryType historyTypeReason)
+            throws NotFoundException, InvalidPeriodException {
+
+        if (!isValidEmployeePeriodDeactivationDate(employee, deactivationDate)) {
+            throw new InvalidPeriodException("La desactivacion no esta en un periodo valido.");
+        }
+
+        HistoryType historyTypeDeactivation = forHistoryTypePort
+                .findHistoryTypeById(historyTypeReason.getId());
+
+        EmployeeHistory employeeHistory = new EmployeeHistory("El empleado se ha desactivado por "+historyTypeDeactivation.getType());
+
+        employeeHistory.setHistoryType(historyTypeDeactivation);
+        employeeHistory.setEmployee(employee);
+        employeeHistory.setHistoryDate(deactivationDate);
+
+        return employeeHistoryRepository.save(employeeHistory);
+    }
+
+    public EmployeeHistory createEmployeeHistoryReactivation(Employee employee, LocalDate reactivationDate)
+            throws NotFoundException, InvalidPeriodException {
+
+        if (!isValidEmployeePeriodReactivationDate(employee, reactivationDate)) {
+            throw new InvalidPeriodException("La desactivacion no esta en un periodo valido.");
+        }
+
+        HistoryType historyTypeDeactivation = forHistoryTypePort
+                .findHistoryTypeByName(HistoryTypeEnum.RECONTRATACION.getType());
+
+        EmployeeHistory employeeHistory = new EmployeeHistory("El empleado se ha recontratado.");
+
+        employeeHistory.setHistoryType(historyTypeDeactivation);
+        employeeHistory.setEmployee(employee);
+        employeeHistory.setHistoryDate(reactivationDate);
+
+        return employeeHistoryRepository.save(employeeHistory);
+    }
+
     public List<EmployeeHistory> getEmployeeHistory(Employee employee) throws NotFoundException {
         return employeeHistoryRepository.findAllByEmployee_IdOrderByHistoryDateAsc(employee.getId());
     }
@@ -117,7 +155,7 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
         List<String> startTypes = Arrays.asList(HistoryTypeEnum.CONTRATACION.getType(),
                 HistoryTypeEnum.RECONTRATACION.getType());
         List<String> endTypes = Arrays.asList(HistoryTypeEnum.DESPIDO.getType(),
-                HistoryTypeEnum.RECONTRATACION.getType());
+                HistoryTypeEnum.RENUNCIA.getType());
 
         List<String> validTypes = new ArrayList<>();
         validTypes.addAll(startTypes);
@@ -149,6 +187,7 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
             }
         }
 
+
         // se itera sobre todos los periodos para ver si la fecha entra en alguno
         for (EmployeePeriod period : periods) {
             // si no tiene fecha de fin el periodo es el actual
@@ -164,5 +203,65 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
         }
 
         return false;
+    }
+
+    public boolean isValidEmployeePeriodDeactivationDate(Employee employee, LocalDate deactivationDate) {
+        List<String> startTypes = Arrays.asList(HistoryTypeEnum.CONTRATACION.getType(),
+                HistoryTypeEnum.RECONTRATACION.getType());
+        List<String> endTypes = Arrays.asList(HistoryTypeEnum.DESPIDO.getType(),
+                HistoryTypeEnum.RENUNCIA.getType());
+
+        List<String> validTypes = new ArrayList<>();
+        validTypes.addAll(startTypes);
+        validTypes.addAll(endTypes);
+
+        // se obtiene la ultima desactivacion del cliente y su fecha de contratacion
+        Optional<EmployeeHistory> hiringDateHistoryOptional = employeeHistoryRepository
+            .findFirstByEmployee_IdOrderByHistoryDateAsc(employee.getId());
+        Optional<EmployeeHistory> lastDeactivationHistoryOptional = employeeHistoryRepository
+                .findFirstByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateDesc(employee.getId(), endTypes);
+
+        // en caso de que se quiera desactivar en una fecha previa a la contratacion el periodo es invalido
+        if (hiringDateHistoryOptional.get().getHistoryDate().isAfter(deactivationDate)) {
+            return false;
+        }
+
+        if (lastDeactivationHistoryOptional.isPresent()) {
+            // si la fecha a desactivar es antes que la ultima desactivacion
+            if (lastDeactivationHistoryOptional.get().getHistoryDate().isAfter(deactivationDate)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public boolean isValidEmployeePeriodReactivationDate(Employee employee, LocalDate reactivationDate) {
+        List<String> startTypes = Arrays.asList(HistoryTypeEnum.CONTRATACION.getType(),
+                HistoryTypeEnum.RECONTRATACION.getType());
+        List<String> endTypes = Arrays.asList(HistoryTypeEnum.DESPIDO.getType(),
+                HistoryTypeEnum.RENUNCIA.getType());
+
+        List<String> validTypes = new ArrayList<>();
+        validTypes.addAll(startTypes);
+        validTypes.addAll(endTypes);
+
+        // se obtiene la ultima desactivacion del cliente y su fecha de contratacion
+        Optional<EmployeeHistory> hiringDateHistoryOptional = employeeHistoryRepository
+            .findFirstByEmployee_IdOrderByHistoryDateAsc(employee.getId());
+        Optional<EmployeeHistory> lastDeactivationHistoryOptional = employeeHistoryRepository
+                .findFirstByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateDesc(employee.getId(), endTypes);
+
+        // en caso de que se quiera reactivar en una fecha previa a la contratacion el periodo es invalido
+        if (hiringDateHistoryOptional.get().getHistoryDate().isAfter(reactivationDate)) {
+            return false;
+        }
+
+        // si la fecha a desactivar es antes que la ultima recontratacion
+        if (lastDeactivationHistoryOptional.get().getHistoryDate().isAfter(reactivationDate)) {
+            return false;
+        }
+
+        return true;
     }
 }
