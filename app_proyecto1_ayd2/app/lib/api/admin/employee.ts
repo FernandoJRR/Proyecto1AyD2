@@ -20,6 +20,7 @@ export interface Employee extends Entity {
   iggsPercentage: number
   irtraPercentage: number
   employeeType: EmployeeType
+  desactivatedAt: Date | null
 }
 
 export interface EmployeeResponse {
@@ -62,6 +63,15 @@ export interface EmployeeSalaryUpdatePayload {
   salaryDate: Date
 }
 
+export interface EmployeeDeactivationPayload {
+  deactivationDate: Date
+  historyTypeId: { id: string }
+}
+
+export interface EmployeeReactivationPayload {
+  reactivationDate: Date
+}
+
 export async function getAllEmployees(params?: {}) {
   return await $api<Employee[]>(`${CURRENT_EMPLOYEE_URI}/`, {
     params
@@ -90,6 +100,22 @@ export const updateEmployee = async (data: EmployeeUpdatePayload, employeeId: st
 
 export const updateEmployeeSalary = async (data: EmployeeSalaryUpdatePayload, employeeId: string) => {
   const response = await $api<Employee>(`${CURRENT_EMPLOYEE_URI}/${employeeId}/salary`, {
+    method: 'PATCH',
+    body: data
+  })
+  return response
+}
+
+export const deactivateEmployee = async (data: EmployeeDeactivationPayload, employeeId: string) => {
+  const response = await $api<Employee>(`${CURRENT_EMPLOYEE_URI}/${employeeId}/desactivate`, {
+    method: 'PATCH',
+    body: data
+  })
+  return response
+}
+
+export const reactivateEmployee = async (data: EmployeeReactivationPayload, employeeId: string) => {
+  const response = await $api<Employee>(`${CURRENT_EMPLOYEE_URI}/${employeeId}/reactivate`, {
     method: 'PATCH',
     body: data
   })

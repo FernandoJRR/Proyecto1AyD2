@@ -19,6 +19,7 @@ import com.hospitalApi.employees.dtos.CompoundEmployeeResponseDTO;
 import com.hospitalApi.employees.dtos.CreateEmployeeRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeDeactivateRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeHistoryResponseDTO;
+import com.hospitalApi.employees.dtos.EmployeeReactivateRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeResponseDTO;
 import com.hospitalApi.employees.dtos.EmployeeSalaryRequestDTO;
@@ -176,13 +177,12 @@ public class EmployeesController {
         })
         @PatchMapping("/{employeeId}/reactivate")
         public ResponseEntity<Void> reactivateEmployee(
-                @RequestBody @Valid EmployeeDeactivateRequestDTO request,
+                @RequestBody @Valid EmployeeReactivateRequestDTO request,
                 @PathVariable("employeeId") String employeeId)
                         throws NotFoundException, IllegalStateException, InvalidPeriodException {
 
-                HistoryType historyTypeReason = historyTypeMapper.fromIdRequestDtoToHistoryType(request.getHistoryTypeId());
                 // mandar a desactivar el employee al port
-                employeesPort.reactivateEmployee(employeeId, request.getDeactivationDate());
+                employeesPort.reactivateEmployee(employeeId, request.getReactivationDate());
 
                 return ResponseEntity.noContent().build();
 
