@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.models.EmployeeHistory;
 import com.hospitalApi.employees.models.EmployeeType;
+import com.hospitalApi.employees.models.HistoryType;
 import com.hospitalApi.employees.ports.ForEmployeeHistoryPort;
 import com.hospitalApi.employees.ports.ForEmployeeTypePort;
 import com.hospitalApi.employees.ports.ForEmployeesPort;
@@ -132,8 +133,8 @@ public class EmployeeService implements ForEmployeesPort {
     }
 
     @Transactional(rollbackOn = Exception.class)
-    public Employee desactivateEmployee(String currentId)
-            throws NotFoundException, IllegalStateException {
+    public Employee desactivateEmployee(String currentId, LocalDate deactivationDate, HistoryType historyTypeReason)
+            throws NotFoundException, IllegalStateException, InvalidPeriodException {
         // traer el empleado por id
         Employee currentEmployee = findEmployeeById(currentId);
 
@@ -142,10 +143,48 @@ public class EmployeeService implements ForEmployeesPort {
             // indicamos que se llamo el metodo en un momento inapropiado
             throw new IllegalStateException("El empleado ya está desactivado.");
         }
-        // le cambiamos el estado a su usuario y al empleado como tal
-        LocalDate desactivatedDate = LocalDate.now();
+
+        EmployeeHistory createdEmployeeHistory = forEmployeeHistoryPort
+            .createEmployeeHistoryDeactivation(currentEmployee, deactivationDate, historyTypeReason);
+
+        // le cambiamos el estado a su usuario y al empleado
+        LocalDate desactivatedDate = deactivationDate;
         currentEmployee.setDesactivatedAt(desactivatedDate);
         currentEmployee.getUser().setDesactivatedAt(desactivatedDate);
+
+        // se agrega la desactivacion al historial del empleado
+        List<EmployeeHistory> employeeHistories = currentEmployee.getEmployeeHistories();
+        employeeHistories.add(createdEmployeeHistory);
+        currentEmployee.setEmployeeHistories(employeeHistories);
+
+        return employeeRepository.save(currentEmployee);
+    }
+
+
+    @Transactional(rollbackOn = Exception.class)
+    public Employee reactivateEmployee(String currentId, LocalDate reactivationDate)
+            throws NotFoundException, IllegalStateException, InvalidPeriodException {
+        // traer el empleado por id
+        Employee currentEmployee = findEmployeeById(currentId);
+
+        // si ya esta desactivado entonces lanzamos error
+        if (currentEmployee.getDesactivatedAt() == null) {
+            // indicamos que se llamo el metodo en un momento inapropiado
+            throw new IllegalStateException("El empleado esta activado.");
+        }
+
+        EmployeeHistory reactivatedEmployeeHistory = forEmployeeHistoryPort
+            .createEmployeeHistoryReactivation(currentEmployee, reactivationDate);
+
+        // le cambiamos el estado a su usuario y al empleado
+        currentEmployee.setDesactivatedAt(null);
+        currentEmployee.getUser().setDesactivatedAt(null);
+
+        // se agrega la desactivacion al historial del empleado
+        List<EmployeeHistory> employeeHistories = currentEmployee.getEmployeeHistories();
+        employeeHistories.add(reactivatedEmployeeHistory);
+        currentEmployee.setEmployeeHistories(employeeHistories);
+
         return employeeRepository.save(currentEmployee);
     }
 

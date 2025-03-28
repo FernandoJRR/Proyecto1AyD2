@@ -7,6 +7,7 @@ import java.util.List;
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.models.EmployeeHistory;
 import com.hospitalApi.employees.models.EmployeeType;
+import com.hospitalApi.employees.models.HistoryType;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
@@ -32,7 +33,9 @@ public interface ForEmployeesPort {
 
         public List<Employee> findEmployees();
 
-        public Employee desactivateEmployee(String currentId)
-                        throws NotFoundException, IllegalStateException;
+        public Employee desactivateEmployee(String currentId, LocalDate deactivationDate, HistoryType historyTypeReason)
+                        throws NotFoundException, IllegalStateException, InvalidPeriodException;
+        public Employee reactivateEmployee(String currentId, LocalDate deactivationDate)
+                        throws NotFoundException, IllegalStateException, InvalidPeriodException;
 
 }

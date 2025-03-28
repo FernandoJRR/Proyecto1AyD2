@@ -30,4 +30,13 @@ public class HistoryTypeService implements ForHistoryTypePort {
 
         return foundHistoryType.get();
     }
+
+    public HistoryType findHistoryTypeById(String historyTypeId) throws NotFoundException {
+        Optional<HistoryType> foundHistoryType = historyTypeRepository.findById(historyTypeId);
+        if (foundHistoryType.isEmpty()) {
+            throw new NotFoundException("No existe el tipo de Historial con el id ingresado.");
+        }
+
+        return foundHistoryType.get();
+    }
 }
