@@ -2,10 +2,24 @@ import { type PatientResponseDTO } from "../patients/patients";
 
 const CURRENT_CONSULT_URI = "/v1/consults";
 
+export interface ConsultFilterDTO {
+  patientId: string | null;
+  patientDpi: string | null;
+  patientFirstnames: string | null;
+  patientLastnames: string | null;
+  employeeId: string | null;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  consultId: string | null;
+  isPaid: boolean | null;
+  isInternado: boolean | null;
+}
+
 export interface ConsultResponseDTO {
   id: string;
   patient: PatientResponseDTO;
   isInternado: boolean;
+  isPaid: boolean;
   costoConsulta: number;
   costoTotal: number;
   createdAt: string;
@@ -28,11 +42,12 @@ export interface TotalConsultResponseDTO {
   totalCost: number;
 }
 
-export const getAllConsults = async () => {
-  const response = await $api<ConsultResponseDTO[]>(
-    `${CURRENT_CONSULT_URI}/all`
-  );
+export const getAllConsults = async (
+  filters: ConsultFilterDTO
+) => {
+  const response = await $api<ConsultResponseDTO[]>(`${CURRENT_CONSULT_URI}/all${genParams(filters)}`);
   return response;
+
 };
 
 export const getConsult = async (id: string) => {
