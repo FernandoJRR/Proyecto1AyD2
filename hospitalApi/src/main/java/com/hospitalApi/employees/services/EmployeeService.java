@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.core.annotation.MergedAnnotations.Search;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.hospitalApi.employees.models.Employee;
@@ -16,6 +18,8 @@ import com.hospitalApi.employees.ports.ForEmployeeHistoryPort;
 import com.hospitalApi.employees.ports.ForEmployeeTypePort;
 import com.hospitalApi.employees.ports.ForEmployeesPort;
 import com.hospitalApi.employees.repositories.EmployeeRepository;
+import com.hospitalApi.employees.specifications.EmployeeSpecifications;
+import com.hospitalApi.shared.enums.EmployeeTypeEnum;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
@@ -36,7 +40,8 @@ public class EmployeeService implements ForEmployeesPort {
     private final ForUsersPort userService;
 
     @Transactional(rollbackOn = Exception.class)
-    public Employee createEmployee(Employee newEmployee, EmployeeType employeeType, User newUser, EmployeeHistory employeeHistoryDate)
+    public Employee createEmployee(Employee newEmployee, EmployeeType employeeType, User newUser,
+            EmployeeHistory employeeHistoryDate)
             throws DuplicatedEntryException, NotFoundException {
         // veficar que el tipo de empleado si exista
         EmployeeType existingEmployeeType = forEmployeeTypePort.findEmployeeTypeById(employeeType.getId());
@@ -44,7 +49,8 @@ public class EmployeeService implements ForEmployeesPort {
         User user = userService.createUser(newUser);
 
         // crea el primer registro del empleado en el historial (su contratacion)
-        EmployeeHistory createdEmployeeHistory = forEmployeeHistoryPort.createEmployeeHistoryHiring(newEmployee, employeeHistoryDate.getHistoryDate());
+        EmployeeHistory createdEmployeeHistory = forEmployeeHistoryPort.createEmployeeHistoryHiring(newEmployee,
+                employeeHistoryDate.getHistoryDate());
 
         // guardar el empledo
         newEmployee.setUser(user);
@@ -87,9 +93,10 @@ public class EmployeeService implements ForEmployeesPort {
 
         BigDecimal comparisonSalary = currentEmployee.getSalary();
 
-        // se verifica si el salario aumento o disminuyo (para la fecha indicada) y se registra en el historial del empleado
+        // se verifica si el salario aumento o disminuyo (para la fecha indicada) y se
+        // registra en el historial del empleado
         Optional<EmployeeHistory> currentSalaryUntilDateHistory = forEmployeeHistoryPort
-            .getLastEmployeeSalaryUntilDate(currentEmployee, salaryDate);
+                .getLastEmployeeSalaryUntilDate(currentEmployee, salaryDate);
 
         // si ya se modifico el salario anteriormente (a la fecha) se usa ese registro
         if (currentSalaryUntilDateHistory.isPresent()) {
@@ -98,19 +105,20 @@ public class EmployeeService implements ForEmployeesPort {
             // si no hay se utiliza el primer salario que se le dio, el de contratacion
             EmployeeHistory hiring = currentEmployee.getEmployeeHistories().get(0);
             String hiringCommentary = hiring.getCommentary();
-            BigDecimal hiringSalary = new BigDecimal(hiringCommentary.substring(hiringCommentary.indexOf("Q.") + 2).trim());
+            BigDecimal hiringSalary = new BigDecimal(
+                    hiringCommentary.substring(hiringCommentary.indexOf("Q.") + 2).trim());
             comparisonSalary = hiringSalary;
         }
 
         if (comparisonSalary.compareTo(newSalary) == -1) {
             // aumento
             EmployeeHistory createdEmployeeHistory = forEmployeeHistoryPort
-                .createEmployeeHistorySalaryIncrease(currentEmployee, newSalary, salaryDate);
+                    .createEmployeeHistorySalaryIncrease(currentEmployee, newSalary, salaryDate);
             employeeHistories.add(createdEmployeeHistory);
         } else if (comparisonSalary.compareTo(newSalary) == 1) {
             // disminuyo
             EmployeeHistory createdEmployeeHistory = forEmployeeHistoryPort
-                .createEmployeeHistorySalaryDecrease(currentEmployee, newSalary, salaryDate);
+                    .createEmployeeHistorySalaryDecrease(currentEmployee, newSalary, salaryDate);
             employeeHistories.add(createdEmployeeHistory);
         }
 
@@ -119,7 +127,7 @@ public class EmployeeService implements ForEmployeesPort {
 
         // se usa el salario mas reciente segun el historial para asignarle al empleado
         Optional<EmployeeHistory> mostRecentEmployeeSalaryOptional = this.forEmployeeHistoryPort
-            .getMostRecentEmployeeSalary(currentEmployee);
+                .getMostRecentEmployeeSalary(currentEmployee);
         if (mostRecentEmployeeSalaryOptional.isEmpty()) {
             // si esta vacio se usa el que se acaba de ingresar
             currentEmployee.setSalary(newSalary);
@@ -224,6 +232,27 @@ public class EmployeeService implements ForEmployeesPort {
         // notfound exception
         List<Employee> employees = employeeRepository.findAll();
 
+        return employees;
+    }
+
+    @Override
+    public List<Employee> getEmployeesByType(String employeeTypeId, String search) throws NotFoundException {
+        // Verificamos si existe el tipo de empleado
+        EmployeeType employeeType = forEmployeeTypePort.findEmployeeTypeById(employeeTypeId);
+        Specification<Employee> spec = Specification
+                .where(EmployeeSpecifications.hasEmployeeTypeId(employeeType.getId()))
+                .and(EmployeeSpecifications.hasFirstName(search))
+                .and(EmployeeSpecifications.hasLastName(search))
+                .and(EmployeeSpecifications.isActive(true));
+        List<Employee> employees = employeeRepository.findAll(spec);
+        return employees;
+    }
+
+    @Override
+    public List<Employee> getDoctors(String search) throws NotFoundException {
+        // Traemos los empleados por el tipo de empleado
+        EmployeeType employeeType = forEmployeeTypePort.findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name());
+        List<Employee> employees = getEmployeesByType(employeeType.getId(), search);
         return employees;
     }
 }

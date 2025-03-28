@@ -30,7 +30,6 @@ import lombok.Setter;
 @Entity
 public class Consult extends Auditor {
 
-    @NotBlank(message = "El paciente es requerido")
     @ManyToOne
     @JoinColumn
     private Patient patient;
@@ -59,8 +58,6 @@ public class Consult extends Auditor {
     @JoinColumn(nullable = true)
     private RoomUsage roomUsage;
 
-    // Habitacion
-    // private Habitacion habitacion;
     public Consult(String id, Patient patient, Boolean isInternado, Double costoConsulta, Double costoTotal) {
         super(id);
         this.patient = patient;

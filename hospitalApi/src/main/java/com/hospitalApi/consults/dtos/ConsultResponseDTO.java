@@ -15,17 +15,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ConsultResponseDTO {
-    String id;
-    PatientResponseDTO patient;
-    Boolean isInternado;
-    Double costoConsulta;
-    Double costoTotal;
-    LocalDate createdAt;
-    LocalDate updateAt;
+    private String id;
+    private PatientResponseDTO patient;
+    private Boolean isInternado;
+    private Boolean isPaid;
+    private Double costoConsulta;
+    private Double costoTotal;
+    private LocalDate createdAt;
+    private LocalDate updateAt;
 
     public ConsultResponseDTO(Consult consult) {
         this.id = consult.getId();
         this.patient = new PatientResponseDTO(consult.getPatient());
+        this.isPaid = consult.getIsPaid();
         this.isInternado = consult.getIsInternado();
         this.costoConsulta = consult.getCostoConsulta();
         this.costoTotal = consult.getCostoTotal();

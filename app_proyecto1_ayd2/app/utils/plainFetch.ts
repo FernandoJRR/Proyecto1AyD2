@@ -33,3 +33,16 @@ export const $api = $fetch.create({
     })
   }
 })
+
+
+export const genParams = (objectParams: any): string => {
+  if (!objectParams) return "";
+  const params = new URLSearchParams();
+  Object.entries(objectParams).forEach(([key, value]) => {
+    if (value !== null && value !== undefined && value !== "") {
+      params.append(key, String(value));
+    }
+  });
+  const query = params.toString();
+  return query ? "?" + query : "";
+};
