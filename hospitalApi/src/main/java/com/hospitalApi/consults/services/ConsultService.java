@@ -2,16 +2,22 @@ package com.hospitalApi.consults.services;
 
 import java.util.List;
 
+import com.hospitalApi.consults.port.ForEmployeeConsultPort;
+
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import com.hospitalApi.consults.dtos.ConsutlFilterDTO;
 import com.hospitalApi.consults.dtos.UpdateConsultRequestDTO;
 import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.consults.port.ForConsultPort;
 import com.hospitalApi.consults.repositories.ConsultRepository;
+import com.hospitalApi.consults.specifications.ConsultSpecifications;
 import com.hospitalApi.patients.models.Patient;
 import com.hospitalApi.patients.ports.ForPatientPort;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.surgery.ports.ForSurgeryCalculationPort;
+import org.springframework.data.domain.Sort;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -23,6 +29,7 @@ public class ConsultService implements ForConsultPort {
     private final ConsultRepository consultRepository;
     private final ForPatientPort forPatientPort;
     private final ForSurgeryCalculationPort forSurgeryCalculationService;
+    private final ForEmployeeConsultPort forEmployeeConsultPort;
 
     @Override
     public Consult findById(String id) throws NotFoundException {
@@ -31,10 +38,15 @@ public class ConsultService implements ForConsultPort {
     }
 
     @Override
-    public Consult createConsult(String patientId, Double costoConsulta) throws NotFoundException {
+    @Transactional(rollbackOn = Exception.class)
+    public Consult createConsult(String patientId, String employeeId, Double costoConsulta) throws NotFoundException {
+        // Creamos la consulta con el paciente
         Patient patient = forPatientPort.getPatient(patientId);
         Consult consult = new Consult(patient, costoConsulta);
-        return consultRepository.save(consult);
+        Consult savedConsult = consultRepository.save(consult);
+        // Asociamos la consulta con el empleado
+        forEmployeeConsultPort.createEmployeeConsult(savedConsult, employeeId);
+        return savedConsult;
     }
 
     @Override
@@ -79,4 +91,29 @@ public class ConsultService implements ForConsultPort {
     public List<Consult> getAllConsults() {
         return consultRepository.findAll();
     }
+
+    @Override
+    public List<Consult> getConsults(ConsutlFilterDTO consutlFilterDTO) {
+        Specification<Consult> patientSpecification = Specification
+                .where(ConsultSpecifications.hasPatientDpi(consutlFilterDTO.getPatientDpi()))
+                .or(ConsultSpecifications.hasPatientFirstnames(consutlFilterDTO.getPatientFirstnames()))
+                .or(ConsultSpecifications.hasPatientLastnames(consutlFilterDTO.getPatientLastnames()));
+
+        Specification<Consult> employeeSpecification = Specification
+                .where(ConsultSpecifications.hasEmployeeId(consutlFilterDTO.getEmployeeId()))
+                .or(ConsultSpecifications.hasEmployeeFirstName(consutlFilterDTO.getEmployeeFirstName()))
+                .or(ConsultSpecifications.hasEmployeeLastName(consutlFilterDTO.getEmployeeLastName()));
+
+        Specification<Consult> specification = Specification
+                .where(ConsultSpecifications.hasId(consutlFilterDTO.getConsultId()))
+                .and(patientSpecification)
+                .and(employeeSpecification)
+                .and(ConsultSpecifications.isPaid(consutlFilterDTO.getIsPaid()))
+                .and(ConsultSpecifications.isInternado(consutlFilterDTO.getIsInternado()));
+
+        List<Consult> consults = consultRepository.findAll(specification, Sort.by(Sort.Direction.DESC, "createdAt"));
+        System.out.println("Consults: " + consults);
+        return consults;
+    }
+
 }

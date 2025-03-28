@@ -96,7 +96,7 @@ export const updateEmployeeSalary = async (data: EmployeeSalaryUpdatePayload, em
   return response
 }
 
-export const getDoctors = async (search: string) => {
+export const getDoctors = async (search: string | null) => {
   const response = await $api<Employee[]>(`${CURRENT_EMPLOYEE_URI}/doctors`, {
     params: { search }
   })

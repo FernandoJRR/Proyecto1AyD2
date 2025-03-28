@@ -157,23 +157,73 @@
 
     <!-- Botón Final para Crear Consulta -->
     <div v-if="puedeCrearConsulta" class="mt-10">
-      <Button
-        label="Crear Consulta"
-        icon="pi pi-check"
-        severity="success"
-        class="w-full"
-        @click="crearConsulta"
-      />
+      <div
+        class="space-y-8 bg-white shadow-md rounded-2xl p-6 border border-gray-200"
+      >
+        <Form
+          v-slot="$form"
+          :initialValues
+          :resolver
+          @submit="crearConsulta"
+          class="mt-2 flex justify-center"
+        >
+          <div class="flex flex-col gap-1 w-full">
+            <h1 class="text-2xl font-semibold mb-6 text-black">
+              Datos del Paciente
+            </h1>
+
+            <div class="flex flex-row gap-4 mt-8">
+              <div class="w-full">
+                <FloatLabel>
+                  <label for="costoConsulta">Costo de Consulta</label>
+                  <InputNumber
+                    :min="1"
+                    :minFractionDigits="2"
+                    :maxFractionDigits="2"
+                    mode="currency"
+                    currency="GTQ"
+                    name="costoConsulta"
+                    type="number"
+                    fluid
+                  />
+                </FloatLabel>
+                <Message
+                  v-if="$form.costoConsulta?.invalid"
+                  severity="error"
+                  size="small"
+                  variant="simple"
+                >
+                  {{ $form.costoConsulta.error?.message }}
+                </Message>
+              </div>
+            </div>
+            <Button
+              type="submit"
+              severity="secondary"
+              label="Crear Consulta"
+              icon="pi pi-save"
+              class="mt-8"
+            />
+          </div>
+        </Form>
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, computed } from "vue";
+import { zodResolver } from "@primevue/forms/resolvers/zod";
+import { z } from "zod";
 import { RouterLink } from "vue-router";
 import { getAllPatients } from "~/lib/api/patients/patients";
 import { getDoctors } from "~/lib/api/admin/employee";
 import { InputText, Button } from "primevue";
+import { toast } from "vue-sonner";
+import {
+  createConsult,
+  type CreateConsultRequestDTO,
+} from "~/lib/api/consults/consult";
 
 const { employee } = storeToRefs(useAuthStore());
 
@@ -183,6 +233,20 @@ const searchTerm = ref("");
 const searchDoctor = ref("");
 const pacienteSeleccionado = ref<any | null>(null);
 const doctorSeleccionado = ref<any | null>(null);
+
+const initialValues = reactive({
+  costoConsulta: 100,
+});
+
+const resolver = ref(
+  zodResolver(
+    z.object({
+      costoConsulta: z
+        .number()
+        .min(0, "El costo de la consulta debe ser mayor a 0"),
+    })
+  )
+);
 
 const {
   state: patientsState,
@@ -199,10 +263,11 @@ const {
   asyncStatus: asyncDoctorsStatus,
   refetch: refetchDoctors,
 } = useCustomQuery({
-  enabled: isAdmin,
   key: ["doctors-consult"],
   query: () =>
-    getDoctors(searchDoctor.value === "" ? null : searchDoctor.value),
+    isAdmin.value
+      ? getDoctors(searchDoctor.value === "" ? null : searchDoctor.value)
+      : Promise.resolve([]),
 });
 
 const buscarPacientes = () => refetchPatients();
@@ -234,8 +299,27 @@ const puedeCrearConsulta = computed(() => {
 });
 
 const crearConsulta = () => {
-  console.log("Paciente:", pacienteSeleccionado.value);
-  console.log("Doctor:", doctorSeleccionado.value);
-  // Aquí iría la lógica para guardar la consulta
+  const payload: CreateConsultRequestDTO = {
+    costoConsulta: initialValues.costoConsulta,
+    patientId: pacienteSeleccionado.value.id,
+    employeeId: isAdmin.value ? doctorSeleccionado.value.id : null,
+  };
+  createConsultMutation(payload);
 };
+
+const { mutate: createConsultMutation, asyncStatus: asyncCreateConsultStatus } =
+  useMutation({
+    mutation: (consultData: CreateConsultRequestDTO) =>
+      createConsult(consultData),
+    onError(error) {
+      console.error(error);
+      toast.error("Ocurrió un error al crear la consulta", {
+        description: error.message,
+      });
+    },
+    onSuccess() {
+      toast.success("Consulta creada con éxito");
+      navigateTo("/consultas");
+    },
+  });
 </script>

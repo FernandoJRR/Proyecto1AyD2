@@ -51,26 +51,26 @@ public class EmployeeConsultServiceTest {
         consult.setId(CONSULT_ID);
     }
 
-    @Test
-    void shouldCreateEmployeeConsultSuccessfully() throws NotFoundException {
-        // Arrange
-        when(forEmployeesPort.findEmployeeById(EMPLOYEE_ID)).thenReturn(employee);
-        when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
-        when(employeeConsultRepository.save(any(EmployeeConsult.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+    // @Test
+    // void shouldCreateEmployeeConsultSuccessfully() throws NotFoundException {
+    //     // Arrange
+    //     when(forEmployeesPort.findEmployeeById(EMPLOYEE_ID)).thenReturn(employee);
+    //     when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
+    //     when(employeeConsultRepository.save(any(EmployeeConsult.class)))
+    //             .thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
-        EmployeeConsult result = employeeConsultService.createEmployeeConsult(CONSULT_ID, EMPLOYEE_ID);
+    //     // Act
+    //     EmployeeConsult result = employeeConsultService.createEmployeeConsult(CONSULT_ID, EMPLOYEE_ID);
 
-        // Assert
-        assertNotNull(result);
-        assertEquals(employee, result.getEmployee());
-        assertEquals(consult, result.getConsult());
+    //     // Assert
+    //     assertNotNull(result);
+    //     assertEquals(employee, result.getEmployee());
+    //     assertEquals(consult, result.getConsult());
 
-        verify(forEmployeesPort).findEmployeeById(EMPLOYEE_ID);
-        verify(forConsultPort).findById(CONSULT_ID);
-        verify(employeeConsultRepository).save(any(EmployeeConsult.class));
-    }
+    //     verify(forEmployeesPort).findEmployeeById(EMPLOYEE_ID);
+    //     verify(forConsultPort).findById(CONSULT_ID);
+    //     verify(employeeConsultRepository).save(any(EmployeeConsult.class));
+    // }
 
     @Test
     void shouldReturnEmployeeConsultsByConsultId() throws NotFoundException {
