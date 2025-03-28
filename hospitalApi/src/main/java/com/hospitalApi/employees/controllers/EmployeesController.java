@@ -1,4 +1,4 @@
-package com.hospitalApi.employees.controllers;
+        package com.hospitalApi.employees.controllers;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hospitalApi.employees.dtos.CompoundEmployeeResponseDTO;
 import com.hospitalApi.employees.dtos.CreateEmployeeRequestDTO;
+import com.hospitalApi.employees.dtos.EmployeeDeactivateRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeHistoryResponseDTO;
 import com.hospitalApi.employees.dtos.EmployeeRequestDTO;
 import com.hospitalApi.employees.dtos.EmployeeResponseDTO;
@@ -24,9 +25,11 @@ import com.hospitalApi.employees.dtos.EmployeeSalaryRequestDTO;
 import com.hospitalApi.employees.mappers.EmployeeHistoryMapper;
 import com.hospitalApi.employees.mappers.EmployeeMapper;
 import com.hospitalApi.employees.mappers.EmployeeTypeMapper;
+import com.hospitalApi.employees.mappers.HistoryTypeMapper;
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.models.EmployeeHistory;
 import com.hospitalApi.employees.models.EmployeeType;
+import com.hospitalApi.employees.models.HistoryType;
 import com.hospitalApi.employees.ports.ForEmployeeHistoryPort;
 import com.hospitalApi.employees.ports.ForEmployeesPort;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
@@ -56,6 +59,7 @@ public class EmployeesController {
         private final EmployeeTypeMapper employeeTypeMapper;
         private final EmployeeMapper employeeMapper;
         private final UserMapper userMapper;
+        private final HistoryTypeMapper historyTypeMapper;
         private final EmployeeHistoryMapper employeeHistoryMapper;
 
         @Operation(summary = "Crear un nuevo empleado", description = "Este endpoint permite la creación de un nuevo empleado en el sistema.")
@@ -140,7 +144,7 @@ public class EmployeesController {
                 return ResponseEntity.status(HttpStatus.OK).body(response);
         }
 
-        @Operation(summary = "Edita un empleado", description = "Este endpoint permite la cambiar el estado de desactivatedAt de un empleado en el sistema segun su id.")
+        @Operation(summary = "Desactiva un empleado", description = "Este endpoint permite la cambiar el estado de desactivatedAt de un empleado en el sistema segun su id.")
         @ApiResponses(value = {
                         @ApiResponse(responseCode = "204", description = "Empleado desactivado exitosamente"),
                         @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
@@ -150,11 +154,35 @@ public class EmployeesController {
         })
         @PatchMapping("/{employeeId}/desactivate")
         public ResponseEntity<Void> desactivateEmployee(
-                        @PathVariable("employeeId") String employeeId)
-                        throws NotFoundException, IllegalStateException {
+                @RequestBody @Valid EmployeeDeactivateRequestDTO request,
+                @PathVariable("employeeId") String employeeId)
+                        throws NotFoundException, IllegalStateException, InvalidPeriodException {
 
+                HistoryType historyTypeReason = historyTypeMapper.fromIdRequestDtoToHistoryType(request.getHistoryTypeId());
                 // mandar a desactivar el employee al port
-                employeesPort.desactivateEmployee(employeeId);
+                employeesPort.desactivateEmployee(employeeId, request.getDeactivationDate(), historyTypeReason);
+
+                return ResponseEntity.noContent().build();
+
+        }
+
+        @Operation(summary = "Reactiva un empleado", description = "Este endpoint permite la reactivar el estado de desactivatedAt de un empleado en el sistema segun su id.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "204", description = "Empleado desactivado exitosamente"),
+                        @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "404", description = "Recursos no econtrados, el usuario a desactivar.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "409", description = "Conflicto, el empleaod ya esta desactivado.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        })
+        @PatchMapping("/{employeeId}/reactivate")
+        public ResponseEntity<Void> reactivateEmployee(
+                @RequestBody @Valid EmployeeDeactivateRequestDTO request,
+                @PathVariable("employeeId") String employeeId)
+                        throws NotFoundException, IllegalStateException, InvalidPeriodException {
+
+                HistoryType historyTypeReason = historyTypeMapper.fromIdRequestDtoToHistoryType(request.getHistoryTypeId());
+                // mandar a desactivar el employee al port
+                employeesPort.reactivateEmployee(employeeId, request.getDeactivationDate());
 
                 return ResponseEntity.noContent().build();
 

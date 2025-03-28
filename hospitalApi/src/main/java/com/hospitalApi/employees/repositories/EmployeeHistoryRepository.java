@@ -21,4 +21,5 @@ public interface EmployeeHistoryRepository extends JpaRepository<EmployeeHistory
 
     List<EmployeeHistory> findByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateAsc(String employeeId, List<String> historyTypeTypes);
 
+    Optional<EmployeeHistory> findFirstByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateDesc(String employeeId, List<String> historyTypes);
 }
