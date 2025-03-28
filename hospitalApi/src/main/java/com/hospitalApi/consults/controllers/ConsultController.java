@@ -3,6 +3,7 @@ package com.hospitalApi.consults.controllers;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hospitalApi.consults.dtos.ConsultResponseDTO;
+import com.hospitalApi.consults.dtos.ConsutlFilterDTO;
 import com.hospitalApi.consults.dtos.CreateConsultRequestDTO;
 import com.hospitalApi.consults.dtos.TotalConsultResponseDTO;
 import com.hospitalApi.consults.dtos.UpdateConsultRequestDTO;
@@ -26,6 +27,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,6 +41,7 @@ public class ConsultController {
 
     private final ForConsultPort consultPort;
     private final ConsultMapper consultMapper;
+    // private final ConsultMapper consultMapper;
 
     @Operation(summary = "Obtener todas las consultas", description = "Este endpoint devuelve una lista con todas las consultas registradas en el sistema.")
     @ApiResponses(value = {
@@ -46,8 +49,9 @@ public class ConsultController {
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     @GetMapping("/all")
-    public ResponseEntity<List<ConsultResponseDTO>> getAllConsults() {
-        List<Consult> consults = consultPort.getAllConsults();
+    public ResponseEntity<List<ConsultResponseDTO>> getAllConsults(
+            @ModelAttribute ConsutlFilterDTO consultFilterDTO) {
+        List<Consult> consults = consultPort.getConsults(consultFilterDTO);
         return ResponseEntity.ok().body(consultMapper.fromConsultsToResponse(consults));
     }
 

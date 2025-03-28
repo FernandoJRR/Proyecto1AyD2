@@ -58,8 +58,6 @@ public class Consult extends Auditor {
     @JoinColumn(nullable = true)
     private RoomUsage roomUsage;
 
-    // Habitacion
-    // private Habitacion habitacion;
     public Consult(String id, Patient patient, Boolean isInternado, Double costoConsulta, Double costoTotal) {
         super(id);
         this.patient = patient;
