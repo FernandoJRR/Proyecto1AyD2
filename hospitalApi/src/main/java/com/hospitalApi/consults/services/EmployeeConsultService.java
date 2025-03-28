@@ -6,14 +6,12 @@ import org.springframework.stereotype.Service;
 
 import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.consults.models.EmployeeConsult;
-import com.hospitalApi.consults.port.ForConsultPort;
 import com.hospitalApi.consults.port.ForEmployeeConsultPort;
 import com.hospitalApi.consults.repositories.EmployeeConsultRepository;
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.ports.ForEmployeesPort;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
-import jakarta.validation.ConstraintViolationException;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -21,13 +19,11 @@ import lombok.AllArgsConstructor;
 public class EmployeeConsultService implements ForEmployeeConsultPort {
 
     private final ForEmployeesPort forEmployeesPort;
-    private final ForConsultPort forConsultPort;
     private final EmployeeConsultRepository employeeConsultRepository;
 
     @Override
-    public EmployeeConsult createEmployeeConsult(String consultId, String employeeId) throws NotFoundException {
+    public EmployeeConsult createEmployeeConsult(Consult consult, String employeeId) throws NotFoundException {
         Employee employee = forEmployeesPort.findEmployeeById(employeeId);
-        Consult consult = forConsultPort.findById(consultId);
         EmployeeConsult employeeConsult = new EmployeeConsult(consult, employee);
         employeeConsult = employeeConsultRepository.save(employeeConsult);
         return employeeConsult;

@@ -18,6 +18,9 @@ export default defineNuxtConfig({
         cssLayer: {
           name: 'primevue',
           order: 'tailwind-base, primevue, tailwind-utilities'
+        },
+        options: {
+          darkModeSelector: '.class-dark'
         }
       }
     }

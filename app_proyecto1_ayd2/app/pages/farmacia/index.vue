@@ -145,7 +145,7 @@ const {
   state: medicinesState,
   asyncStatus,
   refetch: refetchMedicines
-} = useQuery({
+} = useCustomQuery({
   key: ["medicines"],
   query: () => getAllMedicines(searchTerm.value === "" ? null : searchTerm.value),
 });
@@ -154,7 +154,7 @@ const {
   state: medicinesLowStockState,
   asyncStatus: asyncLowStockStatus,
   refetch: refetchLowStock
-} = useQuery({
+} = useCustomQuery({
   key: ["medicines-low-stock"],
   query: () => getAllMedicinesLowStock(),
 });

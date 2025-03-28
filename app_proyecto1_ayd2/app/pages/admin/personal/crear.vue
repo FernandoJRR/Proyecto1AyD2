@@ -7,109 +7,117 @@
     </div>
 
     <h1 class="text-4xl font-bold mb-6">Crear Usuario</h1>
-    <div class="space-y-8 bg-white shadow-md rounded-2xl p-6 border border-gray-200">
-      <Form v-slot="$form" :initialValues :resolver @submit="onFormSubmit" class="mt-8 flex justify-center">
-        <div class="flex flex-col gap-1">
-          <h1 class="text-2xl font-semibold mb-6">Datos del Empleado</h1>
-          <div class="flex flex-row gap-4">
-            <div class="w-full">
-              <FloatLabel>
-                <label>Nombres</label>
-                <InputText name="firstName" type="text" fluid />
-              </FloatLabel>
-              <Message v-if="$form.firstName?.invalid" severity="error" size="small" variant="simple">{{
-                $form.firstName.error?.message }}</Message>
-            </div>
-            <div class="w-full">
-              <FloatLabel>
-                <label>Apellidos</label>
-                <InputText name="lastName" type="text" fluid />
-              </FloatLabel>
-              <Message v-if="$form.lastName?.invalid" severity="error" size="small" variant="simple">{{
-                $form.lastName.error?.message }}</Message>
-            </div>
+    <Form v-slot="$form" :initialValues :resolver @submit="onFormSubmit" class="mt-8 flex justify-center">
+      <div class="flex flex-col gap-1">
+        <h1 class="text-2xl font-semibold mb-6">Datos del Empleado</h1>
+        <div class="flex flex-row gap-4">
+          <div class="w-full">
+            <FloatLabel>
+              <label>Nombres</label>
+              <InputText name="firstName" type="text" fluid />
+            </FloatLabel>
+            <Message v-if="$form.firstName?.invalid" severity="error" size="small" variant="simple">{{
+              $form.firstName.error?.message }}</Message>
           </div>
-          <div class="flex flex-row mt-8">
-            <div>
-              <FloatLabel>
-                <label>Salario</label>
-                <InputNumber name="salary" :min="1" :minFractionDigits="2" :maxFractionDigits="2" mode="currency"
-                  currency="GTQ" placeholder="Salario" fluid />
-              </FloatLabel>
-              <Message v-if="$form.salary?.invalid" severity="error" size="small" variant="simple">{{
-                $form.salary.error?.message }}</Message>
-            </div>
-            <div>
-              <div class="flex flex-row items-center gap-4 ml-4">
-                <ToggleSwitch name="has_porcentaje_iggs" class="min-w-10" />
-                <FloatLabel>
-                  <label>Porcentaje IGGS</label>
-                  <InputNumber name="iggsPercentage" :min="1" :max="100" suffix="%" placeholder="Porcentaje IGGS" fluid
-                    :disabled="!$form.has_porcentaje_iggs?.value" />
-                </FloatLabel>
-              </div>
-              <Message v-if="$form.iggsPercentage?.invalid" severity="error" size="small" variant="simple">{{
-                $form.iggsPercentage.error?.message }}</Message>
-            </div>
-            <div>
-              <div class="flex flex-row items-center gap-4 ml-4">
-                <ToggleSwitch name="has_porcentaje_irtra" class="min-w-10" />
-                <FloatLabel>
-                  <label>Porcentaje IRTRA</label>
-                  <InputNumber name="irtraPercentage" :min="1" :max="100" suffix="%" label="Porcentaje IRTRA" fluid
-                    :disabled="!$form.has_porcentaje_irtra?.value" />
-                </FloatLabel>
-              </div>
-              <Message v-if="$form.irtraPercentage?.invalid" severity="error" size="small" variant="simple">{{
-                $form.irtraPercentage.error?.message }}</Message>
-            </div>
+          <div class="w-full">
+            <FloatLabel>
+              <label>Apellidos</label>
+              <InputText name="lastName" type="text" fluid />
+            </FloatLabel>
+            <Message v-if="$form.lastName?.invalid" severity="error" size="small" variant="simple">{{
+              $form.lastName.error?.message }}</Message>
           </div>
-          <div class="mt-8">
+        </div>
+        <div class="flex flex-row mt-8">
+          <div>
+            <FloatLabel>
+              <label>Salario</label>
+              <InputNumber name="salary" :min="1" :minFractionDigits="2" :maxFractionDigits="2" mode="currency"
+                currency="GTQ" placeholder="Salario" fluid />
+            </FloatLabel>
+            <Message v-if="$form.salary?.invalid" severity="error" size="small" variant="simple">{{
+              $form.salary.error?.message }}</Message>
+          </div>
+          <div>
+            <div class="flex flex-row items-center gap-4 ml-4">
+              <ToggleSwitch name="has_porcentaje_iggs" class="min-w-10" />
+              <FloatLabel>
+                <label>Porcentaje IGGS</label>
+                <InputNumber name="iggsPercentage" :min="1" :max="100" suffix="%" placeholder="Porcentaje IGGS" fluid
+                  :disabled="!$form.has_porcentaje_iggs?.value" />
+              </FloatLabel>
+            </div>
+            <Message v-if="$form.iggsPercentage?.invalid" severity="error" size="small" variant="simple">{{
+              $form.iggsPercentage.error?.message }}</Message>
+          </div>
+          <div>
+            <div class="flex flex-row items-center gap-4 ml-4">
+              <ToggleSwitch name="has_porcentaje_irtra" class="min-w-10" />
+              <FloatLabel>
+                <label>Porcentaje IRTRA</label>
+                <InputNumber name="irtraPercentage" :min="1" :max="100" suffix="%" label="Porcentaje IRTRA" fluid
+                  :disabled="!$form.has_porcentaje_irtra?.value" />
+              </FloatLabel>
+            </div>
+            <Message v-if="$form.irtraPercentage?.invalid" severity="error" size="small" variant="simple">{{
+              $form.irtraPercentage.error?.message }}</Message>
+          </div>
+        </div>
+        <div class="flex flex-row gap-4 mt-8">
+          <div class="w-full">
             <template v-if="userTypes.status === 'success'">
               <FloatLabel>
                 <label>Tipo de Usuario</label>
                 <Select name="type" v-model="selectedType" optionLabel="name" optionValue="id" :options="userTypes.data"
                   placeholder="Selecciona un tipo de usuario" fluid />
               </FloatLabel>
+              <Message v-if="$form.type?.invalid" severity="error" size="small" variant="simple">{{
+                $form.type.error?.message }}</Message>
             </template>
-            <Message v-if="$form.type?.invalid" severity="error" size="small" variant="simple">{{
-              $form.city.error.message }}
-            </Message>
           </div>
-          <h1 class="text-2xl font-semibold mb-6">Datos del Usuario</h1>
-          <div>
+          <div class="w-full">
             <FloatLabel>
-              <label>Username</label>
-              <InputText name="username" type="text" fluid />
+              <label>Fecha de Contratacion</label>
+              <DatePicker name="hiring_date" class="w-full" />
             </FloatLabel>
-            <Message v-if="$form.username?.invalid" severity="error" size="small" variant="simple">{{
-              $form.username.error?.message }}</Message>
+            <Message v-if="$form.hiring_date?.invalid" severity="error" size="small" variant="simple">{{
+              $form.hiring_date.error?.message
+              }}</Message>
           </div>
-          <div class="mt-6">
-            <FloatLabel>
-              <Password name="password" :feedback="false" fluid toggleMask />
-              <label for="over_label">Password</label>
-            </FloatLabel>
-            <Message v-if="$form.password?.invalid" severity="error" size="small" variant="simple">{{
-              $form.password.error?.message }}</Message>
-          </div>
-          <div class="mt-6">
-            <FloatLabel>
-              <Password name="password_repeat" :feedback="false" fluid toggleMask />
-              <label for="over_label">Repite Password</label>
-            </FloatLabel>
-            <Message v-if="$form.password_repeat?.invalid" severity="error" size="small" variant="simple">{{
-              $form.password_repeat.error?.message }}</Message>
-          </div>
-          <Button type="submit" severity="secondary" label="Crear" icon="pi pi-save" />
         </div>
-      </Form>
-    </div>
+        <h1 class="text-2xl font-semibold mb-6">Datos del Usuario</h1>
+        <div>
+          <FloatLabel>
+            <label>Username</label>
+            <InputText name="username" type="text" fluid />
+          </FloatLabel>
+          <Message v-if="$form.username?.invalid" severity="error" size="small" variant="simple">{{
+            $form.username.error?.message }}</Message>
+        </div>
+        <div class="mt-6">
+          <FloatLabel>
+            <Password name="password" :feedback="false" fluid toggleMask />
+            <label for="over_label">Password</label>
+          </FloatLabel>
+          <Message v-if="$form.password?.invalid" severity="error" size="small" variant="simple">{{
+            $form.password.error?.message }}</Message>
+        </div>
+        <div class="mt-6">
+          <FloatLabel>
+            <Password name="password_repeat" :feedback="false" fluid toggleMask />
+            <label for="over_label">Repite Password</label>
+          </FloatLabel>
+          <Message v-if="$form.password_repeat?.invalid" severity="error" size="small" variant="simple">{{
+            $form.password_repeat.error?.message }}</Message>
+        </div>
+        <Button type="submit" severity="secondary" label="Crear" icon="pi pi-save" />
+      </div>
+    </Form>
   </div>
 </template>
 <script setup lang="ts">
 import { zodResolver } from '@primevue/forms/resolvers/zod';
-import { FloatLabel, InputNumber, Password, ToggleSwitch } from 'primevue';
+import { DatePicker, FloatLabel, InputNumber, Password, ToggleSwitch } from 'primevue';
 import { toast } from 'vue-sonner';
 import { z } from 'zod';
 import { createEmployee, type EmployeePayload } from '~/lib/api/admin/employee';
@@ -128,6 +136,8 @@ const initialValues = reactive({
   username: '',
   password: '',
   password_repeat: '',
+
+  hiring_date: new Date()
 });
 
 const selectedType = ref('')
@@ -154,7 +164,9 @@ const resolver = ref(zodResolver(
 
     username: z.string().min(8, 'Debes ingresar un username con al menos 8 caracteres'),
     password: z.string().min(8, 'Debes ingresar un password con al menos 8 caracteres'),
-    password_repeat: z.string({ message: 'Debes confirmar el password' })
+    password_repeat: z.string({ message: 'Debes confirmar el password' }),
+
+    hiring_date: z.date()
   }).superRefine((data, ctx) => {
     if (data.has_porcentaje_iggs && (data.iggsPercentage === null || data.iggsPercentage === undefined || data.iggsPercentage === 0)) {
       ctx.addIssue({
@@ -191,14 +203,15 @@ const onFormSubmit = (e: any) => {
       iggsPercentage: e.values.has_porcentaje_iggs ? e.values.iggsPercentage : null,
       irtraPercentage: e.values.has_porcentaje_iggs ? e.values.irtraPercentage : null,
       employeeTypeId: { id: e.values.type },
-      createUserRequestDTO: { username: e.values.username, password: e.values.password }
+      createUserRequestDTO: { username: e.values.username, password: e.values.password },
+      employeeHistoryDateRequestDTO: { historyDate: e.values.hiring_date }
     }
 
     mutate(payload)
   }
 };
 
-const { state: userTypes } = useQuery({
+const { state: userTypes } = useCustomQuery({
   key: ['optionsTypes'],
   query: () => getAllEmployeeTypes()
 })
@@ -209,10 +222,7 @@ const { mutate, asyncStatus } = useMutation({
     console.log(error)
     console.log(error.message)
     toast.error('Ocurrió un error al crear el empleado', {
-      description: `
-      Parece que los datos no son válidos:
-      ${(error)}
-      `
+      description: error.message
     })
   },
   onSuccess() {

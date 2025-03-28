@@ -15,10 +15,11 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.hospitalApi.medicines.dtos.CreateMedicineRequestDTO;
 import com.hospitalApi.medicines.dtos.UpdateMedicineRequestDTO;
@@ -27,6 +28,7 @@ import com.hospitalApi.medicines.repositories.MedicineRepository;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
+@ExtendWith(MockitoExtension.class)
 public class MedicineServiceTest {
 
     @Mock
@@ -58,8 +60,6 @@ public class MedicineServiceTest {
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-
         createDTO = new CreateMedicineRequestDTO(
                 MEDICINE_NAME,
                 MEDICINE_DESCRIPTION,

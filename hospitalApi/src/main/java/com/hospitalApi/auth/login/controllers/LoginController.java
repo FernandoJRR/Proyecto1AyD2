@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hospitalApi.auth.login.dtos.LoginRequestDTO;
 import com.hospitalApi.auth.login.dtos.LoginResponseDTO;
 import com.hospitalApi.auth.login.ports.ForLogin;
-import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,7 +35,7 @@ public class LoginController {
     })
     @PostMapping
     public ResponseEntity<LoginResponseDTO> login(
-            @RequestBody @Valid LoginRequestDTO request) throws DuplicatedEntryException, NotFoundException {
+            @RequestBody @Valid LoginRequestDTO request) throws NotFoundException {
         // mandamos ha hacer el login
         LoginResponseDTO response = forLogin.login(request.getUsername(), request.getPassword());
         return ResponseEntity.status(HttpStatus.OK).body(response);

@@ -10,12 +10,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,6 +30,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+@ExtendWith(MockitoExtension.class)
 public class JwtAuthenticationFilterTest {
 
     @Mock
@@ -44,18 +48,18 @@ public class JwtAuthenticationFilterTest {
     @Mock
     private FilterChain filterChain;
 
-    @Mock
-    private UserDetails userDetails;
-
     @InjectMocks
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     private static final String JWT = "dsa.asd.asd";
-    private static final String USERNAME = "user";
+    private static final String USERNAME = "userMock";
+    private static final String PASSWORD = "passSecret";
+
+    private UserDetails userDetails;
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    public void setUp() {
+        userDetails = new User(USERNAME, PASSWORD, false, false, false, false, Set.of());
     }
 
     /**
@@ -67,17 +71,14 @@ public class JwtAuthenticationFilterTest {
     public void doFilterInternalShouldAuthenticateWhenTokenIsValid() throws Exception {
         // arrange
         // simulamos la extraccion corecta del header del token
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + JWT);
+        when(request.getHeader(anyString())).thenReturn("Bearer " + JWT);
         // simular la extraccion del usuario
-        when(jwtManager.extractUsername(JWT)).thenReturn(USERNAME);
+        when(jwtManager.extractUsername(anyString())).thenReturn(USERNAME);
         // cuando se haga el laod entonces devoleremos nuestro mock
-        when(userDetailsService.loadUserByUsername(USERNAME)).thenReturn(userDetails);
+        when(userDetailsService.loadUserByUsername(anyString())).thenReturn(userDetails);
         // cuando se trate de verificar el token entonces devolemos true en senial de
         // que es valido
-        when(jwtManager.isTokenValid(JWT, USERNAME)).thenReturn(true);
-        // cuando a nuestro mock se le hagan los geters entonces devolvemos mas mocks
-        when(userDetails.getUsername()).thenReturn(USERNAME);
-        when(userDetails.getAuthorities()).thenReturn(null);
+        when(jwtManager.isTokenValid(anyString(), anyString())).thenReturn(true);
 
         // act
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
@@ -98,7 +99,7 @@ public class JwtAuthenticationFilterTest {
     @Test
     public void doFilterInternalShouldNotAuthenticateWhenNoTokenPresent() throws Exception {
         // arrange
-        when(request.getHeader("Authorization")).thenReturn(null);// extraccion no exitosa devulve el token nulo
+        when(request.getHeader(anyString())).thenReturn(null);// extraccion no exitosa devulve el token nulo
         // act
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
         // assert
@@ -116,9 +117,9 @@ public class JwtAuthenticationFilterTest {
     public void doFilterInternalShouldNotAuthenticateWhenTokenIsInvalid() throws Exception {
         // arrange
         when(request.getHeader("Authorization")).thenReturn("Bearer " + JWT);// extraccion exitosa
-        when(jwtManager.extractUsername(JWT)).thenReturn(USERNAME);// username extraccion exitosa
-        when(userDetailsService.loadUserByUsername(USERNAME)).thenReturn(userDetails);// devolicion exitosa del mock
-        when(jwtManager.isTokenValid(JWT, USERNAME)).thenReturn(false);// error en la validacion del token
+        when(jwtManager.extractUsername(anyString())).thenReturn(USERNAME);// username extraccion exitosa
+        when(userDetailsService.loadUserByUsername(anyString())).thenReturn(userDetails);// devolicion exitosa del mock
+        when(jwtManager.isTokenValid(anyString(), anyString())).thenReturn(false);// error en la validacion del token
         // act
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
         // assert
@@ -137,16 +138,10 @@ public class JwtAuthenticationFilterTest {
     public void doFilterInternalShouldNotAuthenticateWhenUserNotFound()
             throws UsernameNotFoundException, IOException, ServletException {
         // arrang
-        when(request.getHeader("Authorization")).thenReturn("Bearer " + JWT);// extraccion exitosa del token
-        when(jwtManager.extractUsername(JWT)).thenReturn(USERNAME);// extraccion del username exitosa
-        when(userDetailsService.loadUserByUsername(USERNAME)).thenThrow(new UsernameNotFoundException(anyString()));// simulamos
-                                                                                                                    // que
-                                                                                                                    // no
-                                                                                                                    // se
-                                                                                                                    // encontro
-                                                                                                                    // el
-                                                                                                                    // usuario
-        // act
+        when(request.getHeader(anyString())).thenReturn("Bearer " + JWT);// extraccion exitosa del token
+        when(jwtManager.extractUsername(anyString())).thenReturn(USERNAME);// extraccion del username exitosa
+        // simulamos que no se encontro el usuario act
+        when(userDetailsService.loadUserByUsername(anyString())).thenThrow(new UsernameNotFoundException(anyString()));
         assertThrows(UsernameNotFoundException.class,
                 () -> {
                     jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);

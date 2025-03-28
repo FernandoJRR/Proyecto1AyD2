@@ -189,7 +189,7 @@ const {
   state: medicinesState,
   asyncStatus,
   refetch: refetchMedicines,
-} = useQuery({
+} = useCustomQuery({
   key: ["medicines"],
   query: () =>
     getAllMedicines(searchTerm.value === "" ? null : searchTerm.value),
@@ -204,7 +204,7 @@ const {
   onError: (error) => {
     console.error(error);
     toast.error("Ocurrió un error al crear la venta", {
-      description: `Parece que los datos no son válidos:\n${error}`,
+      description: error,
     });
   },
   onSuccess: () => {

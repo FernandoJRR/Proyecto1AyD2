@@ -1,41 +1,53 @@
 package com.hospitalApi.employees.services;
 
+import org.springframework.data.jpa.domain.Specification;
+import static org.mockito.ArgumentMatchers.argThat;
+
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
-import java.sql.Date;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.hospitalApi.employees.models.Employee;
+import com.hospitalApi.employees.models.EmployeeHistory;
 import com.hospitalApi.employees.models.EmployeeType;
+import com.hospitalApi.employees.models.HistoryType;
+import com.hospitalApi.employees.ports.ForEmployeeHistoryPort;
 import com.hospitalApi.employees.ports.ForEmployeeTypePort;
+import com.hospitalApi.employees.ports.ForHistoryTypePort;
 import com.hospitalApi.employees.repositories.EmployeeRepository;
+import com.hospitalApi.shared.enums.EmployeeTypeEnum;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
+import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
 import com.hospitalApi.users.repositories.UserRepository;
 
-public class EmployeesServicesTest {
+@ExtendWith(MockitoExtension.class)
+public class EmployeesServiceTest {
     @Mock
     private EmployeeRepository employeeRepository;
     @Mock
@@ -47,13 +59,26 @@ public class EmployeesServicesTest {
     @Mock
     private ForUsersPort forUsersPort;
 
+    @Mock
+    private ForEmployeeHistoryPort forEmployeeHistoryPort;
+
+    @Mock
+    private ForHistoryTypePort forHistoryTypePort;
+
     @InjectMocks
     private EmployeeService employeeService;
 
     private User user;
+    private HistoryType historyType;
+    private HistoryType historyTypeIncrease;
+    private HistoryType historyTypeDecrease;
+    private HistoryType historyTypeFiring;
+    private EmployeeHistory employeeHistory;
+    private EmployeeHistory reactivationHistory;
     private Employee employee;
     private Employee updatedEmployee;
     private EmployeeType employeeType;
+    private EmployeeType employeeTypeDoctor;
 
     /** Para el nuevo empleado */
     private static final String EMPLOYEE_ID = "adsfgdh-arsgdfhg-adfgh";
@@ -70,6 +95,7 @@ public class EmployeesServicesTest {
 
     /** Para el objeto tipo de empleado */
     private static final String EMPLOYEE_TYPE_ID = "dasdd-asdasd-asdasd";
+    private static final String EMPLOYEE_TYPE_ID_2 = "sdfg-sdfg-sdfg";
 
     /** Para actualizaciones */
     private static final String UPDATED_EMPLOYEE_FIRST_NAME = "Carlos";
@@ -78,20 +104,49 @@ public class EmployeesServicesTest {
     private static final BigDecimal UPDATED_EMPLOYEE_IGSS = new BigDecimal(5.25);
     private static final BigDecimal UPDATED_EMPLOYEE_IRTRA = new BigDecimal(10.2);
 
+    /** Para el historial del empleado **/
+    private static final String HISTORY_TYPE_ID = "fdsf-rtrer-bbvk";
+    private static final String HISTORY_TYPE = "Contratacion";
+    private static final String HISTORY_TYPE_ID_INCREASE = "rewp-fkds-bbvk";
+    private static final String HISTORY_TYPE_INCREASE = "Aumento Salarial";
+    private static final String HISTORY_TYPE_ID_DECREASE = "dflm-fodp-bbvk";
+    private static final String HISTORY_TYPE_DECREASE = "Disminucion Salarial";
+    private static final String HISTORY_TYPE_FIRING = "Despido";
+    private static final String HISTORY_TYPE_ID_FIRING = "fdsj-ewoi-dsml";
+
+    private static final String EMPLOYEE_HISTORY_ID = "rewf-fdsa-fdsd";
+    private static final String EMPLOYEE_HISTORY_COMMENTARY = "Se realizo la contratacion con un salario de Q.7000";
+    private static final LocalDate EMPLOYEE_HISTORY_LOCAL_DATE = LocalDate.of(2022, 11, 23);
+
+    private static final String EMPLOYEE_REACTIVATION_HISTORY_ID = "klfd-dkns-fwsd";
+    private static final String EMPLOYEE_REACTIVATION_HISTORY_COMMENTARY = "El empleado fue recontratado.";
+
+    private static final LocalDate EMPLOYEE_REACTIVATION_LOCAL_DATE = LocalDate.of(2022, 3, 23);
+    private static final LocalDate EMPLOYEE_DEACTIVATION_LOCAL_DATE = LocalDate.of(2022, 12, 23);
+    private static final LocalDate EMPLOYEE_OLD_DEACTIVATION_LOCAL_DATE = LocalDate.of(2022, 1, 23);
+
+    private static final BigDecimal EMPLOYEE_STARTING_SALARY = new BigDecimal(1200);
+    private static final BigDecimal EMPLOYEE_NEW_SALARY = new BigDecimal(1500);
+    private static final String EMPLOYEE_NEW_SALARY_COMMENTARY = "1500";
+    private static final String EMPLOYEE_HISTORY_INCREASE_COMMENTARY = "Se realizo la contratacion con un salario de Q.1200";
+
+    private static final BigDecimal EMPLOYEE_STARTING_DECREASE_SALARY = new BigDecimal(1500);
+    private static final BigDecimal EMPLOYEE_NEW_SALARY_DECREASE = new BigDecimal(1200);
+    private static final String EMPLOYEE_NEW_SALARY_DECREASE_COMMENTARY = "1200";
+    private static final String EMPLOYEE_HISTORY_DECREASE_COMMENTARY = "Se realizo la contratacion con un salario de Q.1500";
+
     /**
      * este metodo se ejecuta antes de cualquier prueba individual, se hace para
      * inicializar los moks ademas del driver
      */
     @BeforeEach
     private void setUp() {
-        MockitoAnnotations.openMocks(this);
         employee = new Employee(
                 EMPLOYEE_FIRST_NAME,
                 EMPLOYEE_LAST_NAME,
                 EMPLOYEE_SALARY,
                 EMPLOYEE_IGSS,
-                EMPLOYEE_IRTRA,
-                null);
+                EMPLOYEE_IRTRA);
         employee.setId(EMPLOYEE_ID);
 
         updatedEmployee = new Employee(
@@ -99,13 +154,38 @@ public class EmployeesServicesTest {
                 UPDATED_EMPLOYEE_LAST_NAME,
                 UPDATED_EMPLOYEE_SALARY,
                 UPDATED_EMPLOYEE_IGSS,
-                UPDATED_EMPLOYEE_IRTRA,
-                null);
+                UPDATED_EMPLOYEE_IRTRA);
 
         user = new User(USER_ID, USER_NAME, USER_PASSWORD);
 
+
+
+        historyType = new HistoryType(HISTORY_TYPE);
+        historyType.setId(HISTORY_TYPE_ID);
+
+        historyTypeIncrease = new HistoryType(HISTORY_TYPE_INCREASE);
+        historyTypeIncrease.setId(HISTORY_TYPE_ID_INCREASE);
+
+        historyTypeDecrease = new HistoryType(HISTORY_TYPE_DECREASE);
+        historyTypeDecrease.setId(HISTORY_TYPE_ID_DECREASE);
+
+        historyTypeFiring = new HistoryType(HISTORY_TYPE_FIRING);
+        historyTypeFiring.setId(HISTORY_TYPE_ID_FIRING);
+
+        employeeHistory = new EmployeeHistory(EMPLOYEE_HISTORY_COMMENTARY);
+        employeeHistory.setHistoryDate(EMPLOYEE_HISTORY_LOCAL_DATE);
+        employeeHistory.setId(EMPLOYEE_HISTORY_ID);
+
+        reactivationHistory = new EmployeeHistory(EMPLOYEE_REACTIVATION_HISTORY_COMMENTARY);
+        reactivationHistory.setHistoryDate(EMPLOYEE_REACTIVATION_LOCAL_DATE);
+        reactivationHistory.setId(EMPLOYEE_REACTIVATION_HISTORY_ID);
+
         employeeType = new EmployeeType();
         employeeType.setId(EMPLOYEE_TYPE_ID);
+
+        employeeTypeDoctor = new EmployeeType();
+        employeeTypeDoctor.setId(EMPLOYEE_TYPE_ID_2);
+        employeeTypeDoctor.setName(EmployeeTypeEnum.DOCTOR.name());
 
         // inicializamos los empleados que usaremos para la reasignacion del tipo de
         // empleado
@@ -119,10 +199,14 @@ public class EmployeesServicesTest {
         // ARRANGE
         // configuramos el mock para que lance el user cuando este sea creado
         when(forEmployeeTypePort.findEmployeeTypeById(anyString())).thenReturn(employeeType);
+        when(forUsersPort.createUser(any())).thenReturn(user);
+        when(employeeRepository.save(any())).thenReturn(employee);
         when(forUsersPort.createUser(any(User.class))).thenReturn(user);
+        when(forEmployeeHistoryPort.createEmployeeHistoryHiring(any(Employee.class), any(LocalDate.class)))
+                .thenReturn(employeeHistory);
         when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
         // ACT
-        Employee result = employeeService.createEmployee(employee, employeeType, user);
+        Employee result = employeeService.createEmployee(employee, employeeType, user, employeeHistory);
 
         // ASSERT
         // captor para capturar el objeto pasado a save()
@@ -138,13 +222,14 @@ public class EmployeesServicesTest {
                 () -> assertEquals(result.getLastName(), capturedEmployee.getLastName()),
                 () -> assertEquals(result.getSalary(), capturedEmployee.getSalary()),
                 () -> assertEquals(user, capturedEmployee.getUser()),
+                () -> assertEquals(employeeHistory, capturedEmployee.getEmployeeHistories().get(0)),
                 () -> assertEquals(employeeType, capturedEmployee.getEmployeeType())
 
         );
 
         // se verifican las llamadas a los métodos dependientes
         verify(forUsersPort, times(1)).createUser(any(User.class));
-        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById(anyString());
+        verify(forEmployeeHistoryPort, times(1)).createEmployeeHistoryHiring(any(Employee.class), any(LocalDate.class));
         verify(employeeRepository, times(1)).save(any(Employee.class));
     }
 
@@ -158,7 +243,7 @@ public class EmployeesServicesTest {
         // ACT and Asserts
         assertThrows(DuplicatedEntryException.class, () -> {
             // se verifica que se haya lanzado la excepcion
-            employeeService.createEmployee(employee, employeeType, user);
+            employeeService.createEmployee(employee, employeeType, user, employeeHistory);
         });
 
         verify(forEmployeeTypePort, times(1)).findEmployeeTypeById(anyString());
@@ -176,7 +261,7 @@ public class EmployeesServicesTest {
         // ACT
         assertThrows(NotFoundException.class, () -> {
             // se verifica que se haya lanzado la excepcion
-            employeeService.createEmployee(employee, employeeType, user);
+            employeeService.createEmployee(employee, employeeType, user, employeeHistory);
         });
 
         // Asserts
@@ -254,25 +339,72 @@ public class EmployeesServicesTest {
     }
 
     @Test
-    public void testDesactivateEmployee() throws NotFoundException {
+    public void shouldReactivateEmployeeSuccessfully() throws NotFoundException, IllegalStateException, InvalidPeriodException {
         // ARRANGE
-        employee.setUser(user); // aseguramos que el empleado tenga un usuario
-        when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
-        when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
+        employee.setUser(user);
+        employee.setDesactivatedAt(EMPLOYEE_OLD_DEACTIVATION_LOCAL_DATE);
+        user.setDesactivatedAt(EMPLOYEE_OLD_DEACTIVATION_LOCAL_DATE);
+        employee.setEmployeeHistories(new ArrayList<>());
+
+        when(employeeRepository.findById(eq(EMPLOYEE_ID))).thenReturn(Optional.of(employee));
+
+        when(forEmployeeHistoryPort.createEmployeeHistoryReactivation(employee, EMPLOYEE_REACTIVATION_LOCAL_DATE))
+                .thenReturn(reactivationHistory);
+        when(forEmployeeHistoryPort.createEmployeeHistoryReactivation(employee, EMPLOYEE_REACTIVATION_LOCAL_DATE))
+                .thenReturn(reactivationHistory);
+
+        when(employeeRepository.save(any(Employee.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // ACT
-        employeeService.desactivateEmployee(EMPLOYEE_ID);
-        // capturamos luego del set
+        Employee reactivatedEmployee = employeeService.reactivateEmployee(EMPLOYEE_ID, EMPLOYEE_REACTIVATION_LOCAL_DATE);
+
+        // ASSERT
         ArgumentCaptor<Employee> employeeCaptor = ArgumentCaptor.forClass(Employee.class);
         verify(employeeRepository).save(employeeCaptor.capture());
         Employee capturedEmployee = employeeCaptor.getValue();
 
-        // ASSERTS
-        LocalDate date = LocalDate.now();
         assertAll(
-                () -> assertNotNull(capturedEmployee),
-                () -> assertEquals(date, capturedEmployee.getDesactivatedAt()),
-                () -> assertEquals(date, capturedEmployee.getUser().getDesactivatedAt()));
+            () -> assertNotNull(reactivatedEmployee, "Reactivated employee should not be null"),
+            () -> assertEquals(null, capturedEmployee.getDesactivatedAt(), "Employee deactivation date should be null after reactivation"),
+            () -> assertEquals(null, capturedEmployee.getUser().getDesactivatedAt(), "User deactivation date should be null after reactivation"),
+            () -> assertEquals(1, capturedEmployee.getEmployeeHistories().size(), "There should be one history record added"),
+            () -> assertEquals(reactivationHistory, capturedEmployee.getEmployeeHistories().get(0), "The reactivation history record should be added")
+        );
+    }
+
+    @Test
+    public void testDesactivateEmployee() throws NotFoundException, IllegalStateException, InvalidPeriodException {
+        // ARRANGE
+        HistoryType reason = new HistoryType("Motivo de Desactivación");
+        reason.setId("reason-id-123");
+
+        employee.setUser(user);
+        employee.setEmployeeHistories(new ArrayList<>());
+
+        when(employeeRepository.findById(eq(EMPLOYEE_ID))).thenReturn(Optional.of(employee));
+
+        EmployeeHistory deactivationHistory = new EmployeeHistory("Empleado desactivado.");
+        deactivationHistory.setHistoryDate(EMPLOYEE_DEACTIVATION_LOCAL_DATE);
+        when(forEmployeeHistoryPort.createEmployeeHistoryDeactivation(employee, EMPLOYEE_DEACTIVATION_LOCAL_DATE, reason))
+            .thenReturn(deactivationHistory);
+
+        when(employeeRepository.save(any(Employee.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // ACT
+        Employee deactivatedEmployee = employeeService.desactivateEmployee(EMPLOYEE_ID, EMPLOYEE_DEACTIVATION_LOCAL_DATE, reason);
+
+        // ASSERT
+        ArgumentCaptor<Employee> employeeCaptor = ArgumentCaptor.forClass(Employee.class);
+        verify(employeeRepository).save(employeeCaptor.capture());
+        Employee capturedEmployee = employeeCaptor.getValue();
+
+        assertAll(
+            () -> assertNotNull(deactivatedEmployee, "The returned employee should not be null"),
+            () -> assertEquals(EMPLOYEE_DEACTIVATION_LOCAL_DATE, capturedEmployee.getDesactivatedAt(), "Employee deactivation date should match"),
+            () -> assertEquals(EMPLOYEE_DEACTIVATION_LOCAL_DATE, capturedEmployee.getUser().getDesactivatedAt(), "User deactivation date should match"),
+            () -> assertEquals(1, capturedEmployee.getEmployeeHistories().size(), "Employee histories should contain one record"),
+            () -> assertEquals(deactivationHistory, capturedEmployee.getEmployeeHistories().get(0), "The deactivation history record should be added")
+        );
     }
 
     /**
@@ -293,7 +425,7 @@ public class EmployeesServicesTest {
         // ACT y ASSERT
         assertThrows(IllegalStateException.class,
                 () -> {
-                    employeeService.desactivateEmployee(EMPLOYEE_ID);
+                    employeeService.desactivateEmployee(EMPLOYEE_ID, EMPLOYEE_DEACTIVATION_LOCAL_DATE, any(HistoryType.class));
                 });
     }
 
@@ -306,8 +438,110 @@ public class EmployeesServicesTest {
         // ACT
         // Asserts
         assertThrows(NotFoundException.class, () -> {
-            employeeService.desactivateEmployee(anyString());
+            employeeService.desactivateEmployee(anyString(), EMPLOYEE_DEACTIVATION_LOCAL_DATE, historyTypeFiring);
         });
+    }
+
+    @Test
+    public void shouldUpdateEmployeeSalaryForIncrease() throws NotFoundException, InvalidPeriodException {
+
+        // ARRANGE
+        List<EmployeeHistory> histories = new ArrayList<>();
+
+        EmployeeHistory increaseHistory = new EmployeeHistory(EMPLOYEE_HISTORY_INCREASE_COMMENTARY);
+        increaseHistory.setHistoryDate(EMPLOYEE_HISTORY_LOCAL_DATE);
+        increaseHistory.setHistoryType(historyTypeIncrease);
+
+        histories.add(increaseHistory);
+
+        employee.setEmployeeHistories(histories);
+        employee.setSalary(EMPLOYEE_STARTING_SALARY);
+
+        LocalDate salaryDate = LocalDate.now();
+        BigDecimal newSalary = EMPLOYEE_NEW_SALARY;
+
+        // se crea el registro de un aumento salarial en el historial del empleado
+        EmployeeHistory salaryIncreaseHistory = new EmployeeHistory(EMPLOYEE_NEW_SALARY_COMMENTARY);
+        salaryIncreaseHistory.setHistoryDate(salaryDate);
+
+        // se hace que el ultimo salario del empleado este vacio
+        when(forEmployeeHistoryPort.getLastEmployeeSalaryUntilDate(employee, salaryDate))
+                .thenReturn(Optional.empty());
+
+        when(forEmployeeHistoryPort.createEmployeeHistorySalaryIncrease(employee, newSalary, salaryDate))
+                .thenReturn(salaryIncreaseHistory);
+
+        // se retorna el ultimo cambio de salario
+        when(forEmployeeHistoryPort.getMostRecentEmployeeSalary(employee))
+                .thenReturn(Optional.of(salaryIncreaseHistory));
+
+        when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
+        when(employeeRepository.save(employee)).thenReturn(employee);
+
+        // ACT
+        Employee updatedEmployee = employeeService.updateEmployeeSalary(employee.getId(), newSalary, salaryDate);
+
+        // ASSERT
+        assertAll(
+                () -> assertEquals(newSalary, updatedEmployee.getSalary()),
+                () -> assertEquals(2, updatedEmployee.getEmployeeHistories().size()),
+                () -> assertEquals(salaryIncreaseHistory, updatedEmployee.getEmployeeHistories().get(1)));
+
+        verify(forEmployeeHistoryPort, times(1))
+                .createEmployeeHistorySalaryIncrease(employee, newSalary, salaryDate);
+        verify(forEmployeeHistoryPort, times(1)).getMostRecentEmployeeSalary(employee);
+        verify(employeeRepository, times(1)).save(employee);
+    }
+
+    @Test
+    public void shouldUpdateEmployeeSalaryForDecrease() throws NotFoundException, InvalidPeriodException {
+
+        // ARRANGE
+        List<EmployeeHistory> histories = new ArrayList<>();
+
+        EmployeeHistory decreaseHistory = new EmployeeHistory(EMPLOYEE_HISTORY_DECREASE_COMMENTARY);
+        decreaseHistory.setHistoryDate(EMPLOYEE_HISTORY_LOCAL_DATE);
+        decreaseHistory.setHistoryType(historyTypeDecrease);
+
+        histories.add(decreaseHistory);
+
+        employee.setEmployeeHistories(histories);
+        employee.setSalary(EMPLOYEE_STARTING_DECREASE_SALARY);
+
+        LocalDate salaryDate = LocalDate.now();
+        BigDecimal newSalary = EMPLOYEE_NEW_SALARY_DECREASE;
+
+        // se crea el registro de un aumento salarial en el historial del empleado
+        EmployeeHistory salaryDecreaseHistory = new EmployeeHistory(EMPLOYEE_NEW_SALARY_DECREASE_COMMENTARY);
+        salaryDecreaseHistory.setHistoryDate(salaryDate);
+
+        // se hace que el ultimo salario del empleado este vacio
+        when(forEmployeeHistoryPort.getLastEmployeeSalaryUntilDate(employee, salaryDate))
+                .thenReturn(Optional.empty());
+
+        when(forEmployeeHistoryPort.createEmployeeHistorySalaryDecrease(employee, newSalary, salaryDate))
+                .thenReturn(salaryDecreaseHistory);
+
+        // se retorna el ultimo cambio de salario
+        when(forEmployeeHistoryPort.getMostRecentEmployeeSalary(employee))
+                .thenReturn(Optional.of(salaryDecreaseHistory));
+
+        when(employeeRepository.findById(anyString())).thenReturn(Optional.of(employee));
+        when(employeeRepository.save(employee)).thenReturn(employee);
+
+        // ACT
+        Employee updatedEmployee = employeeService.updateEmployeeSalary(employee.getId(), newSalary, salaryDate);
+
+        // ASSERT
+        assertAll(
+                () -> assertEquals(newSalary, updatedEmployee.getSalary()),
+                () -> assertEquals(2, updatedEmployee.getEmployeeHistories().size()),
+                () -> assertEquals(salaryDecreaseHistory, updatedEmployee.getEmployeeHistories().get(1)));
+
+        verify(forEmployeeHistoryPort, times(1))
+                .createEmployeeHistorySalaryDecrease(employee, newSalary, salaryDate);
+        verify(forEmployeeHistoryPort, times(1)).getMostRecentEmployeeSalary(employee);
+        verify(employeeRepository, times(1)).save(employee);
     }
 
     /**
@@ -341,7 +575,7 @@ public class EmployeesServicesTest {
      * cuando: se intenta reasignar su tipo de empleado.
      * entonces: se lanza una excepción `NotFoundException` y no se realizan
      * cambios.
-     * 
+     *
      * @throws NotFoundException
      */
     @Test
@@ -363,7 +597,7 @@ public class EmployeesServicesTest {
      * cuando: se intenta reasignar el empleado a ese tipo de empleado inexistente.
      * entonces: se lanza una excepción `NotFoundException` y no se realizan
      * cambios.
-     * 
+     *
      * @throws NotFoundException
      */
     @Test
@@ -426,7 +660,7 @@ public class EmployeesServicesTest {
      * cuando: se intenta reasignar su tipo de empleado.
      * entonces: se lanza una excepción `NotFoundException` y no se realizan cambios
      * en ningún empleado.
-     * 
+     *
      * @throws NotFoundException
      */
     @Test
@@ -454,7 +688,7 @@ public class EmployeesServicesTest {
      * inexistente.
      * entonces: se lanza una excepción `NotFoundException` y no se realizan cambios
      * en ningún empleado.
-     * 
+     *
      * @throws NotFoundException
      */
     @Test
@@ -464,7 +698,6 @@ public class EmployeesServicesTest {
         List<Employee> employees = List.of(employeeToReasignEmployeeType1, employeeToReasignEmployeeType2);
 
         when(employeeRepository.findById(EMPLOYEE_ID_1)).thenReturn(Optional.of(employeeToReasignEmployeeType1));
-        when(employeeRepository.findById(EMPLOYEE_ID_2)).thenReturn(Optional.of(employeeToReasignEmployeeType2));
 
         when(forEmployeeTypePort.findEmployeeTypeById(EMPLOYEE_TYPE_ID)).thenThrow(new NotFoundException(anyString()));
 
@@ -496,6 +729,77 @@ public class EmployeesServicesTest {
                 () -> assertEquals(2, result.size()));
 
         verify(employeeRepository, times(1)).findAll();
+    }
+
+    /**
+     * dado: que existe un tipo de empleado válido en la base de datos.
+     * cuando: se busca a los empleados por ese tipo y se proporciona un término de
+     * búsqueda.
+     * entonces: se devuelve una lista con los empleados que coinciden con el nombre
+     * o apellido buscado.
+     */
+    @Test
+    public void shouldReturnEmployeesByTypeWithMatchingSearch() throws NotFoundException {
+        // ARRANGE
+        String search = "Luis";
+        List<Employee> expectedEmployees = List.of(employee);
+
+        when(forEmployeeTypePort.findEmployeeTypeById(EMPLOYEE_TYPE_ID)).thenReturn(employeeType);
+        when(employeeRepository.findAll(ArgumentMatchers.<Specification<Employee>>any())).thenReturn(expectedEmployees);
+
+        // ACT
+        List<Employee> result = employeeService.getEmployeesByType(EMPLOYEE_TYPE_ID, search);
+
+        // ASSERT
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(1, result.size()),
+                () -> assertEquals(employee.getFirstName(), result.get(0).getFirstName()));
+
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById(EMPLOYEE_TYPE_ID);
+        verify(employeeRepository, times(1)).findAll(ArgumentMatchers.<Specification<Employee>>any());
+    }
+
+    /**
+     * dado: que el tipo de empleado no existe en la base de datos.
+     * cuando: se intenta obtener empleados por ese tipo.
+     * entonces: se lanza una excepción `NotFoundException` y no se realiza ninguna
+     * consulta a la base de datos.
+     */
+    @Test
+    public void shouldThrowNotFoundExceptionWhenTypeNotFoundInGetEmployeesByType() throws NotFoundException {
+        // ARRANGE
+        when(forEmployeeTypePort.findEmployeeTypeById(anyString()))
+                .thenThrow(new NotFoundException("Tipo de empleado no encontrado"));
+
+        // ACT & ASSERT
+        assertThrows(NotFoundException.class, () -> {
+            employeeService.getEmployeesByType("invalid-id", "Luis");
+        });
+
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeById("invalid-id");
+        verify(employeeRepository, never()).findAll(ArgumentMatchers.<Specification<Employee>>any());
+    }
+
+    /**
+     * dado: que el tipo de empleado "Doctor" no existe en la base de datos.
+     * cuando: se intenta obtener doctores con un término de búsqueda.
+     * entonces: se lanza una excepción `NotFoundException` y no se consulta el
+     * repositorio.
+     */
+    @Test
+    public void shouldThrowNotFoundExceptionWhenDoctorTypeNotFound() throws NotFoundException {
+        // ARRANGE
+        when(forEmployeeTypePort.findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name()))
+                .thenThrow(new NotFoundException("Tipo Doctor no encontrado"));
+
+        // ACT & ASSERT
+        assertThrows(NotFoundException.class, () -> {
+            employeeService.getDoctors("Luis");
+        });
+
+        verify(forEmployeeTypePort, times(1)).findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name());
+        verify(employeeRepository, never()).findAll(ArgumentMatchers.<Specification<Employee>>any());
     }
 
 }
