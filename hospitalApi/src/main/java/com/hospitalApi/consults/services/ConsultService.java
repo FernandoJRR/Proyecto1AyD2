@@ -112,7 +112,6 @@ public class ConsultService implements ForConsultPort {
                 .and(ConsultSpecifications.isInternado(consutlFilterDTO.getIsInternado()));
 
         List<Consult> consults = consultRepository.findAll(specification, Sort.by(Sort.Direction.DESC, "createdAt"));
-        System.out.println("Consults: " + consults);
         return consults;
     }
 
