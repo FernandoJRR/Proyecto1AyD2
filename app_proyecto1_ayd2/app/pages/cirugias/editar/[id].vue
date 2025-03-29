@@ -103,7 +103,7 @@
         >
           <Column field="employeeName" header="Nombre" />
           <Column field="employeeLastName" header="Apellido" />
-          <Column field="specialistPayment" header="Pago" />
+          <Column field="specialistPayment" header="Pago Especialista" />
           <Column header="Acciones">
             <template #body="slotProps">
               <Button
@@ -111,7 +111,7 @@
                 icon="pi pi-trash"
                 severity="danger"
                 text
-                @click="() => eliminarEmpleado(slotProps.data)"
+                @click="confirmarEliminacionEmpleado(slotProps.data)"
               />
             </template>
           </Column>
@@ -119,6 +119,19 @@
       </div>
     </div>
   </div>
+  <Dialog v-model:visible="showDeleteDialog" modal header="Eliminar Empleado">
+    <p>
+      ¿Deseas eliminar a {{ empleadoAEliminar?.employeeName }} de esta cirugía?
+    </p>
+    <template #footer>
+      <Button label="Cancelar" text @click="showDeleteDialog = false" />
+      <Button
+        label="Eliminar"
+        severity="danger"
+        @click="eliminarEmpleadoConfirmado"
+      />
+    </template>
+  </Dialog>
   <Dialog
     v-model:visible="mostrarSelector"
     modal
@@ -312,13 +325,18 @@ import {
   type SpecialistEmployeeResponseDTO,
 } from "~/lib/api/admin/specialist-employee";
 import {
+  addDoctorSurgery,
+  deleteDoctorSurgery,
   getSurgery,
+  type AddDeleteEmployeeSurgeryDTO,
   type SurgeryResponseDTO,
 } from "~/lib/api/surgeries/surgeries";
 
 const searchTerm = ref("");
 const searchDoctor = ref("");
 const mostrarSelector = ref(false);
+const showDeleteDialog = ref(false);
+const empleadoAEliminar = ref<any | null>(null);
 
 const personaSeleccionada = ref<{
   data: Employee | SpecialistEmployeeResponseDTO;
@@ -374,6 +392,37 @@ const {
     ),
 });
 
+const { mutate: addEmployeeMutate, asyncStatus: addEmployeeStatus } =
+  useMutation({
+    mutation: (payload: AddDeleteEmployeeSurgeryDTO) =>
+      addDoctorSurgery(payload),
+    onError(error) {
+      toast.error("Ocurrió un error al agregar el empleado", {
+        description: error,
+      });
+    },
+    onSuccess() {
+      toast.success("Empleado agregado correctamente");
+      refetchSurgery();
+      mostrarSelector.value = false;
+    },
+  });
+
+const { mutate: deleteEmployeeMutate, asyncStatus: deleteEmployeeStatus } =
+  useMutation({
+    mutation: (payload: AddDeleteEmployeeSurgeryDTO) =>
+      deleteDoctorSurgery(payload),
+    onError(error) {
+      toast.error("Ocurrió un error al eliminar el empleado", {
+        description: error.message,
+      });
+    },
+    onSuccess() {
+      toast.success("Empleado eliminado correctamente");
+      refetchSurgery();
+    },
+  });
+
 watch(
   () => surgeryState.value,
   (value) => {
@@ -402,9 +451,39 @@ const quitarSeleccionPersona = () => {
   personaSeleccionada.value = null;
 };
 
-const eliminarEmpleado = (empleado: any) => {
-  toast("Lógica para eliminar: " + empleado.employeeName);
+const eliminarEmpleadoConfirmado = () => {
+  if (!empleadoAEliminar.value) return;
+  const payload = {
+    doctorId:
+      empleadoAEliminar.value.employeeId ??
+      empleadoAEliminar.value.specialistEmployeeId,
+    isSpecialist: empleadoAEliminar.value.specialistEmployeeId !== null,
+    surgeryId: initialValues.surgery.id,
+  } as AddDeleteEmployeeSurgeryDTO;
+  console.log("Eliminar empleado", payload);
+  deleteEmployeeMutate(payload);
+  showDeleteDialog.value = false;
 };
 
-const agregarPersonaSeleccionada = () => {};
+const confirmarEliminacionEmpleado = (empleado: any) => {
+  empleadoAEliminar.value = empleado;
+  showDeleteDialog.value = true;
+};
+
+const agregarPersonaSeleccionada = () => {
+  if (!personaSeleccionada.value) {
+    toast.error("No se ha seleccionado ninguna persona");
+    return;
+  }
+  const payload = {
+    doctorId:
+      (personaSeleccionada.value.data as any).id ??
+      (personaSeleccionada.value.data as any).specialistEmployeeId,
+    isSpecialist: personaSeleccionada.value.isSpecialist,
+    surgeryId: initialValues.surgery.id,
+  } as AddDeleteEmployeeSurgeryDTO;
+  addEmployeeMutate(payload);
+  personaSeleccionada.value = null;
+  mostrarSelector.value = false;
+};
 </script>
