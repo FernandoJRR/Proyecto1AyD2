@@ -132,11 +132,84 @@
 
       <!-- Tabla de cirugías asignadas -->
       <div v-if="initialValues.consult.isInternado" class="mt-12">
-        <h2 class="text-xl font-semibold mb-4">Cirugías Asignadas</h2>
-        <DataTable :value="[]" tableStyle="min-width: 30rem" stripedRows>
-          <Column field="surgeryName" header="Nombre de Cirugía" />
-          <Column field="scheduledDate" header="Fecha Programada" />
-          <Column field="responsibleDoctor" header="Doctor Responsable" />
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold">Cirugías Asignadas</h2>
+          <router-link
+            :to="`/consultas/cirugia/crear/${initialValues.consult.id}`"
+          >
+            <Button
+              icon="pi pi-plus"
+              label="Crear Cirugía"
+              severity="success"
+              outlined
+            />
+          </router-link>
+        </div>
+
+        <DataTable
+          :value="initialValues.surgerysConsult"
+          tableStyle="min-width: 30rem"
+          stripedRows
+        >
+          <Column header="Nombre de Cirugía">
+            <template #body="slotProps">
+              {{ slotProps.data.surgeryType.type }}
+            </template>
+          </Column>
+
+          <Column header="Médicos Responsables">
+            <template #body="slotProps">
+              <ul class="list-disc pl-4 text-sm">
+                <li
+                  v-for="emp in slotProps.data.surgeryEmployees"
+                  :key="emp.specialistEmployeeId || emp.employeeId"
+                >
+                  {{ emp.employeeName }} {{ emp.employeeLastName }}
+                </li>
+              </ul>
+            </template>
+          </Column>
+
+          <Column header="Costo Total">
+            <template #body="slotProps">
+              Q{{ slotProps.data.surgeryCost.toFixed(2) }}
+            </template>
+          </Column>
+
+          <Column header="Acciones">
+            <template #body="slotProps">
+              <div class="flex gap-2 flex-wrap">
+                <Button
+                  icon="pi pi-eye"
+                  text
+                  severity="info"
+                  @click="verCirugia(slotProps.data)"
+                  :pt="{ root: { title: 'Ver Detalles' } }"
+                />
+                <Button
+                  icon="pi pi-pencil"
+                  text
+                  severity="warning"
+                  @click="editarCirugia(slotProps.data)"
+                  :pt="{ root: { title: 'Editar Cirugía' } }"
+                />
+                <Button
+                  icon="pi pi-trash"
+                  text
+                  severity="danger"
+                  @click="eliminarCirugia(slotProps.data)"
+                  :pt="{ root: { title: 'Eliminar Cirugía' } }"
+                />
+                <Button
+                  icon="pi pi-check"
+                  text
+                  severity="success"
+                  @click="marcarComoRealizada(slotProps.data)"
+                  :pt="{ root: { title: 'Marcar como Realizada' } }"
+                />
+              </div>
+            </template>
+          </Column>
         </DataTable>
       </div>
     </div>
@@ -170,6 +243,39 @@
         />
       </template>
     </Dialog>
+    <!-- Diálogo Confirmar Eliminación -->
+    <Dialog
+      v-model:visible="showEliminarDialog"
+      modal
+      header="Confirmar Eliminación"
+    >
+      <p>¿Deseas eliminar esta cirugía?</p>
+      <template #footer>
+        <Button label="Cancelar" text @click="showEliminarDialog = false" />
+        <Button
+          label="Eliminar"
+          severity="danger"
+          @click="confirmarEliminarCirugia"
+        />
+      </template>
+    </Dialog>
+
+    <!-- Diálogo Confirmar Realización -->
+    <Dialog
+      v-model:visible="showRealizadaDialog"
+      modal
+      header="Confirmar Acción"
+    >
+      <p>¿Marcar esta cirugía como realizada?</p>
+      <template #footer>
+        <Button label="Cancelar" text @click="showRealizadaDialog = false" />
+        <Button
+          label="Marcar como Realizada"
+          severity="success"
+          @click="confirmarMarcarComoRealizada"
+        />
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -187,11 +293,19 @@ import {
   type UpdateConsultRequestDTO,
 } from "~/lib/api/consults/consult";
 import { Tag, Button, Dialog } from "primevue";
-import { getSurgeriesbyConsultId, type SurgeryResponseDTO } from "../../lib/api/surgeries/surgeries";
+import {
+  deleteSurgery,
+  getSurgeriesbyConsultId,
+  markAsCompletedSurgery,
+  type SurgeryResponseDTO,
+} from "../../lib/api/surgeries/surgeries";
 
 const showInternadoDialog = ref(false);
 const showDeleteDialog = ref(false);
 const empleadoAEliminar = ref<string | null>(null);
+const showEliminarDialog = ref(false);
+const showRealizadaDialog = ref(false);
+const cirugiaSeleccionada = ref<any | null>(null);
 
 const initialValues = reactive({
   consult: {
@@ -267,9 +381,14 @@ const recargarEmpleadosAsignados = () => {
   refetchConsultEmployee();
 };
 
+const recargarCirugiasAsignadas = () => {
+  refetchConsultSurgeries();
+};
+
 const recargarConsulta = () => {
   refecthConsult();
   recargarEmpleadosAsignados();
+  recargarCirugiasAsignadas();
 };
 
 const openDeleteDialog = (id: string) => {
@@ -324,4 +443,66 @@ const { mutate: updateConsultMutation, asyncStatus: asyncUpdateConsultStatus } =
       recargarConsulta();
     },
   });
+
+const { mutate: deleteSurgeryMutate, asyncStatus: asyncDeleteSurgeryStatus } =
+  useMutation({
+    mutation: (surgeryId: string) => deleteSurgery(surgeryId),
+    onError: (error) => {
+      toast.error("Ocurrió un error al eliminar la cirugía", {
+        description: error.message,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Cirugía eliminada correctamente");
+      recargarConsulta();
+    },
+  });
+
+const { mutate: markAsPerformed, asyncStatus: asyncMarkAsPerformedStatus } =
+  useMutation({
+    mutation: (surgeryId: string) => markAsCompletedSurgery(surgeryId),
+    onError: (error) => {
+      toast.error("Ocurrió un error al marcar la cirugía como realizada", {
+        description: error.message,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Cirugía marcada como realizada correctamente");
+      recargarConsulta();
+    },
+  });
+
+const verCirugia = (cirugia: any) => {
+  toast(`Ver cirugía ${cirugia.surgeryType.type}`);
+};
+
+const editarCirugia = (cirugia: any) => {
+  toast(`Editar cirugía ${cirugia.surgeryType.type}`);
+};
+
+// Acción: Eliminar
+const eliminarCirugia = (cirugia: any) => {
+  cirugiaSeleccionada.value = cirugia;
+  showEliminarDialog.value = true;
+};
+
+const confirmarEliminarCirugia = () => {
+  if (!cirugiaSeleccionada.value) return;
+  deleteSurgeryMutate(cirugiaSeleccionada.value.id);
+  showEliminarDialog.value = false;
+  cirugiaSeleccionada.value = null;
+};
+
+// Acción: Marcar como realizada
+const marcarComoRealizada = (cirugia: any) => {
+  cirugiaSeleccionada.value = cirugia;
+  showRealizadaDialog.value = true;
+};
+
+const confirmarMarcarComoRealizada = () => {
+  if (!cirugiaSeleccionada.value) return;
+  markAsPerformed(cirugiaSeleccionada.value.id);
+  showRealizadaDialog.value = false;
+  cirugiaSeleccionada.value = null;
+};
 </script>
