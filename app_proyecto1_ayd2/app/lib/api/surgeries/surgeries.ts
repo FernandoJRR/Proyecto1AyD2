@@ -45,12 +45,34 @@ export interface AddDeleteEmployeeSurgeryDTO {
   employeeId: string;
 }
 
+export interface UpdateSurgeryTypeRequestDTO {
+  type: string | null;
+  description: string | null;
+  specialistPayment: number | null;
+  hospitalCost: number | null;
+  surgeryCost: number | null;
+}
+
 export const getSurgeriesTypes = async (query: string | null) => {
   let url = `${CURRENT_SURGERY_URI}/types/all`;
   if (query) {
     url = `${url}?query=${query}`;
   }
   const response = await $api<SurgeryTypeResponseDTO[]>(url);
+  return response;
+};
+
+export const updateSurgeryType = async (
+  id: string,
+  data: UpdateSurgeryTypeRequestDTO
+) => {
+  const response = await $api<SurgeryTypeResponseDTO>(
+    `${CURRENT_SURGERY_URI}/types/update/${id}`,
+    {
+      method: "PATCH",
+      body: data,
+    }
+  );
   return response;
 };
 
@@ -154,10 +176,9 @@ export const getAllSugeryEmployees = async (surgeryId: string) => {
   return response;
 };
 
-
 export const getSurgeriesbyConsultId = async (consultId: string) => {
   const response = await $api<SurgeryResponseDTO[]>(
     `${CURRENT_SURGERY_URI}/consult/${consultId}`
   );
   return response;
-}
+};
