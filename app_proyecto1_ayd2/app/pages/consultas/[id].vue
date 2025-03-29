@@ -170,6 +170,15 @@
             </template>
           </Column>
 
+          <Column header="Estado">
+            <template #body="slotProps">
+              <Tag
+                :value="slotProps.data.performedDate !== null ? 'Realizada' : 'Pendiente'"
+                :severity="slotProps.data.performedDate !== null ? 'success' : 'warn'"
+              />
+            </template>
+          </Column>
+
           <Column header="Costo Total">
             <template #body="slotProps">
               Q{{ slotProps.data.surgeryCost.toFixed(2) }}
@@ -179,7 +188,7 @@
           <Column header="Acciones">
             <template #body="slotProps">
               <div class="flex gap-2 flex-wrap">
-                <RouterLink :to="`/cirugias/${slotProps.data.surgeryType.id}`">
+                <RouterLink :to="`/cirugias/${slotProps.data.id}`">
                   <Button
                     icon="pi pi-eye"
                     text
@@ -189,9 +198,10 @@
                 </RouterLink>
 
                 <RouterLink
-                  :to="`/cirugias/editar/${slotProps.data.surgeryType.id}`"
+                  :to="`/cirugias/editar/${slotProps.data.id}`"
                 >
                   <Button
+                    v-if="slotProps.data.performedDate === null"
                     icon="pi pi-pencil"
                     text
                     severity="warning"
@@ -199,6 +209,7 @@
                   />
                 </RouterLink>
                 <Button
+                  v-if="slotProps.data.performedDate === null"
                   icon="pi pi-trash"
                   text
                   severity="danger"
@@ -206,6 +217,7 @@
                   :pt="{ root: { title: 'Eliminar Cirugía' } }"
                 />
                 <Button
+                  v-if="slotProps.data.performedDate === null"
                   icon="pi pi-check"
                   text
                   severity="success"
