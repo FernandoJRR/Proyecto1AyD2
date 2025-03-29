@@ -4,6 +4,18 @@
       <Button label="Ver Consultas" icon="pi pi-arrow-left" text />
     </router-link>
 
+    <!-- Botón para convertir en internado -->
+    <div class="mt-4">
+      <Button
+        label="Convertir en Internado"
+        icon="pi pi-user-plus"
+        severity="warning"
+        outlined
+        @click="showInternadoDialog = true"
+        :disabled="initialValues.consult.isInternado"
+      />
+    </div>
+
     <div v-if="consultState.status === 'pending'" class="mt-4">Cargando...</div>
 
     <div v-else-if="consultState.status === 'error'" class="mt-4 text-red-500">
@@ -58,14 +70,25 @@
       <div class="mt-8">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold">Empleados Asignados</h2>
-          <Button
-            icon="pi pi-refresh"
-            label="Recargar"
-            @click="recargarEmpleadosAsignados"
-            rounded
-            outlined
-            severity="help"
-          />
+          <div class="flex gap-2">
+            <Button
+              icon="pi pi-plus"
+              label="Agregar Empleado"
+              severity="success"
+              rounded
+              outlined
+              :disabled="!initialValues.consult.isInternado"
+              @click="() => toast('Abrir diálogo para agregar empleado')"
+            />
+            <Button
+              icon="pi pi-refresh"
+              label="Recargar"
+              @click="recargarEmpleadosAsignados"
+              rounded
+              outlined
+              severity="help"
+            />
+          </div>
         </div>
 
         <DataTable
@@ -85,7 +108,7 @@
                 severity="danger"
                 rounded
                 text
-                @click="eliminarEmpleado(slotProps.data.employeeId)"
+                @click="openDeleteDialog(slotProps.data.employeeId)"
               />
             </template>
           </Column>
@@ -98,6 +121,36 @@
         </DataTable>
       </div>
     </div>
+
+    <!-- Dialogo Confirmar Internado -->
+    <Dialog
+      v-model:visible="showInternadoDialog"
+      modal
+      header="Confirmar acción"
+    >
+      <p>¿Estás seguro que deseas convertir esta consulta en un internado?</p>
+      <template #footer>
+        <Button label="Cancelar" text @click="showInternadoDialog = false" />
+        <Button
+          label="Confirmar"
+          severity="warning"
+          @click="confirmarInternado"
+        />
+      </template>
+    </Dialog>
+
+    <!-- Dialogo Confirmar Eliminación -->
+    <Dialog v-model:visible="showDeleteDialog" modal header="Eliminar Empleado">
+      <p>¿Deseas eliminar este empleado de la consulta?</p>
+      <template #footer>
+        <Button label="Cancelar" text @click="showDeleteDialog = false" />
+        <Button
+          label="Eliminar"
+          severity="danger"
+          @click="confirmarEliminacionEmpleado"
+        />
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -108,11 +161,17 @@ import {
   deleteEmployeeFromConsult,
   employeesConsult,
   getConsult,
+  updateConsult,
   type AddDeleteEmployeeConsultRequestDTO,
   type ConsultResponseDTO,
   type EmployeeConsultResponseDTO,
+  type UpdateConsultRequestDTO,
 } from "~/lib/api/consults/consult";
-import { Tag, Button } from "primevue";
+import { Tag, Button, Dialog } from "primevue";
+
+const showInternadoDialog = ref(false);
+const showDeleteDialog = ref(false);
+const empleadoAEliminar = ref<string | null>(null);
 
 const initialValues = reactive({
   consult: {
@@ -142,7 +201,7 @@ const {
   query: () => employeesConsult(useRoute().params.id as string),
 });
 
-const { state: consultState } = useQuery({
+const { state: consultState, refetch: refecthConsult } = useQuery({
   key: ["consult", useRoute().params.id as string],
   query: () => getConsult(useRoute().params.id as string),
 });
@@ -171,12 +230,33 @@ const recargarEmpleadosAsignados = () => {
   refetchConsultEmployee();
 };
 
-const eliminarEmpleado = (id: string) => {
+const recargarConsulta = () => {
+  refecthConsult();
+  recargarEmpleadosAsignados();
+};
+
+const openDeleteDialog = (id: string) => {
+  empleadoAEliminar.value = id;
+  showDeleteDialog.value = true;
+};
+
+const confirmarEliminacionEmpleado = () => {
+  if (!empleadoAEliminar.value) return;
   const deletePayload = {
     consultId: useRoute().params.id as string,
-    employeeId: id,
+    employeeId: empleadoAEliminar.value,
   } as AddDeleteEmployeeConsultRequestDTO;
   deleteEmployee(deletePayload);
+  showDeleteDialog.value = false;
+};
+
+const confirmarInternado = () => {
+  const payload = {
+    costoConsulta: null,
+    isInternado: true,
+  } as UpdateConsultRequestDTO;
+  updateConsultMutation(payload);
+  showInternadoDialog.value = false;
 };
 
 const { mutate: deleteEmployee, asyncStatus: asyncDeleteEmployeeStatus } =
@@ -190,6 +270,21 @@ const { mutate: deleteEmployee, asyncStatus: asyncDeleteEmployeeStatus } =
     },
     onSuccess: () => {
       recargarEmpleadosAsignados();
+    },
+  });
+
+const { mutate: updateConsultMutation, asyncStatus: asyncUpdateConsultStatus } =
+  useMutation({
+    mutation: (payload: UpdateConsultRequestDTO) =>
+      updateConsult(useRoute().params.id as string, payload),
+    onError: (error) => {
+      toast.error("Ocurrió un error al actualizar la consulta", {
+        description: error.message,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Consulta actualizada correctamente");
+      recargarConsulta();
     },
   });
 </script>
