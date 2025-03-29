@@ -29,6 +29,11 @@ const menus = [
     description: 'Administracion de Farmacia',
     route: '/farmacia',
   },
+  {
+    title: 'Habitaciones',
+    description: 'Administracion de Habitaciones',
+    route: '/habitaciones',
+  },
 ]
 
 defineExpose({ menus })
