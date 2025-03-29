@@ -27,7 +27,7 @@ public class Room extends Auditor {
     /**
      * Este es el numero d ela habitacion
      */
-    @Column(unique = true, nullable = false)
+    @Column(length = 100 ,unique = true, nullable = false)
     private String number;
     /*
      * Costo de mantenimiento diario

@@ -30,6 +30,11 @@ const menus = [
     route: "/farmacia",
   },
   {
+    title: 'Habitaciones',
+    description: 'Administracion de Habitaciones',
+    route: '/habitaciones',
+  },
+  {
     title: "Cirugías",
     description: "Administracion de tipos de Cirugía",
     route: "/cirugias",
