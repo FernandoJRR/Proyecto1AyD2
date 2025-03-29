@@ -1,13 +1,16 @@
 package com.hospitalApi.surgery.models;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.shared.models.Auditor;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.DecimalMin;
@@ -24,27 +27,24 @@ import lombok.NoArgsConstructor;
 @Entity
 public class Surgery extends Auditor {
 
-    @NotBlank(message = "La consulta es requerida")
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = false)
     private Consult consult;
 
-    @NotBlank(message = "El tipo de cirugía es requerido")
     @OneToOne
     @JoinColumn(nullable = false)
     private SurgeryType surgeryType;
 
-    @NotBlank(message = "El pago al especialista es requerido")
-    @DecimalMin(value = "0.01", message = "El pago al especialista debe ser mayor a 0")
     @Column(nullable = false)
     private Double hospitalCost;
 
-    @NotBlank(message = "El costo de la cirugía es requerido")
-    @DecimalMin(value = "0.01", message = "El costo de la cirugía debe ser mayor a 0")
     @Column(nullable = false)
     private Double surgeryCost;
 
-    @OneToMany(mappedBy = "surgery")
+    @Column(nullable = true)
+    private LocalDate performedDate;
+
+    @OneToMany(mappedBy = "surgery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SurgeryEmployee> surgeryEmployees;
 
     public Surgery(Consult consult, SurgeryType surgeryType, Double hospitalCost, Double surgeryCost) {

@@ -15,4 +15,5 @@ public interface SurgeryRepository extends JpaRepository<Surgery, String> {
 
     List<Surgery> findByConsultId(String consultId);
 
+    boolean existsByPerformedDateIsNotNullAndId(String id);
 }

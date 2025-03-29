@@ -14,6 +14,7 @@ import com.hospitalApi.surgery.mappers.SurgeryTypeMapper;
 import com.hospitalApi.surgery.models.Surgery;
 import com.hospitalApi.surgery.models.SurgeryEmployee;
 import com.hospitalApi.surgery.models.SurgeryType;
+import com.hospitalApi.surgery.ports.ForSurgeryCreatePort;
 import com.hospitalApi.surgery.ports.ForSurgeryEmployeePort;
 import com.hospitalApi.surgery.ports.ForSurgeryPort;
 import com.hospitalApi.surgery.ports.ForSurgeryTypePort;
@@ -34,6 +35,7 @@ import lombok.RequiredArgsConstructor;
 public class SurgeryController {
 
 	private final ForSurgeryPort surgeryPort;
+	private final ForSurgeryCreatePort surgeryCreatePort;
 	private final ForSurgeryEmployeePort surgeryEmployeePort;
 	private final ForSurgeryTypePort surgeryTypePort;
 	private final SurgeryEmployeeMapper surgeryEmployeeMapper;
@@ -126,9 +128,9 @@ public class SurgeryController {
 	})
 	@PostMapping("/create")
 	public ResponseEntity<SurgeryResponseDTO> createSurgery(
-			@Valid @RequestBody CreateSugeryRequestDTO createSurgeryRequestDTO) throws NotFoundException {
-		Surgery surgery = surgeryPort.createSurgery(createSurgeryRequestDTO.getConsultId(),
-				createSurgeryRequestDTO.getSurgeryTypeId());
+			@Valid @RequestBody CreateSugeryRequestDTO createSurgeryRequestDTO)
+			throws NotFoundException, IllegalStateException, DuplicatedEntryException {
+		Surgery surgery = surgeryCreatePort.createSurgery(createSurgeryRequestDTO);
 		SurgeryTypeResponseDTO surgeryType = new SurgeryTypeResponseDTO(surgery.getSurgeryType());
 		List<SurgeryEmpleoyeeResponseDTO> surgeryEmployees = surgeryEmployeeMapper
 				.fromSurgeryEmployeeListToSurgeryEmpleoyeeResponseDTOList(
@@ -259,6 +261,41 @@ public class SurgeryController {
 							surgery.getSurgeryEmployees());
 			return new SurgeryResponseDTO(surgery, surgeryType, surgeryEmployees);
 		}).toList();
+		return ResponseEntity.ok().body(response);
+	}
+
+	@Operation(summary = "Marcar cirugía como realizada", description = "Permite marcar una cirugía como realizada.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Cirugía marcada como realizada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryResponseDTO.class))),
+			@ApiResponse(responseCode = "404", description = "Cirugía no encontrada", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "409", description = "Conflicto - Cirugía ya marcada como realizada", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
+	})
+	@PostMapping("/mark-performed/{surgeryId}")
+	public ResponseEntity<SurgeryResponseDTO> markSurgeryAsPerformed(
+			@PathVariable("surgeryId") @NotBlank(message = "El id de la cirugía es requerido") String surgeryId)
+			throws NotFoundException, IllegalStateException {
+		Surgery surgery = surgeryPort.markSurgeryAsPerformed(surgeryId);
+		SurgeryTypeResponseDTO surgeryType = new SurgeryTypeResponseDTO(surgery.getSurgeryType());
+		List<SurgeryEmpleoyeeResponseDTO> surgeryEmployees = surgeryEmployeeMapper
+				.fromSurgeryEmployeeListToSurgeryEmpleoyeeResponseDTOList(
+						surgery.getSurgeryEmployees());
+		SurgeryResponseDTO response = new SurgeryResponseDTO(surgery, surgeryType, surgeryEmployees);
+		return ResponseEntity.ok().body(response);
+	}
+
+	@Operation(summary = "Eliminar una cirugía", description = "Permite eliminar una cirugía existente.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Cirugía eliminada exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Cirugía no encontrada", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "409", description = "Conflicto - Cirugía ya realizada", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
+	})
+	@DeleteMapping("{surgeryId}")
+	public ResponseEntity<DeleteSurgeryResponseDTO> deleteSurgeryById(
+			@PathVariable("surgeryId") @NotBlank(message = "El id de la cirugía es requerido") String surgeryId)
+			throws NotFoundException, IllegalStateException {
+		DeleteSurgeryResponseDTO response = surgeryPort.deleteSurgery(surgeryId);
 		return ResponseEntity.ok().body(response);
 	}
 

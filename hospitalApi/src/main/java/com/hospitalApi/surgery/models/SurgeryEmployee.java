@@ -32,9 +32,7 @@ public class SurgeryEmployee extends Auditor {
     @ManyToOne
     @JoinColumn(nullable = true)
     private SpecialistEmployee specialistEmployee;
-
-    @NotBlank(message = "El pago al especialista es requerido")
-    @DecimalMin(value = "0.01", message = "El pago al especialista debe ser mayor a 0")
+    
     @Column(nullable = false)
     private Double specialistPayment;
 }
