@@ -37,7 +37,7 @@
 import { useQuery } from "@pinia/colada"
 import { getPatient, type PatientResponseDTO } from "~/lib/api/patients/patients"
 
-const { state: patientState } = useQuery({
+const { state: patientState } = useCustomQuery({
   key: ["patient",useRoute().params.id as string],
   query: () => getPatient(useRoute().params.id as string)
 })

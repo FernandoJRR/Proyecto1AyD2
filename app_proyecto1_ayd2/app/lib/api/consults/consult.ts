@@ -2,10 +2,29 @@ import { type PatientResponseDTO } from "../patients/patients";
 
 const CURRENT_CONSULT_URI = "/v1/consults";
 
+export interface AddDeleteEmployeeConsultRequestDTO {
+  consultId: string;
+  employeeId: string;
+}
+
+export interface ConsultFilterDTO {
+  patientId: string | null;
+  patientDpi: string | null;
+  patientFirstnames: string | null;
+  patientLastnames: string | null;
+  employeeId: string | null;
+  employeeFirstName: string | null;
+  employeeLastName: string | null;
+  consultId: string | null;
+  isPaid: boolean | null;
+  isInternado: boolean | null;
+}
+
 export interface ConsultResponseDTO {
   id: string;
   patient: PatientResponseDTO;
   isInternado: boolean;
+  isPaid: boolean;
   costoConsulta: number;
   costoTotal: number;
   createdAt: string;
@@ -15,6 +34,7 @@ export interface ConsultResponseDTO {
 export interface CreateConsultRequestDTO {
   patientId: string;
   costoConsulta: number;
+  employeeId: string;
 }
 
 export interface UpdateConsultRequestDTO {
@@ -27,9 +47,16 @@ export interface TotalConsultResponseDTO {
   totalCost: number;
 }
 
-export const getAllConsults = async () => {
+export interface EmployeeConsultResponseDTO {
+  employeeId: string;
+  employeeName: string;
+  employeeLastName: string;
+  employeeType: string;
+}
+
+export const getAllConsults = async (filters: ConsultFilterDTO) => {
   const response = await $api<ConsultResponseDTO[]>(
-    `${CURRENT_CONSULT_URI}/all`
+    `${CURRENT_CONSULT_URI}/all${genParams(filters)}`
   );
   return response;
 };
@@ -79,6 +106,39 @@ export const payConsult = async (consultId: string) => {
 export const calcTotalConsult = async (consultId: string) => {
   const response = await $api<TotalConsultResponseDTO>(
     `${CURRENT_CONSULT_URI}/total/${consultId}`
+  );
+  return response;
+};
+
+export const employeesConsult = async (consultId: string) => {
+  const response = await $api<EmployeeConsultResponseDTO[]>(
+    `${CURRENT_CONSULT_URI}/${consultId}/employees`
+  );
+  return response;
+};
+
+export const addEmployeeToConsult = async (
+  data: AddDeleteEmployeeConsultRequestDTO
+) => {
+  const response = await $api<EmployeeConsultResponseDTO>(
+    `${CURRENT_CONSULT_URI}/add-employee`,
+    {
+      method: "POST",
+      body: data,
+    }
+  );
+  return response;
+};
+
+export const deleteEmployeeFromConsult = async (
+  data: AddDeleteEmployeeConsultRequestDTO
+) => {
+  const response = await $api<EmployeeConsultResponseDTO>(
+    `${CURRENT_CONSULT_URI}/delete-employee`,
+    {
+      method: "DELETE",
+      body: data,
+    }
   );
   return response;
 };

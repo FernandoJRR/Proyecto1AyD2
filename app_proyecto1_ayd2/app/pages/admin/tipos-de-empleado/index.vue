@@ -51,7 +51,7 @@ const queryCache = useQueryCache()
 //esto es la constante que usa vue para manejar sus dialogs
 const confirm = useConfirm();
 
-const { state, asyncStatus } = useQuery({
+const { state, asyncStatus } = useCustomQuery({
   key: ['getAllEmployeeTypes'],
   query: () => getAllEmployeeTypes()
 })

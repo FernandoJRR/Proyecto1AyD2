@@ -5,7 +5,7 @@
       <router-link to="/admin/tipos-de-empleado">
         <Button label="Ver Todos" icon="pi pi-arrow-left" text />
       </router-link>
-     
+
     </div>
     <h1 class="text-4xl font-bold mb-6">Crear Tipo de Empleado</h1>
     <!-- formulario principal -->
@@ -112,7 +112,7 @@ const resolver = ref(zodResolver(
         }else{
             permissionsError.value = '';
         }
-    
+
     })
 ))
 
@@ -129,7 +129,7 @@ const onFormSubmit = (e: any) => {
     }
 };
 
-const { state: permissions } = useQuery({
+const { state: permissions } = useCustomQuery({
     key: ['permissions'],
     query: () => getAllPermissions()
 })

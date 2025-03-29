@@ -53,7 +53,7 @@
               <template #body="{ data }">
                 <div class="flex items-center gap-2">
                   <p class="text-lg font-medium">
-                    {{ data.historyType.type === "Aumento Salarial" || data.historyType.type === "Disminucion Salarial" 
+                    {{ data.historyType.type === "Aumento Salarial" || data.historyType.type === "Disminucion Salarial"
                       ? `Salario modificado a Q.${data.commentary}` : data.commentary }}
                   </p>
                 </div>
@@ -78,10 +78,10 @@
 import { useQuery } from '@pinia/colada';
 import { getEmployeeById } from '~/lib/api/admin/employee';
 
-const { state } = useQuery({
+const { state } = useCustomQuery({
   key: ['usuario', useRoute().params.id as string],
   query: () => getEmployeeById(useRoute().params.id as string).then((res) => { return {
-    employee: res.employeeResponseDTO, 
+    employee: res.employeeResponseDTO,
     histories: res.employeeHistories
   }})
 })

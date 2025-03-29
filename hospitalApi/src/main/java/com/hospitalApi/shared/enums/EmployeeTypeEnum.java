@@ -13,7 +13,10 @@ import lombok.Getter;
 public enum EmployeeTypeEnum {
 
     DEFAULT(new EmployeeType("Sin Asignar")),
-    ADMIN(new EmployeeType("Admin"));
+    ADMIN(new EmployeeType("Admin")),
+    DOCTOR(new EmployeeType("Doctor")),
+    ENFERMERO(new EmployeeType("Enfermero")),
+    FARMACEUTICO(new EmployeeType("Farmaceutico"));
 
     private final EmployeeType employeeType;
 }

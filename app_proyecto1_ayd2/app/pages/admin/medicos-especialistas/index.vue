@@ -92,7 +92,7 @@ const {
   state: especialistasState,
   asyncStatus,
   refetch: refetchEspecialistas,
-} = useQuery({
+} = useCustomQuery({
   key: ["especialistas"],
   query: () =>
     getAllSpecialistEmployees(

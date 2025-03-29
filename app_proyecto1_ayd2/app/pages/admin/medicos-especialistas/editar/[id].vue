@@ -113,7 +113,7 @@ import {
   type UpdateSpecialistEmployeeRequestDTO,
 } from "~/lib/api/admin/specialist-employee";
 
-const { state: specialistState } = useQuery({
+const { state: specialistState } = useCustomQuery({
   key: ["specialist-edit",useRoute().params.id as string],
   query: () => getSpecialistEmployeeById(useRoute().params.id as string),
 });
@@ -163,7 +163,7 @@ const { mutate, asyncStatus } = useMutation({
   onError(error) {
     console.error(error);
     toast.error("Ocurrió un error al actualizar el especialista", {
-      description: `Parece que los datos no son válidos: ${error}`,
+      description: error,
     });
   },
   onSuccess() {

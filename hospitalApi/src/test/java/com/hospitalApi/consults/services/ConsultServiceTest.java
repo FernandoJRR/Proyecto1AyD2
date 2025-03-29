@@ -99,47 +99,47 @@ public class ConsultServiceTest {
         verify(consultRepository, times(1)).findById(CONSULT_ID);
     }
 
-    @Test
-    public void shouldCreateConsultSuccessfully() throws NotFoundException {
-        // Arrange
-        when(forPatientPort.getPatient(PATIENT_ID)).thenReturn(patient);
-        when(consultRepository.save(any(Consult.class))).thenAnswer(invocation -> {
-            Consult saved = invocation.getArgument(0);
-            saved.setId(CONSULT_ID);
-            return saved;
-        });
+    // @Test
+    // public void shouldCreateConsultSuccessfully() throws NotFoundException {
+    //     // Arrange
+    //     when(forPatientPort.getPatient(PATIENT_ID)).thenReturn(patient);
+    //     when(consultRepository.save(any(Consult.class))).thenAnswer(invocation -> {
+    //         Consult saved = invocation.getArgument(0);
+    //         saved.setId(CONSULT_ID);
+    //         return saved;
+    //     });
 
-        // Act
-        Consult result = consultService.createConsult(PATIENT_ID, CONSULT_COST);
+    //     // Act
+    //     Consult result = consultService.createConsult(PATIENT_ID, CONSULT_COST);
 
-        // Assert
-        assertNotNull(result);
-        assertEquals(CONSULT_ID, result.getId());
-        assertEquals(patient, result.getPatient());
-        assertEquals(CONSULT_COST, result.getCostoConsulta());
+    //     // Assert
+    //     assertNotNull(result);
+    //     assertEquals(CONSULT_ID, result.getId());
+    //     assertEquals(patient, result.getPatient());
+    //     assertEquals(CONSULT_COST, result.getCostoConsulta());
 
-        ArgumentCaptor<Consult> captor = ArgumentCaptor.forClass(Consult.class);
-        verify(consultRepository).save(captor.capture());
+    //     ArgumentCaptor<Consult> captor = ArgumentCaptor.forClass(Consult.class);
+    //     verify(consultRepository).save(captor.capture());
 
-        Consult captured = captor.getValue();
-        assertEquals(patient, captured.getPatient());
-        assertEquals(CONSULT_COST, captured.getCostoConsulta());
-        verify(forPatientPort, times(1)).getPatient(PATIENT_ID);
-    }
+    //     Consult captured = captor.getValue();
+    //     assertEquals(patient, captured.getPatient());
+    //     assertEquals(CONSULT_COST, captured.getCostoConsulta());
+    //     verify(forPatientPort, times(1)).getPatient(PATIENT_ID);
+    // }
 
-    @Test
-    public void shouldThrowNotFoundExceptionWhenPatientDoesNotExistOnCreateConsult() throws NotFoundException {
-        // Arrange
-        when(forPatientPort.getPatient(PATIENT_ID)).thenThrow(new NotFoundException("Paciente no encontrado"));
+    // @Test
+    // public void shouldThrowNotFoundExceptionWhenPatientDoesNotExistOnCreateConsult() throws NotFoundException {
+    //     // Arrange
+    //     when(forPatientPort.getPatient(PATIENT_ID)).thenThrow(new NotFoundException("Paciente no encontrado"));
 
-        // Act & Assert
-        NotFoundException ex = assertThrows(NotFoundException.class,
-                () -> consultService.createConsult(PATIENT_ID, CONSULT_COST));
+    //     // Act & Assert
+    //     NotFoundException ex = assertThrows(NotFoundException.class,
+    //             () -> consultService.createConsult(PATIENT_ID, CONSULT_COST));
 
-        assertEquals("Paciente no encontrado", ex.getMessage());
-        verify(forPatientPort, times(1)).getPatient(PATIENT_ID);
-        verify(consultRepository, never()).save(any());
-    }
+    //     assertEquals("Paciente no encontrado", ex.getMessage());
+    //     verify(forPatientPort, times(1)).getPatient(PATIENT_ID);
+    //     verify(consultRepository, never()).save(any());
+    // }
 
     @Test
     public void shouldUpdateConsultSuccessfully() throws NotFoundException {

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 
 import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.consults.models.EmployeeConsult;
-import com.hospitalApi.consults.port.ForConsultPort;
 import com.hospitalApi.consults.port.ForEmployeeConsultPort;
 import com.hospitalApi.consults.repositories.EmployeeConsultRepository;
 import com.hospitalApi.employees.models.Employee;
@@ -20,13 +19,11 @@ import lombok.AllArgsConstructor;
 public class EmployeeConsultService implements ForEmployeeConsultPort {
 
     private final ForEmployeesPort forEmployeesPort;
-    private final ForConsultPort forConsultPort;
     private final EmployeeConsultRepository employeeConsultRepository;
 
     @Override
-    public EmployeeConsult createEmployeeConsult(String consultId, String employeeId) throws NotFoundException {
+    public EmployeeConsult createEmployeeConsult(Consult consult, String employeeId) throws NotFoundException {
         Employee employee = forEmployeesPort.findEmployeeById(employeeId);
-        Consult consult = forConsultPort.findById(consultId);
         EmployeeConsult employeeConsult = new EmployeeConsult(consult, employee);
         employeeConsult = employeeConsultRepository.save(employeeConsult);
         return employeeConsult;
@@ -40,6 +37,17 @@ public class EmployeeConsultService implements ForEmployeeConsultPort {
     @Override
     public List<EmployeeConsult> getEmployeeConsultsByEmployeeId(String employeeId) throws NotFoundException {
         return employeeConsultRepository.findByEmployeeId(employeeId);
+    }
+
+    @Override
+    public List<EmployeeConsult> addEmployeeConsultsByConsultIdAndEmployeeId(Consult consult, String employeeId)
+            throws NotFoundException, IllegalStateException {
+        if (employeeConsultRepository.existsByConsultIdAndEmployeeId(consult.getId(), employeeId)) {
+            throw new IllegalStateException(
+                    "El empleado " + employeeId + " ya está asignado a la consulta " + consult.getId());
+        }
+        EmployeeConsult employeeConsult = createEmployeeConsult(consult, employeeId);
+        return getEmployeeConsultsByConsultId(employeeConsult.getConsult().getId());
     }
 
     @Override

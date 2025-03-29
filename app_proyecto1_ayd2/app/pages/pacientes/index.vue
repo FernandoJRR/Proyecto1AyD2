@@ -86,7 +86,7 @@ const {
   state: patientsState,
   asyncStatus,
   refetch: refetchPatients
-} = useQuery({
+} = useCustomQuery({
   key: ["patients"],
   query: () => getAllPatients(searchTerm.value === "" ? null : searchTerm.value)
 })

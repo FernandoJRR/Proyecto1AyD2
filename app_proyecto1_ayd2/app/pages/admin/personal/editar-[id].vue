@@ -8,7 +8,7 @@
       <div class="flex flex-col gap-1">
         <h1 class="text-2xl font-semibold">Datos del Empleado</h1>
         <div class="flex flex-col gap-2">
-          <Form v-slot="$employeeForm" :initialValues :resolver @submit="onFormSubmit" class="mt-8 flex justify-center">
+          <Form v-slot="$employeeForm" :initialValues :employeeResolver @submit="onEmployeeFormSubmit" class="mt-8 flex justify-center">
             <div class="flex flex-col w-full gap-4">
               <div class="flex flex-row gap-4">
                 <div class="w-full">
@@ -49,7 +49,7 @@
               </InputGroup>
             </div>
           </Form>
-          <Form v-slot="$benefitsForm" :initialValues :resolver @submit="onFormSubmit" class="mt-8 flex justify-center">
+          <Form v-slot="$benefitsForm" :initialValues :benefitsResolver @submit="onBenefitsFormSubmit" class="mt-8 flex justify-center">
             <div class="flex flex-col gap-2">
               <div class="flex flex-row">
                 <div>
@@ -84,7 +84,7 @@
           </Form>
         </div>
         <h1 class="text-2xl font-semibold mt-2">Area del Empleado</h1>
-        <Form v-slot="$areaForm" :initialValues :resolver @submit="onFormSubmit" class="mt-8 flex justify-center">
+        <Form v-slot="$areaForm" :initialValues :areaResolver @submit="onAreaFormSubmit" class="mt-8 flex justify-center">
           <div class="flex flex-col mt-2 w-full">
             <div>
               <template v-if="userTypes.status === 'success'">
@@ -94,45 +94,10 @@
                     :options="userTypes.data" placeholder="Selecciona un tipo de usuario" fluid />
                 </FloatLabel>
                 <Message v-if="$areaForm.type?.invalid" severity="error" size="small" variant="simple">{{
-                  $areaForm.city.error.message }}</Message>
+                  $areaForm.type.error?.message }}</Message>
               </template>
             </div>
             <Button class="w-full mt-2" type="submit" severity="secondary" label="Actualizar Area" />
-          </div>
-        </Form>
-        <h1 class="text-2xl font-semibold mb-2 mt-2">Datos del Usuario</h1>
-        <Form v-slot="$userForm" :initialValues :resolver @submit="onFormSubmit" class="mt-8 flex justify-center">
-          <div class="flex flex-row gap-4 mb-8 w-full">
-            <div class="flex flex-col gap-4 w-full">
-              <div>
-                <FloatLabel>
-                  <label>Username</label>
-                  <InputText name="username" type="text" fluid />
-                </FloatLabel>
-                <Message v-if="$userForm.username?.invalid" severity="error" size="small" variant="simple">{{
-                  $userForm.username.error?.message }}</Message>
-              </div>
-              <Button type="submit" severity="secondary" label="Actualizar Username" />
-            </div>
-            <div class="flex flex-col gap-4 w-full">
-              <div>
-                <FloatLabel>
-                  <Password name="password" :feedback="false" fluid toggleMask />
-                  <label for="over_label">Password</label>
-                </FloatLabel>
-                <Message v-if="$userForm.password?.invalid" severity="error" size="small" variant="simple">{{
-                  $userForm.password.error?.message }}</Message>
-              </div>
-              <div>
-                <FloatLabel>
-                  <Password name="password_repeat" :feedback="false" fluid toggleMask />
-                  <label for="over_label">Repite Password</label>
-                </FloatLabel>
-                <Message v-if="$userForm.password_repeat?.invalid" severity="error" size="small" variant="simple">{{
-                  $userForm.password_repeat.error?.message }}</Message>
-              </div>
-              <Button type="submit" severity="secondary" label="Actualizar Password" />
-            </div>
           </div>
         </Form>
       </div>
@@ -141,13 +106,13 @@
 </template>
 <script setup lang="ts">
 import { zodResolver } from '@primevue/forms/resolvers/zod';
-import { DatePicker, FloatLabel, InputGroup, InputNumber, Password, ToggleSwitch } from 'primevue';
+import { DatePicker, FloatLabel, InputGroup, InputNumber, ToggleSwitch } from 'primevue';
 import { toast } from 'vue-sonner';
 import { z } from 'zod';
-import { createEmployee, getEmployeeById, updateEmployeeSalary, type EmployeePayload, type EmployeeSalaryUpdatePayload } from '~/lib/api/admin/employee';
+import { createEmployee, getEmployeeById, updateEmployee, updateEmployeeSalary, type EmployeePayload, type EmployeeSalaryUpdatePayload, type EmployeeUpdatePayload } from '~/lib/api/admin/employee';
 import { getAllEmployeeTypes } from '~/lib/api/admin/employee-type';
 
-const { state: foundUser } = useQuery({
+const { state: foundUser } = useCustomQuery({
   key: ['usuario-editar', useRoute().params.id as string],
   query: () => getEmployeeById(useRoute().params.id as string).then((res) => { return { ...res.employeeResponseDTO, username: res.username } })
 })
@@ -174,12 +139,15 @@ const initialValues = reactive({
 
 const selectedType = ref('')
 
-const resolver = ref(zodResolver(
+const employeeResolver = ref(zodResolver(
   z.object({
     firstName: z.string().min(1, 'Los nombres son obligatorios.'),
     lastName: z.string().min(1, 'Los apellidos son obligatorios.'),
-    salary: z.number({ message: "El salario es obligatorio." }).min(1, 'El salario debe ser un numero positivo.'),
+  })
+))
 
+const benefitsResolver = ref(zodResolver(
+  z.object({
     has_porcentaje_iggs: z.boolean(),
     iggsPercentage: z.union([
       z.number().min(1, "El porcentaje debe ser mayor a 0.").max(100, "El porcentaje no puede ser mayor a 100"),
@@ -192,13 +160,6 @@ const resolver = ref(zodResolver(
       z.literal(null)
     ]).optional(),
 
-    type: z.string(),
-
-    username: z.string().min(8, 'Debes ingresar un username con al menos 8 caracteres'),
-    password: z.string().min(8, 'Debes ingresar un password con al menos 8 caracteres'),
-    password_repeat: z.string({ message: 'Debes confirmar el password' }),
-
-    hiring_date: z.date()
   }).superRefine((data, ctx) => {
     if (data.has_porcentaje_iggs && (data.iggsPercentage === null || data.iggsPercentage === undefined || data.iggsPercentage === 0)) {
       ctx.addIssue({
@@ -214,13 +175,12 @@ const resolver = ref(zodResolver(
         code: z.ZodIssueCode.custom,
       });
     }
-    if (data.password !== data.password_repeat) {
-      ctx.addIssue({
-        path: ["password_repeat"],
-        message: "Las password no coinciden.",
-        code: z.ZodIssueCode.custom,
-      });
-    }
+  })
+))
+
+const areaResolver = ref(zodResolver(
+  z.object({
+    type: z.string(),
   })
 ))
 
@@ -231,66 +191,93 @@ const salaryResolver = ref(zodResolver(
   })
 ))
 
-const onFormSubmit = (e: any) => {
+const onEmployeeFormSubmit = (e: any) => {
   if (e.valid) {
     console.log(e.values)
-
-    let payload: EmployeePayload = {
+    const payload: EmployeeUpdatePayload = {
       firstName: e.values.firstName,
       lastName: e.values.lastName,
-      salary: e.values.salary,
-      iggsPercentage: e.values.has_porcentaje_iggs ? e.values.iggsPercentage : null,
-      irtraPercentage: e.values.has_porcentaje_iggs ? e.values.irtraPercentage : null,
-      employeeTypeId: { id: e.values.type },
-      createUserRequestDTO: { username: e.values.username, password: e.values.password },
-      employeeHistoryDateRequestDTO: { historyDate: e.values.hiring_date }
+      salary: foundUser.value.data?.salary ?? 0,
+      iggsPercentage: foundUser.value.data?.iggsPercentage ?? 0,
+      irtraPercentage: foundUser.value.data?.irtraPercentage ?? 0,
+      employeeTypeId: { id: foundUser.value.data?.employeeType.id ?? '' },
     }
+    updateEmployeeMutation(payload)
+  }
+};
 
-    mutate(payload)
+const onAreaFormSubmit = (e: any) => {
+  if (e.valid) {
+    console.log(e.values)
+    const payload: EmployeeUpdatePayload = {
+      firstName: foundUser.value.data?.firstName ?? '',
+      lastName: foundUser.value.data?.lastName ?? '',
+      salary: foundUser.value.data?.salary ?? 0,
+      iggsPercentage: foundUser.value.data?.iggsPercentage ?? 0,
+      irtraPercentage: foundUser.value.data?.irtraPercentage ?? 0,
+      employeeTypeId: { id: e.values.type },
+    }
+    updateEmployeeMutation(payload)
   }
 };
 
 const onSalaryFormSubmit = (e: any) => {
   if (e.valid) {
-    console.log(e.values)
-
     updateSalary(e.values)
   }
 };
 
-const { state: userTypes } = useQuery({
+const onBenefitsFormSubmit = (e: any) => {
+  if (e.valid) {
+    console.log(e.values)
+    const payload: EmployeeUpdatePayload = {
+      firstName: foundUser.value.data?.firstName ?? '',
+      lastName: foundUser.value.data?.lastName ?? '',
+      salary: foundUser.value.data?.salary ?? 0,
+      iggsPercentage: e.values.has_porcentaje_iggs ? e.values.iggsPercentage : null,
+      irtraPercentage: e.values.has_porcentaje_iggs ? e.values.irtraPercentage : null,
+      employeeTypeId: { id: foundUser.value.data?.employeeType.id ?? '' },
+    }
+    updateEmployeeMutation(payload)
+  }
+};
+
+const { state: userTypes } = useCustomQuery({
   key: ['optionsTypes'],
   query: () => getAllEmployeeTypes()
+})
+
+const { mutate: updateEmployeeMutation } = useMutation({
+  mutation: (updateData: EmployeeUpdatePayload) => updateEmployee(updateData, useRoute().params.id as string),
+  onError(error) {
+    toast.error('Ocurrió un error al actualizar al empleado.', {
+      description: error
+    })
+  },
+  onSuccess() {
+    toast.success('Empleado actualizado correctamente')
+    navigateTo('/admin/personal')
+  }
 })
 
 const { mutate: updateSalary } = useMutation({
   mutation: (updateData: EmployeeSalaryUpdatePayload) => updateEmployeeSalary(updateData, useRoute().params.id as string),
   onError(error) {
-    console.log(error)
-    console.log(error.message)
     toast.error('Ocurrió un error al actualizar el salario.', {
-      description: `
-      Parece que los datos no son válidos:
-      ${(error)}
-      `
+      description: error
     })
   },
   onSuccess() {
-    toast.success('Empleado creado correctamente')
+    toast.success('Salario editado correctamente')
     navigateTo('/admin/personal')
   }
 })
 
-const { mutate, asyncStatus } = useMutation({
+const { mutate } = useMutation({
   mutation: (employeeData: EmployeePayload) => createEmployee(employeeData),
   onError(error) {
-    console.log(error)
-    console.log(error.message)
     toast.error('Ocurrió un error al crear el empleado', {
-      description: `
-      Parece que los datos no son válidos:
-      ${(error)}
-      `
+      description: error
     })
   },
   onSuccess() {

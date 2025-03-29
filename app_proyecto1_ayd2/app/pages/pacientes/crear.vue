@@ -1,9 +1,7 @@
 <template>
   <div class="m-6 ml-12">
     <div class="mb-6">
-      <router-link to="/pacientes">
-        <Button label="Ver Todos" icon="pi pi-arrow-left" text />
-      </router-link>
+      <Button label="Volver" icon="pi pi-arrow-left" text @click="router.back()" />
     </div>
 
     <h1 class="text-4xl font-bold mb-6">Crear Paciente</h1>
@@ -82,6 +80,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { zodResolver } from '@primevue/forms/resolvers/zod'
 import { z } from 'zod'
 import {
@@ -96,6 +95,8 @@ import {
   createPatient,
   type CreatePatientRequestDTO
 } from '~/lib/api/patients/patients'
+
+const router = useRouter()
 
 const initialValues = reactive({
   firstnames: '',
@@ -130,7 +131,7 @@ const { mutate, asyncStatus } = useMutation({
   onError(error) {
     console.error(error)
     toast.error('Ocurrió un error al crear el paciente', {
-      description: `Parece que los datos no son válidos:\n${error}`
+      description: error
     })
   },
   onSuccess() {
