@@ -5,7 +5,7 @@
     </router-link>
 
     <!-- Botón para convertir en internado -->
-    <div class="mt-4">
+    <div class="mt-4 flex gap-4 flex-wrap">
       <Button
         label="Convertir en Internado"
         icon="pi pi-user-plus"
@@ -13,6 +13,15 @@
         outlined
         @click="showInternadoDialog = true"
         :disabled="initialValues.consult.isInternado"
+      />
+
+      <Button
+        v-if="initialValues.consult.isInternado"
+        label="Asignar Habitación"
+        icon="pi pi-home"
+        severity="info"
+        outlined
+        @click="toast('Abrir diálogo para asignar habitación')"
       />
     </div>
 
@@ -120,6 +129,16 @@
           </template>
         </DataTable>
       </div>
+
+      <!-- Tabla de cirugías asignadas -->
+      <div v-if="initialValues.consult.isInternado" class="mt-12">
+        <h2 class="text-xl font-semibold mb-4">Cirugías Asignadas</h2>
+        <DataTable :value="[]" tableStyle="min-width: 30rem" stripedRows>
+          <Column field="surgeryName" header="Nombre de Cirugía" />
+          <Column field="scheduledDate" header="Fecha Programada" />
+          <Column field="responsibleDoctor" header="Doctor Responsable" />
+        </DataTable>
+      </div>
     </div>
 
     <!-- Dialogo Confirmar Internado -->
@@ -168,6 +187,7 @@ import {
   type UpdateConsultRequestDTO,
 } from "~/lib/api/consults/consult";
 import { Tag, Button, Dialog } from "primevue";
+import { getSurgeriesbyConsultId } from "../../lib/api/surgeries/surgeries";
 
 const showInternadoDialog = ref(false);
 const showDeleteDialog = ref(false);
@@ -190,6 +210,7 @@ const initialValues = reactive({
     updateAt: "",
   } as ConsultResponseDTO,
   consultEmployees: [] as EmployeeConsultResponseDTO[],
+  surgerysConsult: [] as SurgeryResponseDTO[],
 });
 
 const {
@@ -205,6 +226,22 @@ const { state: consultState, refetch: refecthConsult } = useQuery({
   key: ["consult", useRoute().params.id as string],
   query: () => getConsult(useRoute().params.id as string),
 });
+
+const { state: consultSurgeriesState, refetch: refetchConsultSurgeries } =
+  useQuery({
+    key: ["consultSurgeries", useRoute().params.id as string],
+    query: () => getSurgeriesbyConsultId(useRoute().params.id as string),
+  });
+
+watch(
+  () => consultSurgeriesState.value,
+  (value) => {
+    if (consultSurgeriesState.value.status === "success" && value.data) {
+      initialValues.surgerysConsult = value.data;
+    }
+  },
+  { immediate: true }
+);
 
 watch(
   () => consultState.value,
