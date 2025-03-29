@@ -16,4 +16,7 @@ public interface ForEmployeeConsultPort {
 
     public List<EmployeeConsult> deleteEmployeeConsultsByConsultIdAndEmployeeId(String consultId, String employeeId)
             throws NotFoundException, IllegalStateException;
+
+    public List<EmployeeConsult> addEmployeeConsultsByConsultIdAndEmployeeId(Consult consult, String employeeId)
+            throws NotFoundException, IllegalStateException;
 }

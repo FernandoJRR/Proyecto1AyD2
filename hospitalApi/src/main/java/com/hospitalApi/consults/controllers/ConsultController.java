@@ -2,14 +2,19 @@ package com.hospitalApi.consults.controllers;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hospitalApi.consults.dtos.AddDeleteEmployeeConsultRequestDTO;
 import com.hospitalApi.consults.dtos.ConsultResponseDTO;
 import com.hospitalApi.consults.dtos.ConsutlFilterDTO;
 import com.hospitalApi.consults.dtos.CreateConsultRequestDTO;
+import com.hospitalApi.consults.dtos.EmployeeConsultResponseDTO;
 import com.hospitalApi.consults.dtos.TotalConsultResponseDTO;
 import com.hospitalApi.consults.dtos.UpdateConsultRequestDTO;
 import com.hospitalApi.consults.mappers.ConsultMapper;
+import com.hospitalApi.consults.mappers.EmployeeConsultMapper;
 import com.hospitalApi.consults.models.Consult;
+import com.hospitalApi.consults.models.EmployeeConsult;
 import com.hospitalApi.consults.port.ForConsultPort;
+import com.hospitalApi.consults.port.ForEmployeeConsultPort;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +31,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -41,6 +47,8 @@ public class ConsultController {
 
     private final ForConsultPort consultPort;
     private final ConsultMapper consultMapper;
+    private final EmployeeConsultMapper employeeConsultMapper;
+    private final ForEmployeeConsultPort employeeConsultPort;
     // private final ConsultMapper consultMapper;
 
     @Operation(summary = "Obtener todas las consultas", description = "Este endpoint devuelve una lista con todas las consultas registradas en el sistema.")
@@ -132,4 +140,58 @@ public class ConsultController {
         return ResponseEntity.ok().body(new TotalConsultResponseDTO(id, total));
     }
 
+    @Operation(summary = "Obtener empleados asignados a una consulta", description = "Este endpoint devuelve una lista de empleados asignados a una consulta específica.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Empleados obtenidos exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeConsultResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @GetMapping("/{id}/employees")
+    public ResponseEntity<List<EmployeeConsultResponseDTO>> getEmployeeConsultsByConsultId(
+            @PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id)
+            throws NotFoundException {
+        List<EmployeeConsult> employeeConsults = employeeConsultPort.getEmployeeConsultsByConsultId(id);
+        List<EmployeeConsultResponseDTO> employeeConsultsResponse = employeeConsultMapper
+                .fromEmployeeConsultsToResponse(employeeConsults);
+        return ResponseEntity.ok().body(employeeConsultsResponse);
+    }
+
+    @Operation(summary = "Agregar empleado a una consulta", description = "Este endpoint permite agregar un empleado a una consulta existente.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Empleado agregado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeConsultResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Consulta o Empleado no encontrado", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "409", description = "El empleado ya esta asignado a la consulta", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @PostMapping("add-employee")
+    public ResponseEntity<List<EmployeeConsultResponseDTO>> addEmployeeToConsult(
+            @RequestBody @Valid AddDeleteEmployeeConsultRequestDTO addEmployeeConsultRequestDTO)
+            throws NotFoundException, IllegalStateException {
+        Consult consult = consultPort.findById(addEmployeeConsultRequestDTO.getConsultId());
+        List<EmployeeConsult> employeeConsults = employeeConsultPort.addEmployeeConsultsByConsultIdAndEmployeeId(
+                consult,
+                addEmployeeConsultRequestDTO.getEmployeeId());
+        List<EmployeeConsultResponseDTO> employeeConsultsResponse = employeeConsultMapper
+                .fromEmployeeConsultsToResponse(employeeConsults);
+        return ResponseEntity.ok().body(employeeConsultsResponse);
+    }
+
+    @Operation(summary = "Eliminar empleado de una consulta", description = "Este endpoint permite eliminar un empleado de una consulta existente.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Empleado eliminado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeConsultResponseDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Consulta o Empleado no encontrado", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "409", description = "El empleado no está asignado a la consulta o es el único empleado asignado", content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @DeleteMapping("delete-employee")
+    public ResponseEntity<List<EmployeeConsultResponseDTO>> deleteEmployeeFromConsult(
+            @RequestBody @Valid AddDeleteEmployeeConsultRequestDTO addEmployeeConsultRequestDTO)
+            throws NotFoundException, IllegalStateException {
+        List<EmployeeConsult> employeeConsults = employeeConsultPort
+                .deleteEmployeeConsultsByConsultIdAndEmployeeId(addEmployeeConsultRequestDTO.getConsultId(),
+                        addEmployeeConsultRequestDTO.getEmployeeId());
+        List<EmployeeConsultResponseDTO> employeeConsultsResponse = employeeConsultMapper
+                .fromEmployeeConsultsToResponse(employeeConsults);
+        return ResponseEntity.ok().body(employeeConsultsResponse);
+    }
 }

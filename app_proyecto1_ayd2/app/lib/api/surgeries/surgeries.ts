@@ -22,6 +22,8 @@ export interface SurgeryEmployeeResponseDTO {
   surgeryId: string;
   employeeId?: string | null;
   specialistEmployeeId?: string | null;
+  employeeName: string | null;
+  employeeLastName: string | null;
   specialistPayment: number;
 }
 
@@ -151,3 +153,11 @@ export const getAllSugeryEmployees = async (surgeryId: string) => {
   );
   return response;
 };
+
+
+export const getSurgeriesbyConsultId = async (consultId: string) => {
+  const response = await $api<SurgeryResponseDTO[]>(
+    `${CURRENT_SURGERY_URI}/consult/${consultId}`
+  );
+  return response;
+}
