@@ -31,6 +31,7 @@ export interface SurgeryResponseDTO extends Entity {
   consultId: string;
   hospitalCost: number;
   surgeryCost: number;
+  performedDate: string;
   surgeryType: SurgeryTypeResponseDTO;
   surgeryEmployees: SurgeryEmployeeResponseDTO[];
 }
@@ -38,11 +39,27 @@ export interface SurgeryResponseDTO extends Entity {
 export interface CreateSurgeryRequestDTO {
   consultId: string;
   surgeryTypeId: string;
+  asignedDoctorId: string;
+  isSpecialist: boolean;
 }
 
 export interface AddDeleteEmployeeSurgeryDTO {
   surgeryId: string;
   employeeId: string;
+}
+
+export interface UpdateSurgeryTypeRequestDTO {
+  type: string | null;
+  description: string | null;
+  specialistPayment: number | null;
+  hospitalCost: number | null;
+  surgeryCost: number | null;
+}
+
+export interface DeleteSurgeryResponseDTO {
+  surgeryId: string;
+  message: string;
+  success: boolean;
 }
 
 export const getSurgeriesTypes = async (query: string | null) => {
@@ -51,6 +68,20 @@ export const getSurgeriesTypes = async (query: string | null) => {
     url = `${url}?query=${query}`;
   }
   const response = await $api<SurgeryTypeResponseDTO[]>(url);
+  return response;
+};
+
+export const updateSurgeryType = async (
+  id: string,
+  data: UpdateSurgeryTypeRequestDTO
+) => {
+  const response = await $api<SurgeryTypeResponseDTO>(
+    `${CURRENT_SURGERY_URI}/types/update/${id}`,
+    {
+      method: "PATCH",
+      body: data,
+    }
+  );
   return response;
 };
 
@@ -85,6 +116,26 @@ export const createSurgery = async (data: CreateSurgeryRequestDTO) => {
     {
       method: "POST",
       body: data,
+    }
+  );
+  return response;
+};
+
+export const deleteSurgery = async (id: string) => {
+  const response = await $api<DeleteSurgeryResponseDTO>(
+    `${CURRENT_SURGERY_URI}/${id}`,
+    {
+      method: "DELETE",
+    }
+  );
+  return response;
+};
+
+export const markAsCompletedSurgery = async (id: string) => {
+  const response = await $api<SurgeryResponseDTO>(
+    `${CURRENT_SURGERY_URI}/mark-performed/${id}`,
+    {
+      method: "POST",
     }
   );
   return response;
@@ -154,10 +205,9 @@ export const getAllSugeryEmployees = async (surgeryId: string) => {
   return response;
 };
 
-
 export const getSurgeriesbyConsultId = async (consultId: string) => {
   const response = await $api<SurgeryResponseDTO[]>(
     `${CURRENT_SURGERY_URI}/consult/${consultId}`
   );
   return response;
-}
+};

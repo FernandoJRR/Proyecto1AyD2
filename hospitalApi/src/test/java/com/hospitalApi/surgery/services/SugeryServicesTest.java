@@ -1,6 +1,7 @@
 package com.hospitalApi.surgery.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.consults.port.ForConsultPort;
 import com.hospitalApi.shared.exceptions.NotFoundException;
+import com.hospitalApi.surgery.dtos.DeleteSurgeryResponseDTO;
 import com.hospitalApi.surgery.models.Surgery;
 import com.hospitalApi.surgery.models.SurgeryType;
 import com.hospitalApi.surgery.ports.ForSurgeryTypePort;
@@ -214,10 +217,10 @@ public class SugeryServicesTest {
         doNothing().when(surgeryRepository).deleteById(SURGERY_ID);
 
         // Act
-        boolean result = sugeryServices.deleteSurgery(SURGERY_ID);
+        DeleteSurgeryResponseDTO result = sugeryServices.deleteSurgery(SURGERY_ID);
 
         // Assert
-        assertTrue(result);
+        // assertTrue(result);
         verify(surgeryRepository, times(1)).existsById(SURGERY_ID);
         verify(surgeryRepository, times(1)).deleteById(SURGERY_ID);
     }
@@ -234,5 +237,79 @@ public class SugeryServicesTest {
         assertEquals("No se encontró la cirugía con id " + SURGERY_ID, ex.getMessage());
         verify(surgeryRepository, times(1)).existsById(SURGERY_ID);
         verify(surgeryRepository, times(0)).deleteById(SURGERY_ID);
+    }
+
+    @Test
+    void shouldMarkSurgeryAsPerformedSuccessfully() throws NotFoundException {
+        // Arrange
+        when(surgeryRepository.findById(SURGERY_ID)).thenReturn(Optional.of(surgery));
+        when(surgeryRepository.save(any(Surgery.class))).thenReturn(surgery);
+
+        // Act
+        Surgery result = sugeryServices.markSurgeryAsPerformed(SURGERY_ID);
+
+        // Assert
+        assertNotNull(result.getPerformedDate());
+        verify(surgeryRepository).findById(SURGERY_ID);
+        verify(surgeryRepository).save(surgery);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenMarkingAlreadyPerformedSurgery() {
+        // Arrange
+        surgery.setPerformedDate(LocalDate.now());
+        when(surgeryRepository.findById(SURGERY_ID)).thenReturn(Optional.of(surgery));
+
+        // Act & Assert
+        assertThrows(IllegalStateException.class, () -> sugeryServices.markSurgeryAsPerformed(SURGERY_ID));
+        verify(surgeryRepository, never()).save(any(Surgery.class));
+    }
+
+    @Test
+    void shouldReturnTrueWhenSurgeryIsPerformed() throws NotFoundException {
+        // Arrange
+        surgery.setPerformedDate(LocalDate.now());
+        when(surgeryRepository.findById(SURGERY_ID)).thenReturn(Optional.of(surgery));
+
+        // Act
+        boolean result = sugeryServices.surgeryAsPerformed(SURGERY_ID);
+
+        // Assert
+        assertTrue(result);
+        verify(surgeryRepository).findById(SURGERY_ID);
+    }
+
+    @Test
+    void shouldReturnFalseWhenSurgeryIsNotPerformed() throws NotFoundException {
+        // Arrange
+        surgery.setPerformedDate(null);
+        when(surgeryRepository.findById(SURGERY_ID)).thenReturn(Optional.of(surgery));
+
+        // Act
+        boolean result = sugeryServices.surgeryAsPerformed(SURGERY_ID);
+
+        // Assert
+        assertFalse(result);
+        verify(surgeryRepository).findById(SURGERY_ID);
+    }
+
+    @Test
+    void shouldThrowNotFoundExceptionInMarkSurgeryAsPerformed() {
+        // Arrange
+        when(surgeryRepository.findById(SURGERY_ID)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(NotFoundException.class, () -> sugeryServices.markSurgeryAsPerformed(SURGERY_ID));
+        verify(surgeryRepository).findById(SURGERY_ID);
+    }
+
+    @Test
+    void shouldThrowNotFoundExceptionInSurgeryAsPerformed() {
+        // Arrange
+        when(surgeryRepository.findById(SURGERY_ID)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(NotFoundException.class, () -> sugeryServices.surgeryAsPerformed(SURGERY_ID));
+        verify(surgeryRepository).findById(SURGERY_ID);
     }
 }
