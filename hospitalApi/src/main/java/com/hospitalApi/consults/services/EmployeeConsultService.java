@@ -40,6 +40,17 @@ public class EmployeeConsultService implements ForEmployeeConsultPort {
     }
 
     @Override
+    public List<EmployeeConsult> addEmployeeConsultsByConsultIdAndEmployeeId(Consult consult, String employeeId)
+            throws NotFoundException, IllegalStateException {
+        if (employeeConsultRepository.existsByConsultIdAndEmployeeId(consult.getId(), employeeId)) {
+            throw new IllegalStateException(
+                    "El empleado " + employeeId + " ya está asignado a la consulta " + consult.getId());
+        }
+        EmployeeConsult employeeConsult = createEmployeeConsult(consult, employeeId);
+        return getEmployeeConsultsByConsultId(employeeConsult.getConsult().getId());
+    }
+
+    @Override
     public List<EmployeeConsult> deleteEmployeeConsultsByConsultIdAndEmployeeId(String consultId, String employeeId)
             throws NotFoundException, IllegalStateException {
 

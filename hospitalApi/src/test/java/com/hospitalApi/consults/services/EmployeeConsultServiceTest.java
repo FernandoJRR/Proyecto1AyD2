@@ -51,27 +51,6 @@ public class EmployeeConsultServiceTest {
         consult.setId(CONSULT_ID);
     }
 
-    // @Test
-    // void shouldCreateEmployeeConsultSuccessfully() throws NotFoundException {
-    //     // Arrange
-    //     when(forEmployeesPort.findEmployeeById(EMPLOYEE_ID)).thenReturn(employee);
-    //     when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
-    //     when(employeeConsultRepository.save(any(EmployeeConsult.class)))
-    //             .thenAnswer(invocation -> invocation.getArgument(0));
-
-    //     // Act
-    //     EmployeeConsult result = employeeConsultService.createEmployeeConsult(CONSULT_ID, EMPLOYEE_ID);
-
-    //     // Assert
-    //     assertNotNull(result);
-    //     assertEquals(employee, result.getEmployee());
-    //     assertEquals(consult, result.getConsult());
-
-    //     verify(forEmployeesPort).findEmployeeById(EMPLOYEE_ID);
-    //     verify(forConsultPort).findById(CONSULT_ID);
-    //     verify(employeeConsultRepository).save(any(EmployeeConsult.class));
-    // }
-
     @Test
     void shouldReturnEmployeeConsultsByConsultId() throws NotFoundException {
         // Arrange
@@ -113,7 +92,8 @@ public class EmployeeConsultServiceTest {
         when(employeeConsultRepository.findByConsultId(CONSULT_ID)).thenReturn(remaining);
 
         // Act
-        List<EmployeeConsult> result = employeeConsultService.deleteEmployeeConsultsByConsultIdAndEmployeeId(CONSULT_ID, EMPLOYEE_ID);
+        List<EmployeeConsult> result = employeeConsultService.deleteEmployeeConsultsByConsultIdAndEmployeeId(CONSULT_ID,
+                EMPLOYEE_ID);
 
         // Assert
         assertEquals(1, result.size());
@@ -127,8 +107,8 @@ public class EmployeeConsultServiceTest {
         when(employeeConsultRepository.existsByConsultIdAndEmployeeId(CONSULT_ID, EMPLOYEE_ID)).thenReturn(false);
 
         // Act & Assert
-        NotFoundException ex = assertThrows(NotFoundException.class, () ->
-                employeeConsultService.deleteEmployeeConsultsByConsultIdAndEmployeeId(CONSULT_ID, EMPLOYEE_ID));
+        NotFoundException ex = assertThrows(NotFoundException.class,
+                () -> employeeConsultService.deleteEmployeeConsultsByConsultIdAndEmployeeId(CONSULT_ID, EMPLOYEE_ID));
 
         assertEquals("El empleado " + EMPLOYEE_ID + " no está asignado a la consulta " + CONSULT_ID, ex.getMessage());
         verify(employeeConsultRepository, never()).deleteByConsultIdAndEmployeeId(any(), any());
@@ -141,8 +121,8 @@ public class EmployeeConsultServiceTest {
         when(employeeConsultRepository.countByConsultId(CONSULT_ID)).thenReturn(1);
 
         // Act & Assert
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
-                employeeConsultService.deleteEmployeeConsultsByConsultIdAndEmployeeId(CONSULT_ID, EMPLOYEE_ID));
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> employeeConsultService.deleteEmployeeConsultsByConsultIdAndEmployeeId(CONSULT_ID, EMPLOYEE_ID));
 
         assertTrue(ex.getMessage().contains("porque es el único empleado asignado"));
         verify(employeeConsultRepository, never()).deleteByConsultIdAndEmployeeId(any(), any());
