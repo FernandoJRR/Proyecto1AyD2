@@ -6,7 +6,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <span class="text-xl font-bold">Habitaciones</span>
                     <!--Bton de mas-->
-                    <router-link to="/admin/tipos-de-empleado/crear">
+                    <router-link to="/habitaciones/crear">
                         <Button icon="pi pi-plus" rounded raised />
                     </router-link>
                 </div>
@@ -81,7 +81,7 @@ const queryCache = useQueryCache()
 //esto es la constante que usa vue para manejar sus dialogs
 const confirm = useConfirm();
 
-const { state, asyncStatus } = useQuery({
+const { state, asyncStatus } = useCustomQuery({
     key: ['getAllRooms'],
     query: () => getAllRooms()
 })

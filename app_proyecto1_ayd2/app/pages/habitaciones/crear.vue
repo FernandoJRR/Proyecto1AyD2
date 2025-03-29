@@ -1,151 +1,126 @@
 <template>
-    <div class="p-8 max-w-4xl mx-auto">
-      <!-- encabezado y navegación -->
-      <div class="mb-6">
-        <router-link to="/admin/tipos-de-empleado">
-          <Button label="Ver Todos" icon="pi pi-arrow-left" text />
-        </router-link>
-       
-      </div>
-      <h1 class="text-4xl font-bold mb-6">Crear Tipo de Empleado</h1>
-      <!-- formulario principal -->
-      <Form
-        v-slot="$form"
-        :initialValues
-        :resolver
-        @submit="onFormSubmit"
-      class="space-y-8 bg-white shadow-md rounded-2xl p-6 border border-gray-200"
-      >
-        <div class="space-y-6">
-          <h2 class="text-2xl font-semibold">Datos del Tipo de Empleado</h2>
-  
-          <div class="w-full">
-            <FloatLabel>
-              <label for="name">Nombre</label>
-              <InputText id="name" name="name" type="text" class="w-full" />
-            </FloatLabel>
-            <Message
-              v-if="$form.name?.invalid"
-              severity="error"
-              size="small"
-              variant="simple"
-            >
-              {{ $form.name.error?.message }}
-            </Message>
-          </div>
-        </div>
-  
-        <!-- Permisos -->
-        <div class="space-y-4">
-          <h2 class="text-2xl font-semibold">Permisos Asociados</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-            <div
-              v-for="permission in permissions.data"
-              :key="permission.id"
-              class="flex items-center"
-            >
-            <!--Si nosotros establecemos el v-model con nuestro ref entonces view hace el insert y eliminacion en el array (usa el value)-->
-              <Checkbox
-                :value="permission.id"
-                v-model="selectedPermissions"
-  
-              />
-              <label :for="permission.id" class="ml-2">
-                {{ permission.name }}
-              </label>
-            </div>
-            <Message
-              v-if="permissionsError"
-              severity="error"
-              size="small"
-              variant="simple"
-              >
-              {{ permissionsError }}
-            </Message>
-          </div>
-        </div>
-  
-        <!-- Botón de envío -->
-        <div class="pt-4">
-          <Button type="submit" label="Crear" icon="pi pi-save" severity="secondary" />
-        </div>
-      </Form>
+  <div class="p-8 max-w-4xl mx-auto">
+    <!-- encabezado y navegación -->
+    <div class="mb-6">
+      <router-link to="/habitaciones/">
+        <Button label="Ver Todos" icon="pi pi-arrow-left" text />
+      </router-link>
+
     </div>
-  </template>
-  
-  <script setup lang="ts">
-  import { zodResolver } from '@primevue/forms/resolvers/zod';
-  import { FloatLabel, InputNumber, Password, ToggleSwitch } from 'primevue';
-  import { toast } from 'vue-sonner';
-  import { z } from 'zod';;
-  import { createEmployeeType, type EmployeeTypePayLoad } from '~/lib/api/admin/employee-type';
-  import { getAllPermissions, type Permission } from '~/lib/api/admin/permission';
-  
-  
-  
-  //con ref indicamos a view que es un valor reactivo y por lo tanto que restee los cambios
-  const selectedPermissions = ref([]);
-  
-  //mensaje de error para cuando no se haya seleccinado ningun permiso
-  const permissionsError = ref('');
-  
-  //en este caso no hay valores iniciales
-  const initialValues = reactive({
-      name: ''
-  });
-  
-  
-  const resolver = ref(zodResolver(
-      z.object({
-          name: z.string().min(1, 'El nombre del tipo de empleado no puede estar vacío y es obligatorio.').
-              max(100, "El nombre del tipo de empleado no puede tener más de 100 caracteres."),
-  
-      }).superRefine((data, ctx) => {
-  
-          if (selectedPermissions.value.length === 0) {
-              permissionsError.value = 'Debes seleccionar al menos un permiso.';
-              //se agrega el error a sistema de validaciones para que el boton este bloqueado
-              ctx.addIssue({
-                path: ['permissions'],
-                code: z.ZodIssueCode.custom
-              });
-          }else{
-              permissionsError.value = '';
-          }
-      
-      })
-  ))
-  
-  const onFormSubmit = (e: any) => {
-      if (e.valid) {
-          console.log(e.values)
-  
-          let payload: EmployeeTypePayLoad = {
-              name: e.values.name,
-              permissions: selectedPermissions.value.map(id => ({ id }))
-          };
-  
-          mutate(payload)
-      }
-  };
-  
-  const { state: permissions } = useQuery({
-      key: ['permissions'],
-      query: () => getAllPermissions()
+    <h1 class="text-4xl font-bold mb-6">Crear una habitación</h1>
+    <!-- formulario principal -->
+    <Form v-slot="$form" :initialValues :resolver @submit="onFormSubmit"
+      class="space-y-8 bg-white shadow-md rounded-2xl p-6 border border-gray-200">
+      <div class="space-y-6">
+        <h2 class="text-2xl font-semibold">Datos de la habitación</h2>
+
+        <div class="w-full">
+          <FloatLabel>
+            <label for="number">Codigo de habitación</label>
+            <InputText id="number" name="number" type="text" class="w-full" />
+          </FloatLabel>
+          <Message v-if="$form.number?.invalid" severity="error" size="small" variant="simple">
+            {{ $form.number.error?.message }}
+          </Message>
+        </div>
+
+
+        <div class="w-full">
+          <FloatLabel>
+            <label for="dailyMaintenanceCost">Costo de mantenimiento</label>
+            <InputNumber id="dailyMaintenanceCost" name="dailyMaintenanceCost" class="w-full" currency="GTQ"
+              mode="currency" :min="0" :minFractionDigits="2" :maxFractionDigits="2"
+              placeholder="Costo de mantenimiento" />
+          </FloatLabel>
+          <Message v-if="$form.dailyMaintenanceCost?.invalid" severity="error" size="small" variant="simple">
+            {{ $form.dailyMaintenanceCost.error?.message }}
+          </Message>
+        </div>
+
+        <div class="w-full">
+          <FloatLabel>
+            <label for="dailyPrice">Precio diario</label>
+            <InputNumber id="dailyPrice" name="dailyPrice" class="w-full" currency="GTQ" mode="currency" :min="0"
+              :minFractionDigits="2" :maxFractionDigits="2" placeholder="Precio diario" />
+          </FloatLabel>
+          <Message v-if="$form.dailyPrice?.invalid" severity="error" size="small" variant="simple">
+            {{ $form.dailyPrice.error?.message }}
+          </Message>
+        </div>
+      </div>
+
+      <!-- Botón de envío -->
+      <div class="pt-4">
+        <Button type="submit" label="Crear" icon="pi pi-save" severity="secondary" />
+      </div>
+    </Form>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { zodResolver } from '@primevue/forms/resolvers/zod';
+import { FloatLabel } from 'primevue';
+import { toast } from 'vue-sonner';
+import { z } from 'zod';;
+import { createRoom, type RoomPayLoad } from '~/lib/api/habitaciones/room';
+
+const initialValues = reactive({
+  name: 'dd',
+  cost: 0,
+  price: 0,
+});
+
+
+const resolver = ref(zodResolver(
+  z.object({
+    number: z.string()
+      .min(1, 'El número de habitación es obligatorio')
+      .max(100, 'El número de habitación no puede exceder los 100 caracteres'),
+
+
+    //el preprocesor se encarga de convertir el valor a un numero, si no es un numero lanza un error
+    dailyMaintenanceCost: z.number({
+      required_error: 'El costo de mantenimiento diario es obligatorio',
+      invalid_type_error: 'El costo de mantenimiento diario debe ser un número',
+    }).min(0, 'El costo de mantenimiento diario debe ser mayor o igual a 0'),
+
+    //el preprocesor se encarga de convertir el valor a un numero, si no es un numero lanza un error
+    dailyPrice: z.number({
+      required_error: 'El precio diario es obligatorio',
+      invalid_type_error: 'El precio diario debe ser un número',
+    }).min(0, 'El precio diario debe ser mayor o igual a 0')
   })
-  
-  const { mutate, asyncStatus } = useMutation({
-      mutation: (employeeData: EmployeeTypePayLoad) => createEmployeeType(employeeData),
-      onError(error:any) {
-          toast.error('Ocurrió un error al crear el tipo de empleado', {
-              description: `${(error.response._data)}`
-          })
-      },
-      onSuccess() {
-          toast.success('Tipo de empleado creado correctamente')
-          navigateTo('/admin/tipos-de-empleado')
-      }
-  })
-  
-  
-  </script>
+));
+
+
+
+const onFormSubmit = (e: any) => {
+  if (e.valid) {
+    console.log(e.values)
+
+    let payload: RoomPayLoad = {
+      number: e.values.number,
+      dailyMaintenanceCost: e.values.dailyMaintenanceCost,
+      dailyPrice: e.values.dailyPrice
+    }
+
+
+    mutate(payload)
+  }
+};
+
+const { mutate, asyncStatus } = useMutation({
+  mutation: (employeeData: RoomPayLoad) => createRoom(employeeData),
+  onError(error) {
+    toast.error('Ocurrió un error al crear la habitación', {
+      description: `${(error.message)}`
+    })
+  },
+  onSuccess() {
+    toast.success('La habitación se ha creado correctamente')
+    navigateTo('/habitaciones/')
+  }
+})
+
+
+</script>
