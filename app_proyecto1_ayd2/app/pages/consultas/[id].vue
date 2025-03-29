@@ -187,7 +187,7 @@ import {
   type UpdateConsultRequestDTO,
 } from "~/lib/api/consults/consult";
 import { Tag, Button, Dialog } from "primevue";
-import { getSurgeriesbyConsultId } from "../../lib/api/surgeries/surgeries";
+import { getSurgeriesbyConsultId, type SurgeryResponseDTO } from "../../lib/api/surgeries/surgeries";
 
 const showInternadoDialog = ref(false);
 const showDeleteDialog = ref(false);
