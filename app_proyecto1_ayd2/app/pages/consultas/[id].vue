@@ -179,20 +179,25 @@
           <Column header="Acciones">
             <template #body="slotProps">
               <div class="flex gap-2 flex-wrap">
-                <Button
-                  icon="pi pi-eye"
-                  text
-                  severity="info"
-                  @click="verCirugia(slotProps.data)"
-                  :pt="{ root: { title: 'Ver Detalles' } }"
-                />
-                <Button
-                  icon="pi pi-pencil"
-                  text
-                  severity="warning"
-                  @click="editarCirugia(slotProps.data)"
-                  :pt="{ root: { title: 'Editar Cirugía' } }"
-                />
+                <RouterLink :to="`/cirugias/${slotProps.data.surgeryType.id}`">
+                  <Button
+                    icon="pi pi-eye"
+                    text
+                    severity="info"
+                    :pt="{ root: { title: 'Ver Detalles' } }"
+                  />
+                </RouterLink>
+
+                <RouterLink
+                  :to="`/cirugias/editar/${slotProps.data.surgeryType.id}`"
+                >
+                  <Button
+                    icon="pi pi-pencil"
+                    text
+                    severity="warning"
+                    :pt="{ root: { title: 'Editar Cirugía' } }"
+                  />
+                </RouterLink>
                 <Button
                   icon="pi pi-trash"
                   text
@@ -472,15 +477,6 @@ const { mutate: markAsPerformed, asyncStatus: asyncMarkAsPerformedStatus } =
     },
   });
 
-const verCirugia = (cirugia: any) => {
-  toast(`Ver cirugía ${cirugia.surgeryType.type}`);
-};
-
-const editarCirugia = (cirugia: any) => {
-  toast(`Editar cirugía ${cirugia.surgeryType.type}`);
-};
-
-// Acción: Eliminar
 const eliminarCirugia = (cirugia: any) => {
   cirugiaSeleccionada.value = cirugia;
   showEliminarDialog.value = true;
@@ -493,7 +489,6 @@ const confirmarEliminarCirugia = () => {
   cirugiaSeleccionada.value = null;
 };
 
-// Acción: Marcar como realizada
 const marcarComoRealizada = (cirugia: any) => {
   cirugiaSeleccionada.value = cirugia;
   showRealizadaDialog.value = true;
