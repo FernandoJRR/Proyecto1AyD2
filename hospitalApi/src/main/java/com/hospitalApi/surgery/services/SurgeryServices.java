@@ -55,4 +55,11 @@ public class SurgeryServices implements ForSurgeryPort {
         surgeryRepository.deleteById(surgeryId);
         return true;
     }
+
+    @Override
+    public List<Surgery> getSurgerysByConsultId(String consultId) throws NotFoundException {
+        forConsultPort.findById(consultId);
+        List<Surgery> surgerys = surgeryRepository.findByConsultId(consultId);
+        return surgerys;
+    }
 }
