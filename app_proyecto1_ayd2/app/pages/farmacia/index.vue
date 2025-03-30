@@ -4,20 +4,9 @@
 
     <div class="flex justify-between items-center mb-4 gap-4">
       <div class="flex items-center gap-2">
-        <InputText
-          v-model="searchTerm"
-          placeholder="Buscar por nombre..."
-          class="p-inputtext-sm w-64"
-          @keyup.enter="buscarMedicamentos"
-        />
-        <Button
-          icon="pi pi-search"
-          label="Buscar"
-          @click="buscarMedicamentos"
-          rounded
-          outlined
-          severity="info"
-        />
+        <InputText v-model="searchTerm" placeholder="Buscar por nombre..." class="p-inputtext-sm w-64"
+          @keyup.enter="buscarMedicamentos" />
+        <Button icon="pi pi-search" label="Buscar" @click="buscarMedicamentos" rounded outlined severity="info" />
       </div>
 
       <div class="flex items-center gap-2">
@@ -29,35 +18,22 @@
           <Button icon="pi pi-shopping-cart" label="Iniciar Venta" rounded raised severity="success" />
         </router-link>
 
-        <Button
-          icon="pi pi-refresh"
-          label="Recargar Página"
-          @click="recargarDatos"
-          rounded
-          outlined
-          severity="help"
-        />
+        <Button icon="pi pi-refresh" label="Recargar Página" @click="recargarDatos" rounded outlined severity="help" />
       </div>
     </div>
 
-    <DataTable
-      :value="medicinesState.data as any[]"
-      tableStyle="min-width: 50rem"
-      stripedRows
-      :loading="asyncStatus === 'loading'"
-      class="mb-10"
-    >
+    <DataTable :value="medicinesState.data as any[]" tableStyle="min-width: 50rem" stripedRows
+      :loading="asyncStatus === 'loading'" class="mb-10">
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-2">
           <span class="text-xl font-bold">Medicamentos</span>
         </div>
       </template>
 
-      <Column field="id" header="ID"></Column>
       <Column field="name" header="Nombre"></Column>
       <Column field="quantity" header="Existencias"></Column>
       <Column field="price" header="Precio"></Column>
-
+      <Column field="cost" header="Costo"></Column>
       <Column header="Disponible">
         <template #body="slotProps">
           <Tag v-if="slotProps.data.quantity === 0" severity="danger">
@@ -88,20 +64,17 @@
       </template>
     </DataTable>
 
-    <DataTable
-      :value="medicinesLowStockState.data as any[]"
-      tableStyle="min-width: 50rem"
-      stripedRows
-      :loading="asyncLowStockStatus === 'loading'"
-    >
+    <DataTable :value="medicinesLowStockState.data as any[]" tableStyle="min-width: 50rem" stripedRows
+      :loading="asyncLowStockStatus === 'loading'">
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-2">
           <span class="text-xl font-bold text-red-500">Medicamentos Low Stock</span>
         </div>
       </template>
 
-      <Column field="id" header="ID"></Column>
+
       <Column field="name" header="Nombre"></Column>
+      <Column field="minQuantity" header="Min Existencias"></Column>
       <Column field="quantity" header="Existencias"></Column>
 
       <Column header="Estado">

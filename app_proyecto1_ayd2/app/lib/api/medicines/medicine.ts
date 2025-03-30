@@ -7,6 +7,7 @@ export interface Medicine extends Entity {
   name: string;
   description: string;
   price: number;
+  cost: number;
   quantity: number;
   minQuantity: number;
 }
@@ -38,17 +39,11 @@ export interface MedicinePayload {
   name: string;
   description: string;
   price: number;
+  cost: number;
   quantity: number;
   minQuantity: number;
 }
 
-export interface MedicineUpdatePayload {
-  name: string | null;
-  description: string | null;
-  price: number | null;
-  quantity: number | null;
-  minQuantity: number | null;
-}
 
 export const createMedicine = async (data: MedicinePayload) => {
   const response = await $api<Medicine>(`${CURRENT_MEDICINE_URI}/create`, {
@@ -65,7 +60,7 @@ export const getMedicine = async (id: string) => {
 
 export const updateMedicine = async (
   id: string,
-  data: MedicineUpdatePayload
+  data: MedicinePayload
 ) => {
   const response = await $api<Medicine>(`${CURRENT_MEDICINE_URI}/${id}`, {
     method: "PATCH",
