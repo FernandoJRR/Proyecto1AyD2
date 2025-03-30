@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(rollbackOn = Exception.class)
 public class SaleMedicineService implements ForSaleMedicinePort {
 
     private final SaleMedicineRepository saleMedicineRepository;
@@ -35,13 +36,9 @@ public class SaleMedicineService implements ForSaleMedicinePort {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public SaleMedicine createSaleMedicine(String medicineId, Integer quantity) throws NotFoundException {
         // Obtenemos la medicina en base al id
         Medicine medicine = forMedicinePort.getMedicine(medicineId);
-        if (medicine == null) {
-            throw new NotFoundException("Medicamento con id " + medicineId + " no encontrado");
-        }
         // Verificamos si hay suficiente stock
         if (medicine.getQuantity() < quantity) {
             throw new NotFoundException("No hay suficiente stock para el medicamento con id " + medicineId);

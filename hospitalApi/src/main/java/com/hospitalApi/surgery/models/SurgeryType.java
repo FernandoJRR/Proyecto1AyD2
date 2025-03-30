@@ -6,9 +6,6 @@ import com.hospitalApi.surgery.dtos.UpdateSurgeryTypeRequestDTO;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

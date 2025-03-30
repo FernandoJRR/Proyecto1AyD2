@@ -1,6 +1,11 @@
 package com.hospitalApi.medicines.dtos;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,4 +35,8 @@ public class CreateMedicineRequestDTO {
     @DecimalMin(value = "1.0", inclusive = true, message = "El precio del medicamento no puede ser menor a Q1.00")
     @Digits(integer = 10, fraction = 2, message = "El precio debe tener un máximo de 10 dígitos enteros y 2 decimales")
     private Double price;
+
+    @NotNull(message = "El costo del medicamento es requerido")
+    @DecimalMin(value = "0.01", inclusive = true, message = "El costo del medicamento debe ser mayor a 0")
+    private Double cost;
 }

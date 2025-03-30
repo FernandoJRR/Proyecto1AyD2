@@ -126,13 +126,7 @@ public class SeedersConfig implements CommandLineRunner {
 	}
 
 	private boolean validPermissionDoctor(SystemPermissionEnum permissionEnum) {
-		return permissionEnum.name() == SystemPermissionEnum.GET_ALL_PATIENTS.name() ||
-				permissionEnum.name() == SystemPermissionEnum.GET_PATIENT_BY_ID.name() ||
-				permissionEnum.name() == SystemPermissionEnum.GET_PATIENT_BY_DPI.name() ||
-				permissionEnum.name() == SystemPermissionEnum.CREATE_PATIENT.name() ||
-				permissionEnum.name() == SystemPermissionEnum.GET_ALL_MEDICINES.name() ||
-				permissionEnum.name() == SystemPermissionEnum.GET_LOW_STOCK_MEDICINES.name() ||
-				permissionEnum.name() == SystemPermissionEnum.GET_MEDICINE_BY_ID.name() ||
+		return permissionEnum.name() == SystemPermissionEnum.CREATE_PATIENT.name() ||
 				permissionEnum.name() == SystemPermissionEnum.CREATE_SALE_MEDICINE_CONSULT.name();
 	}
 

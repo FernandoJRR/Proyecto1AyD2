@@ -16,7 +16,7 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UpdateConsultRequestDTO {
 
-    Boolean isInternado;
+    private Boolean isInternado;
 
     @DecimalMin(value = "0.01", inclusive = true, message = "El costo de la consulta debe ser mayor a 0")
     @Digits(integer = 10, fraction = 2, message = "El costo de la consulta debe tener un máximo de 10 dígitos enteros y 2 decimales")

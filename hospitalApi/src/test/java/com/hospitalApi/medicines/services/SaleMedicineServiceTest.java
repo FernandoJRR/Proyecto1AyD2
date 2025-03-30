@@ -62,6 +62,7 @@ public class SaleMedicineServiceTest {
     private static final Integer MEDICINE_QUANTITY = 10;
     private static final Integer MEDICINE_MIN_QUANTITY = 5;
     private static final Double MEDICINE_PRICE = 5.00;
+    private static final Double MEDICINE_COST = 4.00;;
     private static final Integer SALE_QUANTITY = 5;
 
     @BeforeEach
@@ -72,7 +73,8 @@ public class SaleMedicineServiceTest {
                 MEDICINE_DESCRIPTION,
                 MEDICINE_QUANTITY,
                 MEDICINE_MIN_QUANTITY,
-                MEDICINE_PRICE);
+                MEDICINE_PRICE,
+                MEDICINE_COST);
 
         saleMedicine = new SaleMedicine(medicine, SALE_QUANTITY);
         saleMedicine.setId(SALE_MEDICINE_ID);
@@ -121,18 +123,6 @@ public class SaleMedicineServiceTest {
         verify(forMedicinePort, times(1)).getMedicine(MEDICINE_ID);
         verify(saleMedicineRepository, times(1)).save(any(SaleMedicine.class));
         verify(forMedicinePort, times(1)).subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY);
-    }
-
-    @Test
-    public void shouldThrowNotFoundWhenCreatingSaleMedicineIfMedicineNotFound() throws NotFoundException {
-        when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(null);
-
-        assertThrows(NotFoundException.class, () -> {
-            saleMedicineService.createSaleMedicine(MEDICINE_ID, SALE_QUANTITY);
-        });
-
-        verify(forMedicinePort, times(1)).getMedicine(MEDICINE_ID);
-        verify(saleMedicineRepository, times(0)).save(any(SaleMedicine.class));
     }
 
     @Test
@@ -433,12 +423,12 @@ public class SaleMedicineServiceTest {
         List<CreateSaleMedicineFarmaciaRequestDTO> requestDTOs = List.of(valid, invalid);
 
         when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(medicine);
-        when(forMedicinePort.getMedicine("INVALID_ID")).thenReturn(null);
+        when(forMedicinePort.getMedicine("INVALID_ID")).thenThrow(NotFoundException.class);
         when(forMedicinePort.subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY)).thenReturn(medicine);
         when(saleMedicineRepository.save(any(SaleMedicine.class))).thenReturn(saleMedicine);
 
         // Act & Assert
-        NotFoundException ex = assertThrows(NotFoundException.class, () -> {
+        assertThrows(NotFoundException.class, () -> {
             saleMedicineService.createSaleMedicines(requestDTOs);
         });
 
