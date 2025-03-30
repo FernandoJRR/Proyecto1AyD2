@@ -54,7 +54,6 @@ public class ConsultService implements ForConsultPort {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public Consult createConsult(String patientId, String employeeId, Double costoConsulta) throws NotFoundException {
         // Creamos la consulta con el paciente
         Patient patient = forPatientPort.getPatient(patientId);
@@ -132,7 +131,6 @@ public class ConsultService implements ForConsultPort {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public Consult markConsultInternado(String id, String habitacionId)
             throws NotFoundException, IllegalStateException, DuplicatedEntryException {
         Consult consult = findById(id);
@@ -147,7 +145,6 @@ public class ConsultService implements ForConsultPort {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public Consult endInternado(String id) throws NotFoundException, IllegalStateException {
         Consult consult = findById(id);
         if (!consult.getIsInternado()) {
@@ -163,7 +160,6 @@ public class ConsultService implements ForConsultPort {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public Consult endConsult(String id) throws NotFoundException, IllegalStateException {
         Consult consult = findById(id);
         if (consult.getIsPaid()) {
