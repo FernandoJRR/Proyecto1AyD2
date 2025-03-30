@@ -253,4 +253,12 @@ public class EmployeeService implements ForEmployeesPort {
         List<Employee> employees = getEmployeesByType(employeeType.getId(), search);
         return employees;
     }
+
+    @Override
+    public List<Employee> getNurses(String search) throws NotFoundException {
+        // Traemos los empleados por el tipo de empleado
+        EmployeeType employeeType = forEmployeeTypePort.findEmployeeTypeByName(EmployeeTypeEnum.ENFERMERO.name());
+        List<Employee> employees = getEmployeesByType(employeeType.getId(), search);
+        return employees;
+    }
 }

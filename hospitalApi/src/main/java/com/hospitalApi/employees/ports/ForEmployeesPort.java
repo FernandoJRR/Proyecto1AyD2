@@ -42,5 +42,6 @@ public interface ForEmployeesPort {
         public List<Employee> getEmployeesByType(String employeeTypeId, String search) throws NotFoundException;
 
         public List<Employee> getDoctors(String search) throws NotFoundException;
+        public List<Employee> getNurses(String search) throws NotFoundException;
 
 }

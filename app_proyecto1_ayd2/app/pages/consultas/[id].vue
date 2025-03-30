@@ -71,15 +71,19 @@
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold">Empleados Asignados</h2>
           <div class="flex gap-2">
-            <Button
-              icon="pi pi-plus"
-              label="Agregar Empleado"
-              severity="success"
-              rounded
-              outlined
-              :disabled="!initialValues.consult.isInternado"
-              @click="() => toast('Abrir diálogo para agregar empleado')"
-            />
+            <router-link
+              v-if="initialValues.consult.isInternado"
+              :to="`/consultas/empleados/agregar/${initialValues.consult.id}`"
+            >
+              <Button
+                icon="pi pi-plus"
+                label="Agregar Empleado"
+                severity="success"
+                rounded
+                outlined
+                :disabled="!initialValues.consult.isInternado"
+              />
+            </router-link>
             <Button
               icon="pi pi-refresh"
               label="Recargar"

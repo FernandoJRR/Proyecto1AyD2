@@ -252,4 +252,23 @@ public class EmployeesController {
 
                 return ResponseEntity.status(HttpStatus.OK).body(response);
         }
+
+        @Operation(summary = "Obtener todos los empleados de tipo enfermera", description = "Este endpoint permite la busqueda de todos los empleados de tipo enfermera.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Empleados encontrados exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
+                        @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "404", description = "No encontrado - Tipo de empleado no existe", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        })
+        @GetMapping("/nurses")
+        public ResponseEntity<List<EmployeeResponseDTO>> findNurseEmployees(
+                        @RequestParam(value = "search", required = false) String search) throws NotFoundException {
+                // mandar a crear el employee al port
+                List<Employee> result = employeesPort.getNurses(search);
+
+                // convertir el Employee al dto
+                List<EmployeeResponseDTO> response = employeeMapper.fromEmployeesToResponse(result);
+
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+        }
 }
