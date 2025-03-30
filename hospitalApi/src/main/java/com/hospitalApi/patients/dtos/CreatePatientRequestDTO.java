@@ -18,8 +18,4 @@ public class CreatePatientRequestDTO {
     @Pattern(regexp = "\\d{13}", message = "El número de DPI debe contener solo números y tener 13 dígitos")
     private String dpi;
 
-    @Override
-    public String toString() {
-        return "CreatePatientRequestDTO [dpi=" + dpi + ", firstnames=" + firstnames + ", lastnames=" + lastnames + "]";
-    }
 }

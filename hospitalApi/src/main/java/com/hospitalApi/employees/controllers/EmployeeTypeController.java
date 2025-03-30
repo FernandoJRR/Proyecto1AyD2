@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -87,7 +88,8 @@ public class EmployeeTypeController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
         @PostMapping
-        @ResponseStatus(HttpStatus.CREATED)
+        @ResponseStatus(HttpStatus.CREATED) 
+        @PreAuthorize("hasAuthority('CREATE_EMPLOYEE_TYPE')")
         public EmployeeTypeResponseDTO createTypeEmployee(
                         @RequestBody @Valid SaveEmployeeTypeRequestDTO request)
                         throws DuplicatedEntryException, NotFoundException {
@@ -116,6 +118,7 @@ public class EmployeeTypeController {
         })
         @PatchMapping("/{employeeTypeId}")
         @ResponseStatus(HttpStatus.OK)
+        @PreAuthorize("hasAuthority('CREATE_EMPLOYEE_TYPE')")
         public EmployeeTypeResponseDTO editEmployeeType(
                         @RequestBody @Valid SaveEmployeeTypeRequestDTO request,
                         @PathVariable("employeeTypeId") String employeeTypeId)
@@ -145,6 +148,7 @@ public class EmployeeTypeController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
         @DeleteMapping("/{employeeTypeId}")
+        @PreAuthorize("hasAuthority('DELETE_EMPLOYEE_TYPE')")
         public ResponseEntity<EmployeeTypeResponseDTO> deleteEmployeeTypeById(
                         @PathVariable("employeeTypeId") String employeeTypeId)
                         throws NotFoundException {

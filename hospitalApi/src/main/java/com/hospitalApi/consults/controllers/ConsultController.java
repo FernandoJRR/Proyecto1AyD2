@@ -1,5 +1,18 @@
 package com.hospitalApi.consults.controllers;
 
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hospitalApi.consults.dtos.AddDeleteEmployeeConsultRequestDTO;
@@ -20,27 +33,11 @@ import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 @RestController
 @RequestMapping("api/v1/consults")
@@ -54,7 +51,7 @@ public class ConsultController {
 
 	@Operation(summary = "Obtener todas las consultas", description = "Este endpoint devuelve una lista con todas las consultas registradas en el sistema.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Consultas obtenidas exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
+			@ApiResponse(responseCode = "200", description = "Consultas obtenidas exitosamente"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@GetMapping("/all")
@@ -66,8 +63,8 @@ public class ConsultController {
 
 	@Operation(summary = "Obtener una consulta por ID", description = "Este endpoint permite obtener una consulta por su identificador único.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Consulta obtenida exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "200", description = "Consulta obtenida exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Consulta no encontrada"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@GetMapping("/{id}")
@@ -75,14 +72,14 @@ public class ConsultController {
 			@PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id)
 			throws NotFoundException {
 		Consult consult = consultPort.findById(id);
-		return ResponseEntity.ok().body(new ConsultResponseDTO(consult));
+		return ResponseEntity.ok().body(consultMapper.fromConsultToResponse(consult));
 	}
 
 	@Operation(summary = "Crear una nueva consulta", description = "Este endpoint permite registrar una nueva consulta para un paciente.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "201", description = "Consulta creada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
-			@ApiResponse(responseCode = "400", description = "Solicitud inválida, error en los datos de entrada", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "404", description = "Paciente no encontrado", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "201", description = "Consulta creada exitosamente"),
+			@ApiResponse(responseCode = "400", description = "Solicitud inválida, error en los datos de entrada"),
+			@ApiResponse(responseCode = "404", description = "Paciente no encontrado"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("/create")
@@ -93,14 +90,14 @@ public class ConsultController {
 		Consult consult = consultPort.createConsult(createConsultRequestDTO.getPatientId(),
 				createConsultRequestDTO.getEmployeeId(),
 				createConsultRequestDTO.getCostoConsulta());
-		return ResponseEntity.status(HttpStatus.CREATED).body(new ConsultResponseDTO(consult));
+		return ResponseEntity.status(HttpStatus.CREATED).body(consultMapper.fromConsultToResponse(consult));
 	}
 
 	@Operation(summary = "Actualizar una consulta", description = "Este endpoint permite actualizar la información de una consulta existente.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Consulta actualizada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
-			@ApiResponse(responseCode = "400", description = "Solicitud inválida, error en los datos de entrada", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "200", description = "Consulta actualizada exitosamente"),
+			@ApiResponse(responseCode = "400", description = "Solicitud inválida, error en los datos de entrada"),
+			@ApiResponse(responseCode = "404", description = "Consulta no encontrada"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PatchMapping("/{id}")
@@ -109,14 +106,14 @@ public class ConsultController {
 			@RequestBody @Valid UpdateConsultRequestDTO updateConsultRequestDTO)
 			throws NotFoundException {
 		Consult consult = consultPort.updateConsult(id, updateConsultRequestDTO);
-		return ResponseEntity.ok().body(new ConsultResponseDTO(consult));
+		return ResponseEntity.ok().body(consultMapper.fromConsultToResponse(consult));
 	}
 
 	@Operation(summary = "Pagar una consulta", description = "Este endpoint permite pagar una consulta, cambiando su estado a pagada.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Consulta pagada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "409", description = "La consulta ya se encuentra pagada", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "200", description = "Consulta pagada exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Consulta no encontrada"),
+			@ApiResponse(responseCode = "409", description = "La consulta ya se encuentra pagada"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("/pay/{id}")
@@ -124,13 +121,13 @@ public class ConsultController {
 			@PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id)
 			throws NotFoundException, IllegalStateException {
 		Consult consult = consultPort.pagarConsulta(id);
-		return ResponseEntity.ok().body(new ConsultResponseDTO(consult));
+		return ResponseEntity.ok().body(consultMapper.fromConsultToResponse(consult));
 	}
 
 	@Operation(summary = "Obtener el total de una consulta", description = "Este endpoint devuelve el costo total de una consulta incluyendo posibles cirugías.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Total obtenido exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Double.class))),
-			@ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "200", description = "Total obtenido exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Consulta no encontrada"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@GetMapping("/total/{id}")
@@ -143,8 +140,8 @@ public class ConsultController {
 
 	@Operation(summary = "Obtener empleados asignados a una consulta", description = "Este endpoint devuelve una lista de empleados asignados a una consulta específica.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Empleados obtenidos exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeConsultResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "200", description = "Empleados obtenidos exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Consulta no encontrada"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@GetMapping("/{id}/employees")
@@ -159,9 +156,9 @@ public class ConsultController {
 
 	@Operation(summary = "Agregar empleado a una consulta", description = "Este endpoint permite agregar un empleado a una consulta existente.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Empleado agregado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeConsultResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Consulta o Empleado no encontrado", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "409", description = "El empleado ya esta asignado a la consulta o la consulta ya fue pagada no se puede modificar", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "200", description = "Empleado agregado exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Consulta o Empleado no encontrado"),
+			@ApiResponse(responseCode = "409", description = "El empleado ya esta asignado a la consulta o la consulta ya fue pagada no se puede modificar"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("add-employee")
@@ -179,9 +176,9 @@ public class ConsultController {
 
 	@Operation(summary = "Eliminar empleado de una consulta", description = "Este endpoint permite eliminar un empleado de una consulta existente.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Empleado eliminado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeConsultResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Consulta o Empleado no encontrado", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "409", description = "El empleado no está asignado a la consulta, es el único empleado asignado o la consulta ya fue pagada no se puede modificar", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "200", description = "Empleado eliminado exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Consulta o Empleado no encontrado"),
+			@ApiResponse(responseCode = "409", description = "El empleado no está asignado a la consulta, es el único empleado asignado o la consulta ya fue pagada no se puede modificar"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@DeleteMapping("delete-employee")
@@ -199,9 +196,9 @@ public class ConsultController {
 
 	@Operation(summary = "Marcar consulta como internado", description = "Este endpoint permite marcar una consulta como internado.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Consulta marcada como internado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Consulta o habitación no encontrada", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "409", description = "La consulta ya fue pagada o la habitación no está disponible", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "200", description = "Consulta marcada como internado exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Consulta o habitación no encontrada"),
+			@ApiResponse(responseCode = "409", description = "La consulta ya fue pagada o la habitación no está disponible"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("/mark-internado")
@@ -210,14 +207,14 @@ public class ConsultController {
 			throws NotFoundException, IllegalStateException, DuplicatedEntryException {
 		Consult consult = consultPort.markConsultInternado(markConsultAsInternadoDTO.getConsultId(),
 				markConsultAsInternadoDTO.getRoomId());
-		return ResponseEntity.ok().body(new ConsultResponseDTO(consult));
+		return ResponseEntity.ok().body(consultMapper.fromConsultToResponse(consult));
 	}
 
 	@Operation(summary = "Finalizar internado", description = "Este endpoint permite finalizar el estado de internado de una consulta.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Internado finalizado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ConsultResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "409", description = "La consulta no es de tipo internado o la consulta ya fue pagada", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "200", description = "Internado finalizado exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Consulta no encontrada"),
+			@ApiResponse(responseCode = "409", description = "La consulta no es de tipo internado o la consulta ya fue pagada"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("/end-internado/{id}")
@@ -225,6 +222,6 @@ public class ConsultController {
 			@PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id)
 			throws NotFoundException, IllegalStateException {
 		Consult consult = consultPort.endInternado(id);
-		return ResponseEntity.ok().body(new ConsultResponseDTO(consult));
+		return ResponseEntity.ok().body(consultMapper.fromConsultToResponse(consult));
 	}
 }

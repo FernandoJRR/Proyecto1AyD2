@@ -3,6 +3,7 @@ package com.hospitalApi.rooms.controllers;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -42,6 +43,7 @@ public class RoomController {
     })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('CREATE_ROOM')")
     public RoomResponseDTO createRoom(
             @RequestBody @Valid SaveRoomRequestDTO request) throws DuplicatedEntryException, NotFoundException {
         // mapear el request dto a nuestro modelo
@@ -61,6 +63,7 @@ public class RoomController {
     })
     @PatchMapping("/{roomId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('EDIT_ROOM')")
     public RoomResponseDTO updateRoom(
             @PathVariable String roomId,
             @RequestBody @Valid SaveRoomRequestDTO request) throws DuplicatedEntryException, NotFoundException {
@@ -81,6 +84,7 @@ public class RoomController {
     })
     @PatchMapping("/{roomId}/toggle-availability")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('TOGGLE_ROOM_AVAILABILITY')")
     public RoomResponseDTO toggleRoomAvailability(
             @PathVariable String roomId) throws DuplicatedEntryException, NotFoundException {
         // mandamos a editar el room
@@ -96,6 +100,7 @@ public class RoomController {
     })
     @GetMapping("/{roomNumber}/by-number")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyAuthority('EDIT_ROOM', 'TOGGLE_ROOM_AVAILABILITY', 'CREATE_ROOM')")
     public RoomResponseDTO getRoomByNumber(
             @PathVariable String roomNumber) throws NotFoundException {
         // mandmaos a traer la room por su number
@@ -111,6 +116,7 @@ public class RoomController {
     })
     @GetMapping("/{roomId}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyAuthority('EDIT_ROOM', 'TOGGLE_ROOM_AVAILABILITY', 'CREATE_ROOM')")
     public RoomResponseDTO getRoomById(
             @PathVariable String roomId) throws NotFoundException {
         // mandmaos a traer la room por su id
@@ -125,6 +131,7 @@ public class RoomController {
     })
     @GetMapping("/all")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyAuthority('EDIT_ROOM', 'TOGGLE_ROOM_AVAILABILITY', 'CREATE_ROOM')")
     public List<RoomResponseDTO> getAllRooms() {
         // mandmaos a traer todas las rooms
         List<Room> findedRooms = forRoomPort.findAllRooms();

@@ -28,6 +28,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
+@Transactional(rollbackOn = Exception.class)
 public class ConsultService implements ForConsultPort {
 
     private final ConsultRepository consultRepository;
@@ -77,7 +78,6 @@ public class ConsultService implements ForConsultPort {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public Double obtenerTotalConsulta(String id) throws NotFoundException {
         Consult consult = findById(id);
         Double totalCirugias = forSurgeryCalculationService.totalSurgerisByConsult(id);
