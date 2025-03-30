@@ -26,6 +26,10 @@ export async function getAllRooms() {
   return await $api<Room[]>(`${CURRENT_ROOMS_URI}/all`);
 }
 
+export async function getAllAvailableRooms() {
+  return await $api<Room[]>(`${CURRENT_ROOMS_URI}/all/available`);
+}
+
 /**
  * Crea una nueva habitación.
  * @param payload datos de la habitación a crear

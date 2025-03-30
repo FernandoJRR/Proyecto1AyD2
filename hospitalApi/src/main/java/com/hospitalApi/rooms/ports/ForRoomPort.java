@@ -47,6 +47,13 @@ public interface ForRoomPort {
     List<Room> findAllRooms();
 
     /**
+     * Busca todas las habitaciones disponibles.
+     * 
+     * @return una lista de habitaciones disponibles
+     */
+    List<Room> findAllRoomsAvailable();
+
+    /**
      * Cambia el estado de disponibilidad de una habitación entre AVAILABLE y
      * OUT_OF_SERVICE.
      * Si la habitación está ocupada, se lanza una excepción.
@@ -68,4 +75,62 @@ public interface ForRoomPort {
      * @throws NotFoundException si no se encuentra la habitación
      */
     public Room findRoomByNumber(String number) throws NotFoundException;
+
+    /**
+     * Verifica si una habitación está disponible.
+     * 
+     * @param roomId ID de la habitación a verificar.
+     * @return true si la habitación está disponible, false en caso contrario.
+     * @throws NotFoundException si no se encuentra la habitación con el ID
+     *                           proporcionado.
+     */
+    public boolean roomIsAvailable(String roomId) throws NotFoundException;
+
+    /**
+     * Marca una habitación como vacía.
+     * 
+     * @param roomId ID de la habitación a marcar como vacía.
+     * @return La habitación marcada como vacía.
+     * @throws NotFoundException     si no se encuentra la habitación con el ID
+     *                               proporcionado.
+     * @throws IllegalStateException si la habitación no está ocupada y no se puede
+     *                               marcar como vacía.
+     */
+    public Room markVacant(String roomId) throws NotFoundException, IllegalStateException;
+
+    /**
+     * Marca una habitación como disponible.
+     * 
+     * @param roomId ID de la habitación a marcar como disponible.
+     * @return La habitación marcada como disponible.
+     * @throws NotFoundException     si no se encuentra la habitación con el ID
+     *                               proporcionado.
+     * @throws IllegalStateException si la habitación está ocupada y no se puede
+     *                               marcar como disponible.
+     */
+    public Room markAvailable(String roomId) throws NotFoundException, IllegalStateException;
+
+    /**
+     * Marca una habitación como ocupada.
+     * 
+     * @param roomId ID de la habitación a marcar como ocupada.
+     * @return La habitación marcada como ocupada.
+     * @throws NotFoundException     si no se encuentra la habitación con el ID
+     *                               proporcionado.
+     * @throws IllegalStateException si la habitación está fuera de servicio y no se
+     *                               puede marcar como ocupada.
+     */
+    public Room markOccupied(String roomId) throws NotFoundException, IllegalStateException;
+
+    /**
+     * Marca una habitación como fuera de servicio.
+     * 
+     * @param roomId ID de la habitación a marcar como fuera de servicio.
+     * @return La habitación marcada como fuera de servicio.
+     * @throws NotFoundException     si no se encuentra la habitación con el ID
+     *                               proporcionado.
+     * @throws IllegalStateException si la habitación está ocupada y no se puede
+     *                               marcar como fuera de servicio.
+     */
+    public Room markOutOfService(String roomId) throws NotFoundException, IllegalStateException;
 }
