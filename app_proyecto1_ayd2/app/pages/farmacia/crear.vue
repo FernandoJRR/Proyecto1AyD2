@@ -8,15 +8,9 @@
 
     <h1 class="text-4xl font-bold mb-6">Crear Medicamento</h1>
     <div class="space-y-8 bg-white shadow-md rounded-2xl p-6 border border-gray-200">
-      <Form
-        v-slot="$form"
-        :initialValues
-        :resolver
-        @submit="onFormSubmit"
-        class="mt-8 flex justify-center"
-      >
+      <Form v-slot="$form" :initialValues :resolver @submit="onFormSubmit" class="mt-8 flex justify-center">
         <div class="flex flex-col gap-1 w-full">
-          <h1 class="text-2xl font-semibold mb-6 text-black" >Datos del Medicamento</h1>
+          <h1 class="text-2xl font-semibold mb-6 text-black">Datos del Medicamento</h1>
 
           <div class="flex flex-row gap-4">
             <div class="w-full">
@@ -24,12 +18,7 @@
                 <label for="name">Nombre del Medicamento</label>
                 <InputText name="name" type="text" fluid />
               </FloatLabel>
-              <Message
-                v-if="$form.name?.invalid"
-                severity="error"
-                size="small"
-                variant="simple"
-              >
+              <Message v-if="$form.name?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.name.error?.message }}
               </Message>
             </div>
@@ -39,12 +28,7 @@
                 <label for="description">Descripción</label>
                 <InputText name="description" type="text" fluid />
               </FloatLabel>
-              <Message
-                v-if="$form.description?.invalid"
-                severity="error"
-                size="small"
-                variant="simple"
-              >
+              <Message v-if="$form.description?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.description.error?.message }}
               </Message>
             </div>
@@ -54,43 +38,31 @@
             <div class="w-full">
               <FloatLabel>
                 <label for="price">Precio</label>
-                <InputNumber
-                  name="price"
-                  :min="0.01"
-                  :minFractionDigits="2"
-                  :maxFractionDigits="2"
-                  mode="currency"
-                  currency="GTQ"
-                  placeholder="Precio del Medicamento"
-                  fluid
-                />
+                <InputNumber name="price" :min="0.01" :minFractionDigits="2" :maxFractionDigits="2" mode="currency"
+                  currency="GTQ" placeholder="Precio del Medicamento" fluid />
               </FloatLabel>
-              <Message
-                v-if="$form.price?.invalid"
-                severity="error"
-                size="small"
-                variant="simple"
-              >
+              <Message v-if="$form.price?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.price.error?.message }}
               </Message>
             </div>
 
             <div class="w-full">
               <FloatLabel>
-                <label for="quantity">Cantidad</label>
-                <InputNumber
-                  name="quantity"
-                  :min="1"
-                  placeholder="Cantidad en Stock"
-                  fluid
-                />
+                <label for="cost">Costo del Medicamento</label>
+                <InputNumber name="cost" :min="0.01" :minFractionDigits="2" :maxFractionDigits="2" mode="currency"
+                  currency="GTQ" placeholder="Costo del Medicamento" fluid />
               </FloatLabel>
-              <Message
-                v-if="$form.quantity?.invalid"
-                severity="error"
-                size="small"
-                variant="simple"
-              >
+              <Message v-if="$form.cost?.invalid" severity="error" size="small" variant="simple">
+                {{ $form.cost.error?.message }}
+              </Message>
+            </div>
+
+            <div class="w-full">
+              <FloatLabel>
+                <label for="quantity">Cantidad</label>
+                <InputNumber name="quantity" :min="1" placeholder="Cantidad en Stock" fluid />
+              </FloatLabel>
+              <Message v-if="$form.quantity?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.quantity.error?.message }}
               </Message>
             </div>
@@ -98,31 +70,15 @@
             <div class="w-full">
               <FloatLabel>
                 <label for="minQuantity">Cantidad Mínima</label>
-                <InputNumber
-                  name="minQuantity"
-                  :min="1"
-                  placeholder="Cantidad Mínima"
-                  fluid
-                />
+                <InputNumber name="minQuantity" :min="1" placeholder="Cantidad Mínima" fluid />
               </FloatLabel>
-              <Message
-                v-if="$form.minQuantity?.invalid"
-                severity="error"
-                size="small"
-                variant="simple"
-              >
+              <Message v-if="$form.minQuantity?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.minQuantity.error?.message }}
               </Message>
             </div>
           </div>
 
-          <Button
-            type="submit"
-            severity="secondary"
-            label="Crear"
-            icon="pi pi-save"
-            class="mt-8"
-          />
+          <Button type="submit" severity="secondary" label="Crear" icon="pi pi-save" class="mt-8" />
         </div>
       </Form>
     </div>
@@ -150,9 +106,10 @@ import {
 const initialValues = reactive({
   name: '',
   description: '',
-  price: 0,
-  quantity: 0,
-  minQuantity: 0,
+  price: 0.01,
+  cost: 0.01,
+  quantity: 1,
+  minQuantity: 1,
 });
 
 // Validaciones con Zod
@@ -164,6 +121,9 @@ const resolver = ref(
       price: z
         .number({ message: 'El precio es obligatorio.' })
         .min(0.01, 'El precio debe ser mayor a 0.01.'),
+      cost: z
+        .number({ message: 'El costo es obligatorio.' })
+        .min(0.01, 'El costo debe ser mayor a 0.01.'),
       quantity: z
         .number({ message: 'La cantidad es obligatoria.' })
         .min(1, 'La cantidad debe ser mayor a 0.'),
@@ -181,6 +141,7 @@ const onFormSubmit = (e: any) => {
       name: e.values.name,
       description: e.values.description,
       price: e.values.price,
+      cost: e.values.cost,
       quantity: e.values.quantity,
       minQuantity: e.values.minQuantity,
     };

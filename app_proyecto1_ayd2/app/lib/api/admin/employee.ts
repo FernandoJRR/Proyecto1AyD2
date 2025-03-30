@@ -126,5 +126,6 @@ export const getDoctors = async (search: string | null) => {
   const response = await $api<Employee[]>(`${CURRENT_EMPLOYEE_URI}/doctors`, {
     params: { search }
   })
+  console.log('doctors', response)
   return response
 }
