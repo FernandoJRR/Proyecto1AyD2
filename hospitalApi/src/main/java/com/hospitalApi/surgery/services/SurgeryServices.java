@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.consults.port.ForConsultPort;
 import com.hospitalApi.shared.exceptions.NotFoundException;
-import com.hospitalApi.surgery.dtos.CreateSugeryRequestDTO;
 import com.hospitalApi.surgery.dtos.DeleteSurgeryResponseDTO;
 import com.hospitalApi.surgery.models.Surgery;
 import com.hospitalApi.surgery.models.SurgeryType;

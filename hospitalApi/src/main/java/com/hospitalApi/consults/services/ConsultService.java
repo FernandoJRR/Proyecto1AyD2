@@ -24,6 +24,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
+@Transactional(rollbackOn = Exception.class)
 public class ConsultService implements ForConsultPort {
 
     private final ConsultRepository consultRepository;
@@ -38,7 +39,6 @@ public class ConsultService implements ForConsultPort {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public Consult createConsult(String patientId, String employeeId, Double costoConsulta) throws NotFoundException {
         // Creamos la consulta con el paciente
         Patient patient = forPatientPort.getPatient(patientId);
@@ -58,7 +58,6 @@ public class ConsultService implements ForConsultPort {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public Double obtenerTotalConsulta(String id) throws NotFoundException {
         Consult consult = findById(id);
         Double totalCirugias = forSurgeryCalculationService.totalSurgerisByConsult(id);
@@ -83,7 +82,6 @@ public class ConsultService implements ForConsultPort {
     @Override
     public Consult addHabitacionToConsult(String id, String habitacionId)
             throws NotFoundException, IllegalStateException {
-        // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'addHabitacionToConsult'");
     }
 

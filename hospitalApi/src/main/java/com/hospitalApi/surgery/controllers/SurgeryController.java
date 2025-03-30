@@ -4,12 +4,28 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
-import com.hospitalApi.surgery.dtos.*;
+import com.hospitalApi.surgery.dtos.AddDeleteEmployeeSurgeryDTO;
+import com.hospitalApi.surgery.dtos.CreateSugeryRequestDTO;
+import com.hospitalApi.surgery.dtos.CreateSurgeryTypeRequest;
+import com.hospitalApi.surgery.dtos.DeleteSurgeryResponseDTO;
+import com.hospitalApi.surgery.dtos.SurgeryEmpleoyeeResponseDTO;
+import com.hospitalApi.surgery.dtos.SurgeryResponseDTO;
+import com.hospitalApi.surgery.dtos.SurgeryTypeResponseDTO;
+import com.hospitalApi.surgery.dtos.UpdateSurgeryTypeRequestDTO;
 import com.hospitalApi.surgery.mappers.SurgeryEmployeeMapper;
+import com.hospitalApi.surgery.mappers.SurgeryMapper;
 import com.hospitalApi.surgery.mappers.SurgeryTypeMapper;
 import com.hospitalApi.surgery.models.Surgery;
 import com.hospitalApi.surgery.models.SurgeryEmployee;
@@ -20,11 +36,8 @@ import com.hospitalApi.surgery.ports.ForSurgeryPort;
 import com.hospitalApi.surgery.ports.ForSurgeryTypePort;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +53,7 @@ public class SurgeryController {
 	private final ForSurgeryTypePort surgeryTypePort;
 	private final SurgeryEmployeeMapper surgeryEmployeeMapper;
 	private final SurgeryTypeMapper surgeryTypeMapper;
+	private final SurgeryMapper surgeryMapper;
 
 	@Operation(summary = "Obtener todos los tipos de cirugía", description = "Devuelve la lista de los tipos de cirugía existentes.")
 	@ApiResponses(value = {
@@ -47,125 +61,118 @@ public class SurgeryController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@GetMapping("/types/all")
-	public ResponseEntity<List<SurgeryTypeResponseDTO>> getAllSurgeryTypes(
+	@ResponseStatus(HttpStatus.OK)
+	public List<SurgeryTypeResponseDTO> getAllSurgeryTypes(
 			@PathVariable(value = "query", required = false) String query) {
 		List<SurgeryType> response = surgeryTypePort.getSurgeryTypes(query);
 		List<SurgeryTypeResponseDTO> surgeryTypeResponseDTOList = surgeryTypeMapper
 				.fromSurgeryTypeListToSurgeryTypeResponseDTOList(response);
-		return ResponseEntity.ok().body(surgeryTypeResponseDTOList);
+		return surgeryTypeResponseDTOList;
 	}
 
 	@Operation(summary = "Crear un nuevo tipo de cirugía", description = "Permite la creación de un nuevo tipo de cirugía en el sistema.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "201", description = "Tipo de cirugía creado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryTypeResponseDTO.class))),
-			@ApiResponse(responseCode = "400", description = "Solicitud inválida.", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "409", description = "Conflicto - Nombre de tipo de cirugía duplicado", content = @Content(mediaType = "application/json"))
+			@ApiResponse(responseCode = "201", description = "Tipo de cirugía creado exitosamente"),
+			@ApiResponse(responseCode = "400", description = "Solicitud inválida."),
+			@ApiResponse(responseCode = "409", description = "Conflicto - Nombre de tipo de cirugía duplicado")
 	})
 	@PostMapping("/types/create")
-	public ResponseEntity<SurgeryTypeResponseDTO> createSurgeryType(
+	@ResponseStatus(HttpStatus.CREATED)
+	public SurgeryTypeResponseDTO createSurgeryType(
 			@Valid @RequestBody CreateSurgeryTypeRequest createSurgeryTypeRequestDTO)
 			throws DuplicatedEntryException {
 		SurgeryType surgeryType = new SurgeryType(createSurgeryTypeRequestDTO);
 		surgeryType = surgeryTypePort.createSurgeryType(surgeryType);
-		SurgeryTypeResponseDTO response = new SurgeryTypeResponseDTO(surgeryType);
-		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+		SurgeryTypeResponseDTO response = surgeryTypeMapper.fromSurgeryTypeToSurgeryTypeResponseDTO(surgeryType);
+		return response;
 	}
 
 	@Operation(summary = "Actualizar un tipo de cirugía", description = "Permite actualizar un tipo de cirugía existente.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Tipo de cirugía actualizado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryTypeResponseDTO.class))),
-			@ApiResponse(responseCode = "400", description = "Solicitud inválida.", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "404", description = "Tipo de cirugía no encontrado", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "409", description = "Conflicto - Nombre de tipo de cirugía duplicado", content = @Content(mediaType = "application/json"))
+			@ApiResponse(responseCode = "200", description = "Tipo de cirugía actualizado exitosamente"),
+			@ApiResponse(responseCode = "400", description = "Solicitud inválida."),
+			@ApiResponse(responseCode = "404", description = "Tipo de cirugía no encontrado"),
+			@ApiResponse(responseCode = "409", description = "Conflicto - Nombre de tipo de cirugía duplicado")
 	})
 	@PatchMapping("/types/update/{surgeryTypeId}")
-	public ResponseEntity<SurgeryTypeResponseDTO> updateSurgeryType(
+	@ResponseStatus(HttpStatus.OK)
+	public SurgeryTypeResponseDTO updateSurgeryType(
 			@PathVariable("surgeryTypeId") @NotBlank(message = "El id del tipo de cirugía es requerido") String surgeryTypeId,
 			@Valid @RequestBody UpdateSurgeryTypeRequestDTO updateSurgeryTypeRequestDTO)
 			throws NotFoundException, DuplicatedEntryException {
 		SurgeryType surgeryType = surgeryTypePort.updateSurgeryType(updateSurgeryTypeRequestDTO, surgeryTypeId);
-		SurgeryTypeResponseDTO response = new SurgeryTypeResponseDTO(surgeryType);
-		return ResponseEntity.ok().body(response);
+		SurgeryTypeResponseDTO response = surgeryTypeMapper.fromSurgeryTypeToSurgeryTypeResponseDTO(surgeryType);
+		return response;
 	}
 
 	@Operation(summary = "Obtener un tipo de cirugía por ID", description = "Devuelve un tipo de cirugía por su ID.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Tipo de cirugía obtenido exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryTypeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Tipo de cirugía no encontrado", content = @Content(mediaType = "application/json"))
+			@ApiResponse(responseCode = "200", description = "Tipo de cirugía obtenido exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Tipo de cirugía no encontrado")
 	})
 	@GetMapping("/types/{surgeryTypeId}")
-	public ResponseEntity<SurgeryTypeResponseDTO> getSurgeryType(
+	@ResponseStatus(HttpStatus.OK)
+	public SurgeryTypeResponseDTO getSurgeryType(
 			@PathVariable("surgeryTypeId") @NotBlank(message = "El id del tipo de cirugía es requerido") String surgeryTypeId)
 			throws NotFoundException {
 		SurgeryType surgeryType = surgeryTypePort.getSurgeryType(surgeryTypeId);
-		SurgeryTypeResponseDTO response = new SurgeryTypeResponseDTO(surgeryType);
-		return ResponseEntity.ok().body(response);
+		SurgeryTypeResponseDTO response = surgeryTypeMapper.fromSurgeryTypeToSurgeryTypeResponseDTO(surgeryType);
+		return response;
 	}
 
 	@Operation(summary = "Obtener todas las cirugías", description = "Devuelve la lista de cirugías existentes.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Lista de cirugías obtenida exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryResponseDTO.class))),
+			@ApiResponse(responseCode = "200", description = "Lista de cirugías obtenida exitosamente"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@GetMapping("/all")
-	public ResponseEntity<List<SurgeryResponseDTO>> getAllSurgeries() {
+	public List<SurgeryResponseDTO> getAllSurgeries() {
 		List<Surgery> surgeryList = surgeryPort.getSurgerys();
-		List<SurgeryResponseDTO> response = surgeryList.stream().map(surgery -> {
-			SurgeryTypeResponseDTO surgeryType = new SurgeryTypeResponseDTO(surgery.getSurgeryType());
-			List<SurgeryEmpleoyeeResponseDTO> surgeryEmployees = surgeryEmployeeMapper
-					.fromSurgeryEmployeeListToSurgeryEmpleoyeeResponseDTOList(
-							surgery.getSurgeryEmployees());
-			return new SurgeryResponseDTO(surgery, surgeryType, surgeryEmployees);
-		}).toList();
-		return ResponseEntity.ok().body(response);
+		List<SurgeryResponseDTO> response = surgeryMapper.fromSurgeryListToSurgeryResponseDTOList(surgeryList);
+		return response;
 	}
 
 	@Operation(summary = "Crear una cirugía", description = "Permite crear una nueva cirugía en el sistema.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "201", description = "Cirugía creada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryResponseDTO.class))),
-			@ApiResponse(responseCode = "400", description = "Solicitud inválida.", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "404", description = "Consulta o tipo de cirugía no encontrado", content = @Content(mediaType = "application/json"))
+			@ApiResponse(responseCode = "201", description = "Cirugía creada exitosamente"),
+			@ApiResponse(responseCode = "400", description = "Solicitud inválida."),
+			@ApiResponse(responseCode = "404", description = "Consulta o tipo de cirugía no encontrado")
 	})
 	@PostMapping("/create")
-	public ResponseEntity<SurgeryResponseDTO> createSurgery(
+	@ResponseStatus(HttpStatus.CREATED)
+	public SurgeryResponseDTO createSurgery(
 			@Valid @RequestBody CreateSugeryRequestDTO createSurgeryRequestDTO)
 			throws NotFoundException, IllegalStateException, DuplicatedEntryException {
 		Surgery surgery = surgeryCreatePort.createSurgery(createSurgeryRequestDTO);
-		SurgeryTypeResponseDTO surgeryType = new SurgeryTypeResponseDTO(surgery.getSurgeryType());
-		List<SurgeryEmpleoyeeResponseDTO> surgeryEmployees = surgeryEmployeeMapper
-				.fromSurgeryEmployeeListToSurgeryEmpleoyeeResponseDTOList(
-						surgery.getSurgeryEmployees());
-		SurgeryResponseDTO response = new SurgeryResponseDTO(surgery, surgeryType, surgeryEmployees);
-		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+		SurgeryResponseDTO response = surgeryMapper.fromSurgeryToSurgeryResponseDTO(surgery);
+		return response;
 	}
 
 	@Operation(summary = "Obtener una cirugía por ID", description = "Devuelve una cirugía por su ID.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Cirugía obtenida exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Cirugía no encontrada", content = @Content(mediaType = "application/json"))
+			@ApiResponse(responseCode = "200", description = "Cirugía obtenida exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Cirugía no encontrada")
 	})
 	@GetMapping("{surgeryId}")
-	public ResponseEntity<SurgeryResponseDTO> getSurgery(
+	@ResponseStatus(HttpStatus.CREATED)
+	public SurgeryResponseDTO getSurgery(
 			@PathVariable("surgeryId") @NotBlank(message = "El id de la cirugía es requerido") String surgeryId)
 			throws NotFoundException {
 		Surgery surgery = surgeryPort.getSurgery(surgeryId);
-		SurgeryTypeResponseDTO surgeryType = new SurgeryTypeResponseDTO(surgery.getSurgeryType());
-		List<SurgeryEmpleoyeeResponseDTO> surgeryEmployees = surgeryEmployeeMapper
-				.fromSurgeryEmployeeListToSurgeryEmpleoyeeResponseDTOList(
-						surgery.getSurgeryEmployees());
-		SurgeryResponseDTO response = new SurgeryResponseDTO(surgery, surgeryType, surgeryEmployees);
-		return ResponseEntity.ok().body(response);
+		SurgeryResponseDTO response = surgeryMapper.fromSurgeryToSurgeryResponseDTO(surgery);
+		return response;
 	}
 
 	@Operation(summary = "Asignar un empleado a una cirugía", description = "Permite asignar un empleado a una cirugía existente.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Empleado asignado exitosamente a la cirugía", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryEmpleoyeeResponseDTO.class))),
-			@ApiResponse(responseCode = "400", description = "Solicitud inválida.", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "404", description = "Cirugía o empleado no encontrado", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "409", description = "Empleado ya asignado a la cirugía", content = @Content(mediaType = "application/json"))
+			@ApiResponse(responseCode = "200", description = "Empleado asignado exitosamente a la cirugía"),
+			@ApiResponse(responseCode = "400", description = "Solicitud inválida."),
+			@ApiResponse(responseCode = "404", description = "Cirugía o empleado no encontrado"),
+			@ApiResponse(responseCode = "409", description = "Empleado ya asignado a la cirugía")
 	})
 	@PostMapping("add-employee")
-	public ResponseEntity<List<SurgeryEmpleoyeeResponseDTO>> addEmployeeToSurgery(
+	@ResponseStatus(HttpStatus.OK)
+	public List<SurgeryEmpleoyeeResponseDTO> addEmployeeToSurgery(
 			@RequestBody @Valid AddDeleteEmployeeSurgeryDTO addEmployeeSurgeryDTO)
 			throws NotFoundException, DuplicatedEntryException {
 		List<SurgeryEmployee> response = surgeryEmployeePort
@@ -173,16 +180,17 @@ public class SurgeryController {
 						addEmployeeSurgeryDTO.getEmployeeId());
 		List<SurgeryEmpleoyeeResponseDTO> surgeryEmpleoyeeResponseDTOList = surgeryEmployeeMapper
 				.fromSurgeryEmployeeListToSurgeryEmpleoyeeResponseDTOList(response);
-		return ResponseEntity.ok().body(surgeryEmpleoyeeResponseDTOList);
+		return surgeryEmpleoyeeResponseDTOList;
 	}
 
 	@Operation(summary = "Eliminar un empleado de una cirugía", description = "Permite eliminar un empleado asignado a una cirugía.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Empleado eliminado exitosamente de la cirugía", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryEmpleoyeeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Cirugía o empleado no encontrado", content = @Content(mediaType = "application/json"))
+			@ApiResponse(responseCode = "200", description = "Empleado eliminado exitosamente de la cirugía"),
+			@ApiResponse(responseCode = "404", description = "Cirugía o empleado no encontrado")
 	})
 	@DeleteMapping("remove-employee")
-	public ResponseEntity<List<SurgeryEmpleoyeeResponseDTO>> removeEmployeeFromSurgery(
+	@ResponseStatus(HttpStatus.OK)
+	public List<SurgeryEmpleoyeeResponseDTO> removeEmployeeFromSurgery(
 			@RequestBody @Valid AddDeleteEmployeeSurgeryDTO removeEmployeeSurgeryDTO)
 			throws NotFoundException {
 		List<SurgeryEmployee> response = surgeryEmployeePort
@@ -190,17 +198,18 @@ public class SurgeryController {
 						removeEmployeeSurgeryDTO.getEmployeeId());
 		List<SurgeryEmpleoyeeResponseDTO> surgeryEmpleoyeeResponseDTOList = surgeryEmployeeMapper
 				.fromSurgeryEmployeeListToSurgeryEmpleoyeeResponseDTOList(response);
-		return ResponseEntity.ok().body(surgeryEmpleoyeeResponseDTOList);
+		return surgeryEmpleoyeeResponseDTOList;
 	}
 
 	@Operation(summary = "Asignar un especialista a una cirugía", description = "Permite asignar un especialista a una cirugía existente.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Especialista asignado exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryEmpleoyeeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Cirugía o especialista no encontrado", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "409", description = "Especialista ya asignado a la cirugía", content = @Content(mediaType = "application/json"))
+			@ApiResponse(responseCode = "200", description = "Especialista asignado exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Cirugía o especialista no encontrado"),
+			@ApiResponse(responseCode = "409", description = "Especialista ya asignado a la cirugía")
 	})
 	@PostMapping("add-specialist")
-	public ResponseEntity<List<SurgeryEmpleoyeeResponseDTO>> addSpecialistToSurgery(
+	@ResponseStatus(HttpStatus.OK)
+	public List<SurgeryEmpleoyeeResponseDTO> addSpecialistToSurgery(
 			@RequestBody @Valid AddDeleteEmployeeSurgeryDTO addSpecialistSurgeryDTO)
 			throws NotFoundException, DuplicatedEntryException {
 		List<SurgeryEmployee> response = surgeryEmployeePort
@@ -208,16 +217,17 @@ public class SurgeryController {
 						addSpecialistSurgeryDTO.getEmployeeId());
 		List<SurgeryEmpleoyeeResponseDTO> surgeryEmpleoyeeResponseDTOList = surgeryEmployeeMapper
 				.fromSurgeryEmployeeListToSurgeryEmpleoyeeResponseDTOList(response);
-		return ResponseEntity.ok().body(surgeryEmpleoyeeResponseDTOList);
+		return surgeryEmpleoyeeResponseDTOList;
 	}
 
 	@Operation(summary = "Eliminar un especialista de una cirugía", description = "Permite eliminar un especialista asignado a una cirugía.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Especialista eliminado exitosamente de la cirugía", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryEmpleoyeeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Cirugía o especialista no encontrado", content = @Content(mediaType = "application/json"))
+			@ApiResponse(responseCode = "200", description = "Especialista eliminado exitosamente de la cirugía"),
+			@ApiResponse(responseCode = "404", description = "Cirugía o especialista no encontrado")
 	})
 	@DeleteMapping("remove-specialist")
-	public ResponseEntity<List<SurgeryEmpleoyeeResponseDTO>> removeSpecialistFromSurgery(
+	@ResponseStatus(HttpStatus.OK)
+	public List<SurgeryEmpleoyeeResponseDTO> removeSpecialistFromSurgery(
 			@RequestBody @Valid AddDeleteEmployeeSurgeryDTO removeSpecialistSurgeryDTO)
 			throws NotFoundException {
 		List<SurgeryEmployee> response = surgeryEmployeePort
@@ -225,70 +235,64 @@ public class SurgeryController {
 						removeSpecialistSurgeryDTO.getEmployeeId());
 		List<SurgeryEmpleoyeeResponseDTO> surgeryEmpleoyeeResponseDTOList = surgeryEmployeeMapper
 				.fromSurgeryEmployeeListToSurgeryEmpleoyeeResponseDTOList(response);
-		return ResponseEntity.ok().body(surgeryEmpleoyeeResponseDTOList);
+		return surgeryEmpleoyeeResponseDTOList;
 	}
 
 	@Operation(summary = "Obtener los empleados de una cirugía", description = "Devuelve los empleados asignados a una cirugía.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Empleados de la cirugía obtenidos exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryEmpleoyeeResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Cirugía no encontrada", content = @Content(mediaType = "application/json"))
+			@ApiResponse(responseCode = "200", description = "Empleados de la cirugía obtenidos exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Cirugía no encontrada")
 	})
 	@GetMapping("/surgery-employees/{surgeryId}")
-	public ResponseEntity<List<SurgeryEmpleoyeeResponseDTO>> getSurgeryEmployees(
+	@ResponseStatus(HttpStatus.OK)
+	public List<SurgeryEmpleoyeeResponseDTO> getSurgeryEmployees(
 			@PathVariable("surgeryId") @NotBlank(message = "El id de la cirugía es requerido") String surgeryId)
 			throws NotFoundException {
 		List<SurgeryEmployee> response = surgeryEmployeePort.getSurgeryEmployees(surgeryId);
 		List<SurgeryEmpleoyeeResponseDTO> surgeryEmpleoyeeResponseDTOList = surgeryEmployeeMapper
 				.fromSurgeryEmployeeListToSurgeryEmpleoyeeResponseDTOList(response);
-		return ResponseEntity.ok().body(surgeryEmpleoyeeResponseDTOList);
+		return surgeryEmpleoyeeResponseDTOList;
 	}
 
 	@Operation(summary = "Obtiene las cirugías de una consulta", description = "Devuelve la lista de cirugías asociadas a una consulta.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Lista de cirugías obtenida exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Consulta no encontrada", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "200", description = "Lista de cirugías obtenida exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Consulta no encontrada"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@GetMapping("/consult/{consultId}")
-	public ResponseEntity<List<SurgeryResponseDTO>> getSugeriesByConsultId(
+	@ResponseStatus(HttpStatus.OK)
+	public List<SurgeryResponseDTO> getSugeriesByConsultId(
 			@PathVariable("consultId") @NotBlank(message = "El id de la consulta es requerido") String consultId)
 			throws NotFoundException {
 		List<Surgery> surgeryList = surgeryPort.getSurgerysByConsultId(consultId);
-		List<SurgeryResponseDTO> response = surgeryList.stream().map(surgery -> {
-			SurgeryTypeResponseDTO surgeryType = new SurgeryTypeResponseDTO(surgery.getSurgeryType());
-			List<SurgeryEmpleoyeeResponseDTO> surgeryEmployees = surgeryEmployeeMapper
-					.fromSurgeryEmployeeListToSurgeryEmpleoyeeResponseDTOList(
-							surgery.getSurgeryEmployees());
-			return new SurgeryResponseDTO(surgery, surgeryType, surgeryEmployees);
-		}).toList();
-		return ResponseEntity.ok().body(response);
+		List<SurgeryResponseDTO> responseDTOs = surgeryMapper
+				.fromSurgeryListToSurgeryResponseDTOList(surgeryList);
+		return responseDTOs;
 	}
 
 	@Operation(summary = "Marcar cirugía como realizada", description = "Permite marcar una cirugía como realizada.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Cirugía marcada como realizada exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = SurgeryResponseDTO.class))),
-			@ApiResponse(responseCode = "404", description = "Cirugía no encontrada", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "409", description = "Conflicto - Cirugía ya marcada como realizada", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "200", description = "Cirugía marcada como realizada exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Cirugía no encontrada"),
+			@ApiResponse(responseCode = "409", description = "Conflicto - Cirugía ya marcada como realizada"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("/mark-performed/{surgeryId}")
-	public ResponseEntity<SurgeryResponseDTO> markSurgeryAsPerformed(
+	@ResponseStatus(HttpStatus.OK)
+	public SurgeryResponseDTO markSurgeryAsPerformed(
 			@PathVariable("surgeryId") @NotBlank(message = "El id de la cirugía es requerido") String surgeryId)
 			throws NotFoundException, IllegalStateException {
 		Surgery surgery = surgeryPort.markSurgeryAsPerformed(surgeryId);
-		SurgeryTypeResponseDTO surgeryType = new SurgeryTypeResponseDTO(surgery.getSurgeryType());
-		List<SurgeryEmpleoyeeResponseDTO> surgeryEmployees = surgeryEmployeeMapper
-				.fromSurgeryEmployeeListToSurgeryEmpleoyeeResponseDTOList(
-						surgery.getSurgeryEmployees());
-		SurgeryResponseDTO response = new SurgeryResponseDTO(surgery, surgeryType, surgeryEmployees);
-		return ResponseEntity.ok().body(response);
+		SurgeryResponseDTO response = surgeryMapper.fromSurgeryToSurgeryResponseDTO(surgery);
+		return response;
 	}
 
 	@Operation(summary = "Eliminar una cirugía", description = "Permite eliminar una cirugía existente.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Cirugía eliminada exitosamente"),
-			@ApiResponse(responseCode = "404", description = "Cirugía no encontrada", content = @Content(mediaType = "application/json")),
-			@ApiResponse(responseCode = "409", description = "Conflicto - Cirugía ya realizada", content = @Content(mediaType = "application/json")),
+			@ApiResponse(responseCode = "404", description = "Cirugía no encontrada"),
+			@ApiResponse(responseCode = "409", description = "Conflicto - Cirugía ya realizada"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@DeleteMapping("{surgeryId}")

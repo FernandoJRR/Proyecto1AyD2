@@ -3,6 +3,7 @@ package com.hospitalApi.permissions.controllers;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -33,6 +34,7 @@ public class PermissionController {
     })
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyAuthority('CREATE_EMPLOYEE_TYPE', 'EDIT_EMPLOYEE_TYPE')")
     public List<PermissionResponseDTO> findPermissions() {
         // mandamos a traer todos los permisos
         List<Permission> result = forPermissionsPort.findAllPemrissions();

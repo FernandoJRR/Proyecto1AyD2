@@ -1,6 +1,5 @@
         package com.hospitalApi.employees.controllers;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -72,6 +71,7 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
         @PostMapping
+        @PreAuthorize("hasAuthority('CREATE_EMPLOYEE')")
         public ResponseEntity<EmployeeResponseDTO> createEmployee(
                         @RequestBody @Valid CreateEmployeeRequestDTO request)
                         throws DuplicatedEntryException, NotFoundException {
@@ -101,7 +101,7 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
 
         })
-        @PreAuthorize("hasAuthority('EDITAR_EMPLEADOS')") // el usuario necesita este permiso para entrar al endpoint
+        @PreAuthorize("hasAuthority('EDIT_EMPLOYEE')") 
         @PatchMapping("/{employeeId}")
         public ResponseEntity<EmployeeResponseDTO> updateEmployee(
                         @PathVariable("employeeId") String employeeId,
@@ -154,6 +154,7 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
         @PatchMapping("/{employeeId}/desactivate")
+        @PreAuthorize("hasAuthority('DESACTIVATE_EMPLOYEE')")
         public ResponseEntity<Void> desactivateEmployee(
                 @RequestBody @Valid EmployeeDeactivateRequestDTO request,
                 @PathVariable("employeeId") String employeeId)
@@ -175,6 +176,7 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "409", description = "Conflicto, el empleaod ya esta desactivado.", content = @Content(mediaType = "application/json")),
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
+        @PreAuthorize("hasAuthority('RESACTIVATE_EMPLOYEE')")
         @PatchMapping("/{employeeId}/reactivate")
         public ResponseEntity<Void> reactivateEmployee(
                 @RequestBody @Valid EmployeeReactivateRequestDTO request,

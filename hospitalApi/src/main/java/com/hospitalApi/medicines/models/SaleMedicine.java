@@ -42,6 +42,10 @@ public class SaleMedicine extends Auditor {
     @Column(nullable = false)
     private Double price;
 
+    @Column(nullable = false)
+    private Double medicineCost;
+
+
     /**
      * Inicializa una nueva instancia de la clase SaleMedicine en base a un
      * medicamento y una cantidad.
@@ -53,6 +57,7 @@ public class SaleMedicine extends Auditor {
         this.medicine = medicine;
         this.quantity = quantity;
         this.price = medicine.getPrice();
+        this.medicineCost = medicine.getCost();
     }
 
     /**
@@ -67,5 +72,6 @@ public class SaleMedicine extends Auditor {
         this.medicine = medicine;
         this.quantity = quantity;
         this.price = medicine.getPrice();
+        this.medicineCost = medicine.getCost();
     }
 }

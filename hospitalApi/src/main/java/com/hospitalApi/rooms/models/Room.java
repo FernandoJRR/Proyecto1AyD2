@@ -6,7 +6,6 @@ import java.util.List;
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.hospitalApi.rooms.enums.RoomStatus;
-import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.CascadeType;

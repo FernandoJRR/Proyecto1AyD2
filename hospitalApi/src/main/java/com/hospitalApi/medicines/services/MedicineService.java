@@ -12,10 +12,12 @@ import com.hospitalApi.medicines.repositories.MedicineRepository;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(rollbackOn = Exception.class)
 public class MedicineService implements ForMedicinePort {
 
     private final MedicineRepository medicineRepository;

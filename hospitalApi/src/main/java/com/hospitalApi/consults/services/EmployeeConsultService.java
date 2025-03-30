@@ -12,10 +12,12 @@ import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.ports.ForEmployeesPort;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
+@Transactional(rollbackOn = Exception.class)
 public class EmployeeConsultService implements ForEmployeeConsultPort {
 
     private final ForEmployeesPort forEmployeesPort;
