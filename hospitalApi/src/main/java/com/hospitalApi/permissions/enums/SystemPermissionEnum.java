@@ -21,7 +21,7 @@ public enum SystemPermissionEnum {
         // PERMISOS PARA MEDICOS
         CREATE_MEDICINE(new Permission("Crear medicamento", "CREATE_MEDICINE")),
         EDIT_MEDICINE(new Permission("Editar medicamento", "EDIT_MEDICINE")),
-        DELETE_MEDICINE(new Permission("Eliminar medicamento", "DELETE_MEDICINE")),
+        // DELETE_MEDICINE(new Permission("Eliminar medicamento", "DELETE_MEDICINE")),
 
         // PERMISOS PARA SALAS
         CREATE_SALE_MEDICINE_FARMACIA(
