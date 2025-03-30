@@ -14,8 +14,8 @@ public interface SurgeryEmployeeMapper {
     @Mapping(target = "surgeryId", source = "surgery.id")
     @Mapping(target = "employeeId", source = "employee.id")
     @Mapping(target = "specialistEmployeeId", source = "specialistEmployee.id")
-    @Mapping(target = "employeeName", source = "employee.firstName")
-    @Mapping(target = "employeeLastName", source = "employee.lastName")
+    @Mapping(target = "employeeName", expression = "java(surgeryEmployee.getEmployee() != null && surgeryEmployee.getEmployee().getFirstName() != null ? surgeryEmployee.getEmployee().getFirstName() : surgeryEmployee.getSpecialistEmployee().getNombres())")
+    @Mapping(target = "employeeLastName", expression = "java(surgeryEmployee.getEmployee() != null && surgeryEmployee.getEmployee().getLastName() != null ? surgeryEmployee.getEmployee().getLastName() : surgeryEmployee.getSpecialistEmployee().getApellidos())")
     public SurgeryEmpleoyeeResponseDTO fromSurgeryEmployeeToSurgeryEmpleoyeeResponseDTO(
             SurgeryEmployee surgeryEmployee);
 
