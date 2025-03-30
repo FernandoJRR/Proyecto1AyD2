@@ -58,7 +58,7 @@
         <Column header="Acciones">
           <template #body="slotProps">
             <Button
-              label="Seleccionar"
+              label="Agregar"
               severity="success"
               rounded
               text
@@ -121,7 +121,7 @@
         <Column header="Acciones">
           <template #body="slotProps">
             <Button
-              label="Seleccionar"
+              label="Agregar"
               severity="success"
               rounded
               text
