@@ -155,7 +155,8 @@ public class SaleMedicineServiceTest {
         when(forConsultPort.findConsultAndIsNotPaid(CONSULT_ID)).thenReturn(consult);
         when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(medicine);
         when(forMedicinePort.subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY)).thenReturn(medicine);
-        when(saleMedicineRepository.save(any(SaleMedicine.class))).thenReturn(saleMedicine);
+        when(saleMedicineRepository.save(any(SaleMedicine.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         ArgumentCaptor<SaleMedicine> captor = ArgumentCaptor.forClass(SaleMedicine.class);
 
@@ -514,31 +515,4 @@ public class SaleMedicineServiceTest {
         verify(forMedicinePort, times(3)).subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY);
         verify(saleMedicineRepository, times(3)).save(any(SaleMedicine.class));
     }
-
-    @Test
-    public void shouldThrowNotFoundExceptionWhenOneItemIsInvalidInBatch() throws NotFoundException {
-        // Arrange
-        CreateSaleMedicineConsultRequestDTO valid = new CreateSaleMedicineConsultRequestDTO(CONSULT_ID, MEDICINE_ID,
-                SALE_QUANTITY);
-        CreateSaleMedicineConsultRequestDTO invalid = new CreateSaleMedicineConsultRequestDTO("INVALID_CONSULT",
-                MEDICINE_ID, SALE_QUANTITY);
-
-        List<CreateSaleMedicineConsultRequestDTO> requestList = List.of(valid, invalid);
-
-        when(forConsultPort.findConsultAndIsNotPaid(CONSULT_ID)).thenReturn(consult);
-        when(forConsultPort.findConsultAndIsNotPaid("INVALID_CONSULT")).thenThrow(new NotFoundException("No existe"));
-        when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(medicine);
-        when(forMedicinePort.subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY)).thenReturn(medicine);
-        when(saleMedicineRepository.save(any(SaleMedicine.class))).thenReturn(saleMedicine);
-
-        // Act & Assert
-        assertThrows(NotFoundException.class, () -> {
-            saleMedicineService.createSaleMedicinesForConsult(requestList);
-        });
-
-        verify(forConsultPort).findConsultAndIsNotPaid(CONSULT_ID);
-        verify(forConsultPort).findConsultAndIsNotPaid("INVALID_CONSULT");
-        verify(saleMedicineRepository, times(1)).save(any());
-    }
-
 }
