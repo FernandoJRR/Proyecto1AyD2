@@ -45,7 +45,8 @@ export interface CreateSurgeryRequestDTO {
 
 export interface AddDeleteEmployeeSurgeryDTO {
   surgeryId: string;
-  employeeId: string;
+  doctorId: string;
+  isSpecialist: boolean;
 }
 
 export interface UpdateSurgeryTypeRequestDTO {
@@ -148,9 +149,9 @@ export const getSurgery = async (id: string) => {
   return response;
 };
 
-export const addEmployeeSurgery = async (data: AddDeleteEmployeeSurgeryDTO) => {
+export const addDoctorSurgery = async (data: AddDeleteEmployeeSurgeryDTO) => {
   const response = await $api<SurgeryEmployeeResponseDTO>(
-    `${CURRENT_SURGERY_URI}/add-employee`,
+    `${CURRENT_SURGERY_URI}/add-doctor`,
     {
       method: "POST",
       body: data,
@@ -159,37 +160,11 @@ export const addEmployeeSurgery = async (data: AddDeleteEmployeeSurgeryDTO) => {
   return response;
 };
 
-export const deleteEmployeeSurgery = async (
+export const deleteDoctorSurgery = async (
   data: AddDeleteEmployeeSurgeryDTO
 ) => {
   const response = await $api<SurgeryEmployeeResponseDTO>(
-    `${CURRENT_SURGERY_URI}/remove-employee`,
-    {
-      method: "DELETE",
-      body: data,
-    }
-  );
-  return response;
-};
-
-export const addEmployeeSpecialistSurgery = async (
-  data: AddDeleteEmployeeSurgeryDTO
-) => {
-  const response = await $api<SurgeryEmployeeResponseDTO>(
-    `${CURRENT_SURGERY_URI}/add-specialist`,
-    {
-      method: "POST",
-      body: data,
-    }
-  );
-  return response;
-};
-
-export const deleteEmployeeSpecialistSurgery = async (
-  data: AddDeleteEmployeeSurgeryDTO
-) => {
-  const response = await $api<SurgeryEmployeeResponseDTO>(
-    `${CURRENT_SURGERY_URI}/remove-specialist`,
+    `${CURRENT_SURGERY_URI}/remove-doctor`,
     {
       method: "DELETE",
       body: data,
