@@ -11,4 +11,8 @@ public interface ForRoomUsagePort {
 
     public RoomUsage closeRoomUsage(Consult consult)
             throws NotFoundException, IllegalStateException;
+
+    public RoomUsage calcRoomUsage(Consult consult)
+            throws NotFoundException, IllegalStateException;
+
 }

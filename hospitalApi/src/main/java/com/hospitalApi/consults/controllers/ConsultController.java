@@ -113,7 +113,7 @@ public class ConsultController {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Consulta pagada exitosamente"),
 			@ApiResponse(responseCode = "404", description = "Consulta no encontrada"),
-			@ApiResponse(responseCode = "409", description = "La consulta ya se encuentra pagada"),
+			@ApiResponse(responseCode = "409", description = "La consulta ya se encuentra pagada o las cirugías no han sido realizadas"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("/pay/{id}")
@@ -128,6 +128,7 @@ public class ConsultController {
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "200", description = "Total obtenido exitosamente"),
 			@ApiResponse(responseCode = "404", description = "Consulta no encontrada"),
+			@ApiResponse(responseCode = "409", description = "La consulta ya fue pagada o las cirugías no han sido realizadas"),
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@GetMapping("/total/{id}")
@@ -207,21 +208,6 @@ public class ConsultController {
 			throws NotFoundException, IllegalStateException, DuplicatedEntryException {
 		Consult consult = consultPort.markConsultInternado(markConsultAsInternadoDTO.getConsultId(),
 				markConsultAsInternadoDTO.getRoomId());
-		return ResponseEntity.ok().body(consultMapper.fromConsultToResponse(consult));
-	}
-
-	@Operation(summary = "Finalizar internado", description = "Este endpoint permite finalizar el estado de internado de una consulta.")
-	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200", description = "Internado finalizado exitosamente"),
-			@ApiResponse(responseCode = "404", description = "Consulta no encontrada"),
-			@ApiResponse(responseCode = "409", description = "La consulta no es de tipo internado o la consulta ya fue pagada"),
-			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
-	})
-	@PostMapping("/end-internado/{id}")
-	public ResponseEntity<ConsultResponseDTO> endInternado(
-			@PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id)
-			throws NotFoundException, IllegalStateException {
-		Consult consult = consultPort.endInternado(id);
 		return ResponseEntity.ok().body(consultMapper.fromConsultToResponse(consult));
 	}
 }

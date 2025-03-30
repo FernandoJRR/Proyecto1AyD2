@@ -12,7 +12,8 @@ public interface ForSurgeryPort {
 
     public Surgery getSurgery(String surgeryId) throws NotFoundException;
 
-    public Surgery createSurgery(String consultId, String surgeryTypeId) throws NotFoundException;
+    public Surgery createSurgery(String consultId, String surgeryTypeId)
+            throws NotFoundException, IllegalStateException;
 
     public DeleteSurgeryResponseDTO deleteSurgery(String surgeryId) throws NotFoundException;
 

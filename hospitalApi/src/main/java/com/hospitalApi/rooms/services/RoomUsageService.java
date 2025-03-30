@@ -58,7 +58,23 @@ public class RoomUsageService implements ForRoomUsagePort {
         // Calculamos los dias de uso mediante la diferencia de fechas
         int daysUsed = (int) ChronoUnit.DAYS.between(roomUsage.getCreatedAt(), LocalDate.now());
         // Si no se ha usado la habitación, asignamos 1 día de uso
-        daysUsed = daysUsed == 0 ? 1 : daysUsed;
+        daysUsed = daysUsed + 1;
+        if (daysUsed <= 0) {
+            throw new IllegalStateException("No se puede cerrar el uso de la habitación sin días de uso.");
+        }
+        roomUsage.setUsageDays(daysUsed);
+        return roomUsageRepository.save(roomUsage);
+    }
+
+    public RoomUsage calcRoomUsage(Consult consult) throws IllegalStateException {
+        if (!roomUsageRepository.existsByConsultId(consult.getId())) {
+            throw new IllegalStateException("La consulta no tiene una habitación asignada.");
+        }
+        RoomUsage roomUsage = roomUsageRepository.findByConsultId(consult.getId());
+        // Calculamos los dias de uso mediante la diferencia de fechas
+        int daysUsed = (int) ChronoUnit.DAYS.between(roomUsage.getCreatedAt(), LocalDate.now());
+        // Si no se ha usado la habitación, asignamos 1 día de uso
+        daysUsed = daysUsed + 1;
         if (daysUsed <= 0) {
             throw new IllegalStateException("No se puede cerrar el uso de la habitación sin días de uso.");
         }

@@ -9,10 +9,18 @@
       <Button
         label="Convertir en Internado"
         icon="pi pi-user-plus"
-        severity="warning"
+        severity="warn"
         outlined
         @click="showInternadoDialog = true"
-        :disabled="initialValues.consult.isInternado"
+        :disabled="initialValues.consult.isInternado || initialValues.consult.isPaid"
+      />
+      <Button
+        label="Pagar Consulta"
+        icon="pi pi-dollar"
+        severity="danger"
+        outlined
+        @click="abrirDialogoPagarCalcularTotal"
+        :disabled="initialValues.consult.isPaid"
       />
     </div>
 
@@ -81,7 +89,7 @@
                 severity="success"
                 rounded
                 outlined
-                :disabled="!initialValues.consult.isInternado"
+                :disabled="!initialValues.consult.isInternado || initialValues.consult.isPaid"
               />
             </router-link>
             <Button
@@ -112,6 +120,7 @@
                 severity="danger"
                 rounded
                 text
+                :disabled="initialValues.consult.isPaid"
                 @click="openDeleteDialog(slotProps.data.employeeId)"
               />
             </template>
@@ -134,8 +143,9 @@
           >
             <Button
               icon="pi pi-plus"
-              label="Crear Cirugía"
+              label="Agregar Cirugía"
               severity="success"
+              :disabled="initialValues.consult.isPaid"
               outlined
             />
           </router-link>
@@ -213,6 +223,7 @@
                   text
                   severity="danger"
                   @click="eliminarCirugia(slotProps.data)"
+                  :disabled="initialValues.consult.isPaid"
                   :pt="{ root: { title: 'Eliminar Cirugía' } }"
                 />
                 <Button
@@ -233,13 +244,12 @@
       <div class="mt-12">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold">Medicinas</h2>
-          <router-link
-            :to="`/consultas/farmacia/${initialValues.consult.id}`"
-          >
+          <router-link :to="`/consultas/farmacia/${initialValues.consult.id}`">
             <Button
               icon="pi pi-plus"
               label="Agregar Medicina"
               severity="success"
+              :disabled="initialValues.consult.isPaid"
               outlined
             />
           </router-link>
@@ -437,6 +447,23 @@
       </template>
     </Dialog>
 
+    <!-- Dialogo Pagar Consulta -->
+    <Dialog v-model:visible="pagarConsultaDialog" modal header="Pagar Consulta">
+      <p>¿Estas seguro que deseas pagar la consulta?</p>
+      <p>
+        El costo total de la consulta es de
+        <strong>Q{{ initialValues.consult.costoTotal.toFixed(2) }}</strong>
+      </p>
+      <template #footer>
+        <Button label="Cancelar" text @click="pagarConsultaDialog = false" />
+        <Button
+          label="Pagar"
+          severity="danger"
+          @click="confirmarPagarConsulta"
+        />
+      </template>
+    </Dialog>
+
     <!-- Dialogo Confirmar Eliminación -->
     <Dialog v-model:visible="showDeleteDialog" modal header="Eliminar Empleado">
       <p>¿Deseas eliminar este empleado de la consulta?</p>
@@ -489,10 +516,12 @@
 import { toast } from "vue-sonner";
 import { reactive, ref, watch } from "vue";
 import {
+  calcTotalConsult,
   deleteEmployeeFromConsult,
   employeesConsult,
   getConsult,
   markConsultAsInternado,
+  payConsult,
   updateConsult,
   type AddDeleteEmployeeConsultRequestDTO,
   type ConsultResponseDTO,
@@ -514,6 +543,7 @@ import {
 } from "~/lib/api/medicines/medicine";
 
 const showInternadoDialog = ref(false);
+const pagarConsultaDialog = ref(false);
 const showConfirmInternadoDialog = ref(false);
 const showDeleteDialog = ref(false);
 const empleadoAEliminar = ref<string | null>(null);
@@ -632,10 +662,30 @@ const recargarHabitaciones = () => {
   refetchRooms();
 };
 
+const recargarMedicinas = () => {
+  refetchConsultMedicinesDurgery();
+};
+
+const abrirDialogoPagarCalcularTotal = () => {
+  if (initialValues.consult.isPaid) {
+    toast.error("La consulta ya ha sido pagada");
+    return;
+  }
+  calcularCostoConsulta(useRoute().params.id as string);
+  pagarConsultaDialog.value = true;
+};
+
 const recargarConsulta = () => {
   refecthConsult();
   recargarEmpleadosAsignados();
   recargarCirugiasAsignadas();
+};
+
+const reloadAll = () => {
+  recargarConsulta();
+  recargarEmpleadosAsignados();
+  recargarCirugiasAsignadas();
+  recargarMedicinas();
 };
 
 const openDeleteDialog = (id: string) => {
@@ -742,6 +792,38 @@ const { mutate: markAsPerformed, asyncStatus: asyncMarkAsPerformedStatus } =
     },
   });
 
+const {
+  mutate: calcularCostoConsulta,
+  asyncStatus: asyncCalcularCostoConsultaStatus,
+} = useMutation({
+  mutation: (consultId: string) => calcTotalConsult(consultId),
+  onError: (error) => {
+    toast.error("Ocurrió un error al calcular el costo de la consulta", {
+      description: error.message,
+    });
+    // Cerramos la ventana de pago
+    pagarConsultaDialog.value = false;
+  },
+  onSuccess: () => {
+    toast.success("Costo de consulta calculado correctamente");
+    reloadAll();
+  },
+});
+
+const { mutate: payConsultMutate, asyncStatus: asyncPayConsultStatus } =
+  useMutation({
+    mutation: (consultId: string) => payConsult(consultId),
+    onError: (error) => {
+      toast.error("Ocurrió un error al pagar la consulta", {
+        description: error.message,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Consulta pagada correctamente");
+      reloadAll();
+    },
+  });
+
 const eliminarCirugia = (cirugia: any) => {
   cirugiaSeleccionada.value = cirugia;
   showEliminarDialog.value = true;
@@ -752,6 +834,19 @@ const confirmarEliminarCirugia = () => {
   deleteSurgeryMutate(cirugiaSeleccionada.value.id);
   showEliminarDialog.value = false;
   cirugiaSeleccionada.value = null;
+};
+
+const confirmarPagarConsulta = () => {
+  const payload = {
+    consultId: useRoute().params.id as string,
+    isPaid: true,
+  };
+  // updateConsultMutation(payload);
+  toast.success("Consulta pagada correctamente", {
+    description: String(payload),
+  });
+  payConsultMutate(useRoute().params.id as string);
+  pagarConsultaDialog.value = false;
 };
 
 const marcarComoRealizada = (cirugia: any) => {

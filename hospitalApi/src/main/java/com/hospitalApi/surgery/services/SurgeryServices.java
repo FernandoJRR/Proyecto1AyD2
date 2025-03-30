@@ -36,8 +36,9 @@ public class SurgeryServices implements ForSurgeryPort {
     }
 
     @Override
-    public Surgery createSurgery(String consultId, String surgeryTypeId) throws NotFoundException {
-        Consult consult = forConsultPort.findById(consultId);
+    public Surgery createSurgery(String consultId, String surgeryTypeId)
+            throws NotFoundException, IllegalStateException {
+        Consult consult = forConsultPort.findConsultAndIsNotPaid(consultId);
         SurgeryType surgeryType = forSurgeryTypePort.getSurgeryType(surgeryTypeId);
         Surgery surgery = new Surgery(
                 consult,
