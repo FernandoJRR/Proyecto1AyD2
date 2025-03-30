@@ -82,6 +82,7 @@ public class SugeryServicesTest {
                 SPECIALIST_PAYMENT,
                 HOSPITAL_COST,
                 SURGERY_COST);
+        surgeryType.setId(SURGERY_TYPE_ID);
 
         surgery = new Surgery(consult, surgeryType, surgeryType.getHospitalCost(), surgeryType.getSurgeryCost());
         surgery.setId(SURGERY_ID);
@@ -133,7 +134,7 @@ public class SugeryServicesTest {
     @Test
     void shouldCreateSurgerySuccessfully() throws NotFoundException {
         // Arrange
-        when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
+        when(forConsultPort.findConsultAndIsNotPaid(CONSULT_ID)).thenReturn(consult);
         when(forSurgeryTypePort.getSurgeryType(SURGERY_TYPE_ID)).thenReturn(surgeryType);
         when(surgeryRepository.save(any(Surgery.class))).thenAnswer(i -> i.getArgument(0)); // devuelve el mismo objeto
 
@@ -157,7 +158,7 @@ public class SugeryServicesTest {
         assertEquals(HOSPITAL_COST, capturedSurgery.getHospitalCost());
         assertEquals(SURGERY_COST, capturedSurgery.getSurgeryCost());
 
-        verify(forConsultPort).findById(CONSULT_ID);
+        verify(forConsultPort).findConsultAndIsNotPaid(CONSULT_ID);
         verify(forSurgeryTypePort).getSurgeryType(SURGERY_TYPE_ID);
     }
 

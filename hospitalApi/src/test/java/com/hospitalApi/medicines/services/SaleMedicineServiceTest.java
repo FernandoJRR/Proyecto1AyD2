@@ -494,9 +494,9 @@ public class SaleMedicineServiceTest {
     public void shouldCreateMultipleSaleMedicinesForConsultSuccessfully() throws NotFoundException {
         // Arrange
         List<CreateSaleMedicineConsultRequestDTO> requestList = List.of(
-                new CreateSaleMedicineConsultRequestDTO(CONSULT_ID, MEDICINE_ID, SALE_QUANTITY),
-                new CreateSaleMedicineConsultRequestDTO(CONSULT_ID, MEDICINE_ID, SALE_QUANTITY),
-                new CreateSaleMedicineConsultRequestDTO(CONSULT_ID, MEDICINE_ID, SALE_QUANTITY));
+                new CreateSaleMedicineConsultRequestDTO(MEDICINE_ID, CONSULT_ID, SALE_QUANTITY),
+                new CreateSaleMedicineConsultRequestDTO(MEDICINE_ID, CONSULT_ID, SALE_QUANTITY),
+                new CreateSaleMedicineConsultRequestDTO(MEDICINE_ID, CONSULT_ID, SALE_QUANTITY));
 
         when(forConsultPort.findConsultAndIsNotPaid(CONSULT_ID)).thenReturn(consult);
         when(forMedicinePort.getMedicine(MEDICINE_ID)).thenReturn(medicine);
