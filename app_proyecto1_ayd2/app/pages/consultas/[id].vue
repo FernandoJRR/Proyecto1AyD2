@@ -1,5 +1,5 @@
 <template>
-  <div class="m-6 ml-12 text-black">
+  <div class="m-6 pb-6 ml-12 text-black">
     <router-link to="/consultas">
       <Button label="Ver Consultas" icon="pi pi-arrow-left" text />
     </router-link>
