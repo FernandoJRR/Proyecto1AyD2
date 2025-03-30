@@ -161,11 +161,31 @@
             :disabled="
               carrito.length === 0 || ventaVariosFarmaciaStatus === 'loading'
             "
-            @click="realizarVenta"
+            @click="mostrarDialogoVenta = true"
           />
         </div>
       </template>
     </DataTable>
+    <!-- Dialogo Confirmar Venta -->
+    <Dialog
+      v-model:visible="mostrarDialogoVenta"
+      modal
+      header="Confirmar Venta"
+    >
+      <p>
+        ¿Estás seguro que deseas realizar la venta por un total de
+        <strong>Q.{{ totalVenta }}</strong
+        >?
+      </p>
+      <template #footer>
+        <Button label="Cancelar" text @click="mostrarDialogoVenta = false" />
+        <Button
+          label="Confirmar Venta"
+          severity="success"
+          @click="confirmarVenta"
+        />
+      </template>
+    </Dialog>
   </div>
 </template>
 
@@ -186,6 +206,11 @@ import { InputText, Button, Tag, InputNumber } from "primevue";
 
 const searchTerm = ref("");
 const carrito = ref<LineaVentaMedicine[]>([]);
+const mostrarDialogoVenta = ref(false);
+
+const totalVenta = computed(() =>
+  carrito.value.reduce((sum, item) => sum + item.total, 0).toFixed(2)
+);
 
 const {
   state: medicinesState,
@@ -214,18 +239,6 @@ const {
     refetchMedicines();
   },
 });
-
-const realizarVenta = () => {
-  if (carrito.value.length === 0) {
-    toast.error("El carrito está vacío");
-    return;
-  }
-  const payload = mapLineaVentaMedicineToPayloadSaleMedicineConsulta(
-    carrito.value,
-    useRoute().params.id as string
-  );
-  ventaVariosFarmaciaMutate(payload);
-};
 
 const buscarMedicamentos = () => {
   refetchMedicines();
@@ -263,4 +276,14 @@ defineExpose({
   eliminarDelCarrito,
   actualizarCantidad,
 });
+
+const confirmarVenta = () => {
+  if (carrito.value.length === 0) return;
+  const payload = mapLineaVentaMedicineToPayloadSaleMedicineConsulta(
+    carrito.value,
+    useRoute().params.id as string
+  );
+  ventaVariosFarmaciaMutate(payload);
+  mostrarDialogoVenta.value = false;
+};
 </script>

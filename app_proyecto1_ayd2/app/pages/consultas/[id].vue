@@ -1,5 +1,5 @@
 <template>
-  <div class="m-6 ml-12 text-black">
+  <div class="m-6 pb-6 ml-12 text-black">
     <router-link to="/consultas">
       <Button label="Ver Consultas" icon="pi pi-arrow-left" text />
     </router-link>
@@ -42,7 +42,7 @@
           :severity="initialValues.consult.isInternado ? 'danger' : 'info'"
         />
       </div>
-
+      <!-- Información de la consulta -->
       <p>
         <strong>Paciente:</strong>
         {{ initialValues.consult.patient.firstnames }}
@@ -228,6 +228,54 @@
           </Column>
         </DataTable>
       </div>
+
+      <!-- Tabla de las medicinas asignadas en consulta-->
+      <div class="mt-12">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold">Medicinas</h2>
+          <router-link
+            :to="`/consultas/farmacia/${initialValues.consult.id}`"
+          >
+            <Button
+              icon="pi pi-plus"
+              label="Agregar Medicina"
+              severity="success"
+              outlined
+            />
+          </router-link>
+        </div>
+        <DataTable
+          :value="initialValues.medicinesConsult"
+          tableStyle="min-width: 30rem"
+          stripedRows
+        >
+          <Column header="Nombre">
+            <template #body="slotProps">
+              {{ slotProps.data.medicine.name }}
+            </template>
+          </Column>
+
+          <Column header="Cantidad">
+            <template #body="slotProps">
+              {{ slotProps.data.quantity }}
+            </template>
+          </Column>
+          <Column header="Precio">
+            <template #body="slotProps">
+              Q{{ slotProps.data.medicine.price.toFixed(2) }}
+            </template>
+          </Column>
+          <Column header="Total">
+            <template #body="slotProps">
+              Q{{
+                (
+                  slotProps.data.medicine.price * slotProps.data.quantity
+                ).toFixed(2)
+              }}
+            </template>
+          </Column>
+        </DataTable>
+      </div>
     </div>
 
     <!-- Dialogo Confirmar Internado -->
@@ -368,7 +416,7 @@
         />
       </template>
     </Dialog>
-
+    <!-- Dialogo Confirmar Internado -->
     <Dialog
       v-model:visible="showConfirmInternadoDialog"
       modal
@@ -460,6 +508,10 @@ import {
   type SurgeryResponseDTO,
 } from "../../lib/api/surgeries/surgeries";
 import { getAllAvailableRooms } from "~/lib/api/habitaciones/room";
+import {
+  getSaleMedicinesConsult,
+  type LineaVentaMedicine,
+} from "~/lib/api/medicines/medicine";
 
 const showInternadoDialog = ref(false);
 const showConfirmInternadoDialog = ref(false);
@@ -488,6 +540,7 @@ const initialValues = reactive({
   } as ConsultResponseDTO,
   consultEmployees: [] as EmployeeConsultResponseDTO[],
   surgerysConsult: [] as SurgeryResponseDTO[],
+  medicinesConsult: [] as LineaVentaMedicine[],
 });
 
 const {
@@ -518,6 +571,24 @@ const { state: consultSurgeriesState, refetch: refetchConsultSurgeries } =
     key: ["consultSurgeries", useRoute().params.id as string],
     query: () => getSurgeriesbyConsultId(useRoute().params.id as string),
   });
+
+const {
+  state: consultMedicinesSurgery,
+  refetch: refetchConsultMedicinesDurgery,
+} = useQuery({
+  key: ["consultMedicinesSurgery", useRoute().params.id as string],
+  query: () => getSaleMedicinesConsult(useRoute().params.id as string),
+});
+
+watch(
+  () => consultMedicinesSurgery.value,
+  (value) => {
+    if (consultMedicinesSurgery.value.status === "success" && value.data) {
+      initialValues.medicinesConsult = value.data;
+    }
+  },
+  { immediate: true }
+);
 
 watch(
   () => consultSurgeriesState.value,
