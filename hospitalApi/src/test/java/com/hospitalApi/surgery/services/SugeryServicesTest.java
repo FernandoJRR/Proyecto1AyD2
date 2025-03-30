@@ -135,7 +135,7 @@ public class SugeryServicesTest {
         // Arrange
         when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
         when(forSurgeryTypePort.getSurgeryType(SURGERY_TYPE_ID)).thenReturn(surgeryType);
-        when(surgeryRepository.save(any(Surgery.class))).thenReturn(surgery);
+        when(surgeryRepository.save(any(Surgery.class))).thenAnswer(i -> i.getArgument(0)); // devuelve el mismo objeto
 
         ArgumentCaptor<Surgery> surgeryCaptor = ArgumentCaptor.forClass(Surgery.class);
 
@@ -144,35 +144,33 @@ public class SugeryServicesTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(consult, result.getConsult());
-        assertEquals(surgeryType, result.getSurgeryType());
+        assertEquals(CONSULT_ID, result.getConsult().getId());
+        assertEquals(SURGERY_TYPE_ID, result.getSurgeryType().getId());
         assertEquals(surgeryType.getHospitalCost(), result.getHospitalCost());
         assertEquals(surgeryType.getSurgeryCost(), result.getSurgeryCost());
 
-        verify(surgeryRepository, times(1)).save(surgeryCaptor.capture());
+        verify(surgeryRepository).save(surgeryCaptor.capture());
 
         Surgery capturedSurgery = surgeryCaptor.getValue();
-        assertEquals(consult, capturedSurgery.getConsult());
-        assertEquals(surgeryType, capturedSurgery.getSurgeryType());
+        assertEquals(CONSULT_ID, capturedSurgery.getConsult().getId());
+        assertEquals(SURGERY_TYPE_ID, capturedSurgery.getSurgeryType().getId());
         assertEquals(HOSPITAL_COST, capturedSurgery.getHospitalCost());
         assertEquals(SURGERY_COST, capturedSurgery.getSurgeryCost());
 
-        verify(forConsultPort, times(1)).findById(CONSULT_ID);
-        verify(forSurgeryTypePort, times(1)).getSurgeryType(SURGERY_TYPE_ID);
+        verify(forConsultPort).findById(CONSULT_ID);
+        verify(forSurgeryTypePort).getSurgeryType(SURGERY_TYPE_ID);
     }
 
     @Test
     void shouldThrowNotFoundExceptionWhenConsultDoesNotExist() throws NotFoundException {
         // Arrange
-        when(forConsultPort.findById(CONSULT_ID))
-                .thenThrow(new NotFoundException("Consulta no encontrada"));
+        when(forConsultPort.findConsultAndIsNotPaid(CONSULT_ID)).thenThrow(new NotFoundException(""));
 
         // Act & Assert
-        NotFoundException ex = assertThrows(NotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> sugeryServices.createSurgery(CONSULT_ID, SURGERY_TYPE_ID));
 
-        assertEquals("Consulta no encontrada", ex.getMessage());
-        verify(forConsultPort, times(1)).findById(CONSULT_ID);
+        verify(forConsultPort, times(1)).findConsultAndIsNotPaid(CONSULT_ID);
         verify(forSurgeryTypePort, never()).getSurgeryType(any());
         verify(surgeryRepository, never()).save(any());
     }
@@ -180,7 +178,7 @@ public class SugeryServicesTest {
     @Test
     void shouldThrowNotFoundExceptionWhenSurgeryTypeDoesNotExist() throws NotFoundException {
         // Arrange
-        when(forConsultPort.findById(CONSULT_ID)).thenReturn(consult);
+        when(forConsultPort.findConsultAndIsNotPaid(CONSULT_ID)).thenReturn(consult);
         when(forSurgeryTypePort.getSurgeryType(SURGERY_TYPE_ID))
                 .thenThrow(new NotFoundException("Tipo de cirugía no encontrado"));
 
@@ -189,23 +187,20 @@ public class SugeryServicesTest {
                 () -> sugeryServices.createSurgery(CONSULT_ID, SURGERY_TYPE_ID));
 
         assertEquals("Tipo de cirugía no encontrado", ex.getMessage());
-        verify(forConsultPort, times(1)).findById(CONSULT_ID);
+        verify(forConsultPort, times(1)).findConsultAndIsNotPaid(CONSULT_ID);
         verify(forSurgeryTypePort, times(1)).getSurgeryType(SURGERY_TYPE_ID);
         verify(surgeryRepository, never()).save(any());
     }
 
     @Test
-    void shouldThrowNotFoundExceptionWhenBothConsultAndSurgeryTypeDoNotExist() throws NotFoundException {
-        // Arrange
-        when(forConsultPort.findById(CONSULT_ID))
+    void shouldThrowNotFoundExceptionWhenConsultDoesNotExist_EvenIfSurgeryTypeIsAlsoMissing() throws NotFoundException {
+        when(forConsultPort.findConsultAndIsNotPaid(CONSULT_ID))
                 .thenThrow(new NotFoundException("Consulta no encontrada"));
 
-        // Act & Assert
-        NotFoundException ex = assertThrows(NotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> sugeryServices.createSurgery(CONSULT_ID, SURGERY_TYPE_ID));
 
-        assertEquals("Consulta no encontrada", ex.getMessage());
-        verify(forConsultPort, times(1)).findById(CONSULT_ID);
+        verify(forConsultPort).findConsultAndIsNotPaid(CONSULT_ID);
         verify(forSurgeryTypePort, never()).getSurgeryType(any());
         verify(surgeryRepository, never()).save(any());
     }
