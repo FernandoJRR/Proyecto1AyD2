@@ -1,5 +1,17 @@
 <template>
   <div class="m-2">
+    <Dialog v-model:visible="mostrarDialogo" modal header="Confirmar Agregado">
+      <p>
+        ¿Deseas agregar a {{ empleadoSeleccionado?.firstName }}
+        {{ empleadoSeleccionado?.lastName }} como
+        {{ tipoSeleccionado === "DOCTOR" ? "Doctor" : "Enfermero" }}?
+      </p>
+      <template #footer>
+        <Button label="Cancelar" text @click="cancelarAgregado" />
+        <Button label="Agregar" severity="success" @click="confirmarAgregado" />
+      </template>
+    </Dialog>
+
     <div class="mb-2">
       <Button
         label="Volver"
@@ -67,7 +79,8 @@
           </template>
         </Column>
         <template #footer>
-          Hay en total {{ doctorsState.data?.length ?? 0 }} doctores registrados.
+          Hay en total {{ doctorsState.data?.length ?? 0 }} doctores
+          registrados.
         </template>
       </DataTable>
     </div>
@@ -130,7 +143,8 @@
           </template>
         </Column>
         <template #footer>
-          Hay en total {{ enfermerosState.data?.length ?? 0 }} enfermeros registrados.
+          Hay en total {{ enfermerosState.data?.length ?? 0 }} enfermeros
+          registrados.
         </template>
       </DataTable>
     </div>
@@ -139,10 +153,40 @@
 
 <script lang="ts" setup>
 import { ref } from "vue";
+import { toast } from "vue-sonner";
 import { getDoctors, getEnfermeros } from "~/lib/api/admin/employee";
+import {
+  addEmployeeToConsult,
+  type AddDeleteEmployeeConsultRequestDTO,
+} from "~/lib/api/consults/consult";
 
 const searchDoctor = ref("");
 const searchNurse = ref("");
+const mostrarDialogo = ref(false);
+const empleadoSeleccionado = ref<any | null>(null);
+const tipoSeleccionado = ref<string | null>(null);
+
+const seleccionarEmpleado = (empleado: any, tipo: string) => {
+  empleadoSeleccionado.value = empleado;
+  tipoSeleccionado.value = tipo;
+  mostrarDialogo.value = true;
+};
+
+const cancelarAgregado = () => {
+  mostrarDialogo.value = false;
+  empleadoSeleccionado.value = null;
+  tipoSeleccionado.value = null;
+};
+
+const confirmarAgregado = () => {
+  if (!empleadoSeleccionado.value || !tipoSeleccionado.value) return;
+  const payload: AddDeleteEmployeeConsultRequestDTO = {
+    consultId: useRoute().params.id as string,
+    employeeId: empleadoSeleccionado.value.id,
+  };
+  addEmpleadoMutate(payload);
+  mostrarDialogo.value = false;
+};
 
 const {
   state: doctorsState,
@@ -150,7 +194,8 @@ const {
   refetch: refetchDoctors,
 } = useCustomQuery({
   key: ["doctors-add-consult"],
-  query: () => getDoctors(searchDoctor.value === "" ? null : searchDoctor.value),
+  query: () =>
+    getDoctors(searchDoctor.value === "" ? null : searchDoctor.value),
 });
 
 const {
@@ -159,13 +204,26 @@ const {
   refetch: refetchEnfermeros,
 } = useCustomQuery({
   key: ["enfermeros-add-consult"],
-  query: () => getEnfermeros(searchNurse.value === "" ? null : searchNurse.value),
+  query: () =>
+    getEnfermeros(searchNurse.value === "" ? null : searchNurse.value),
 });
 
 const buscarDoctores = () => refetchDoctors();
 const buscarEnfermeros = () => refetchEnfermeros();
 
-const seleccionarEmpleado = (empleado: any, tipo: string) => {
-  console.log("Empleado seleccionado:", empleado, "Tipo:", tipo);
-};
+const { mutate: addEmpleadoMutate, asyncStatus: asyncAddEmpleadoStatus } =
+  useMutation({
+    mutation: async (empleado: AddDeleteEmployeeConsultRequestDTO) =>
+      addEmployeeToConsult(empleado),
+    onSuccess: () => {
+      toast.success("Empleado agregado correctamente a la consulta.");
+      refetchDoctors();
+      refetchEnfermeros();
+    },
+    onError: (error) => {
+      toast.error("Error al agregar el empleado a la consulta.", {
+        description: error.message,
+      });
+    },
+  });
 </script>
