@@ -55,7 +55,7 @@ public class SaleMedicineService implements ForSaleMedicinePort {
     @Override
     public SaleMedicine createSaleMedicine(String consultId, String medicineId, Integer quantity)
             throws NotFoundException {
-        Consult consult = forConsultPort.findById(consultId);
+        Consult consult = forConsultPort.findConsultAndIsNotPaid(consultId);
         // Obtenemos la medicina en base al id
         Medicine medicine = forMedicinePort.getMedicine(medicineId);
         // Verificamos si hay suficiente stock
