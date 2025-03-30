@@ -149,4 +149,128 @@ class RoomTest {
                 () -> room.toggleAvailability());
 
     }
+
+    /**
+     * dado: una habitación en estado OCCUPIED.
+     * cuando: se llama a markVacant().
+     * entonces: el estado cambia a AVAILABLE.
+     */
+    @Test
+    void shouldMarkRoomAsVacantSuccessfully() {
+        // arrange
+        room.setStatus(RoomStatus.OCCUPIED);
+
+        // act
+        RoomStatus result = room.markVacant();
+
+        // assert
+        assertEquals(RoomStatus.AVAILABLE, result);
+    }
+
+    /**
+     * dado: una habitación que no está OCCUPIED.
+     * cuando: se llama a markVacant().
+     * entonces: se lanza IllegalStateException.
+     */
+    @Test
+    void shouldThrowWhenMarkVacantAndNotOccupied() {
+        // arrange
+        room.setStatus(RoomStatus.OUT_OF_SERVICE);
+
+        // assert & act
+        assertThrows(IllegalStateException.class, () -> room.markVacant());
+    }
+
+    /**
+     * dado: una habitación en estado OUT_OF_SERVICE.
+     * cuando: se llama a markAvailable().
+     * entonces: cambia a AVAILABLE.
+     */
+    @Test
+    void shouldMarkRoomAsAvailableSuccessfully() {
+        // arrange
+        room.setStatus(RoomStatus.OUT_OF_SERVICE);
+
+        // act
+        RoomStatus result = room.markAvailable();
+
+        // assert
+        assertEquals(RoomStatus.AVAILABLE, result);
+    }
+
+    /**
+     * dado: una habitación en estado OCCUPIED.
+     * cuando: se llama a markAvailable().
+     * entonces: lanza IllegalStateException.
+     */
+    @Test
+    void shouldThrowWhenMarkAvailableWhileOccupied() {
+        // arrange
+        room.setStatus(RoomStatus.OCCUPIED);
+
+        // assert & act
+        assertThrows(IllegalStateException.class, () -> room.markAvailable());
+    }
+
+    /**
+     * dado: una habitación en estado AVAILABLE.
+     * cuando: se llama a markOutOfService().
+     * entonces: cambia a OUT_OF_SERVICE.
+     */
+    @Test
+    void shouldMarkRoomAsOutOfServiceSuccessfully() {
+        // arrange
+        room.setStatus(RoomStatus.AVAILABLE);
+
+        // act
+        RoomStatus result = room.markOutOfService();
+
+        // assert
+        assertEquals(RoomStatus.OUT_OF_SERVICE, result);
+    }
+
+    /**
+     * dado: una habitación en estado OCCUPIED.
+     * cuando: se llama a markOutOfService().
+     * entonces: lanza IllegalStateException.
+     */
+    @Test
+    void shouldThrowWhenMarkOutOfServiceWhileOccupied() {
+        // arrange
+        room.setStatus(RoomStatus.OCCUPIED);
+
+        // assert & act
+        assertThrows(IllegalStateException.class, () -> room.markOutOfService());
+    }
+
+    /**
+     * dado: una habitación en estado AVAILABLE.
+     * cuando: se llama a markOccupied().
+     * entonces: cambia a OCCUPIED.
+     */
+    @Test
+    void shouldMarkRoomAsOccupiedSuccessfully() {
+        // arrange
+        room.setStatus(RoomStatus.AVAILABLE);
+
+        // act
+        RoomStatus result = room.markOccupied();
+
+        // assert
+        assertEquals(RoomStatus.OCCUPIED, result);
+    }
+
+    /**
+     * dado: una habitación en estado OUT_OF_SERVICE.
+     * cuando: se llama a markOccupied().
+     * entonces: lanza IllegalStateException.
+     */
+    @Test
+    void shouldThrowWhenMarkOccupiedWhileOutOfService() {
+        // arrange
+        room.setStatus(RoomStatus.OUT_OF_SERVICE);
+
+        // assert & act
+        assertThrows(IllegalStateException.class, () -> room.markOccupied());
+    }
 }
