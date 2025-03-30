@@ -73,9 +73,6 @@ public class Consult extends Auditor {
     }
 
     public Consult updateConsultFromDTO(UpdateConsultRequestDTO updateConsultRequestDTO) {
-        if (updateConsultRequestDTO.getIsInternado() != null) {
-            this.isInternado = updateConsultRequestDTO.getIsInternado();
-        }
         if (updateConsultRequestDTO.getCostoConsulta() != null) {
             this.costoConsulta = updateConsultRequestDTO.getCostoConsulta();
         }

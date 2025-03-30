@@ -38,8 +38,12 @@ export interface CreateConsultRequestDTO {
 }
 
 export interface UpdateConsultRequestDTO {
-  isInternado?: boolean | null;
-  costoConsulta?: number | null;
+  costoConsulta: number | null;
+}
+
+export interface MarkConsultAsInternadoDTO {
+  consultId: string;
+  roomId: string;
 }
 
 export interface TotalConsultResponseDTO {

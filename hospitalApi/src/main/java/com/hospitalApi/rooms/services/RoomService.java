@@ -71,4 +71,43 @@ public class RoomService implements ForRoomPort {
     public List<Room> findAllRooms() {
         return roomRepository.findAll();
     }
+
+    @Override
+    public List<Room> findAllRoomsAvailable() {
+        return roomRepository.findByStatus(RoomStatus.AVAILABLE);
+    }
+
+    @Override
+    public boolean roomIsAvailable(String roomId) throws NotFoundException {
+        Room room = findRoomById(roomId);
+        return room.getStatus() == RoomStatus.AVAILABLE;
+    }
+
+    @Override
+    public Room markVacant(String roomId) throws NotFoundException, IllegalStateException {
+        Room room = findRoomById(roomId);
+        room.markVacant();
+        return roomRepository.save(room);
+    }
+
+    @Override
+    public Room markAvailable(String roomId) throws NotFoundException, IllegalStateException {
+        Room room = findRoomById(roomId);
+        room.markAvailable();
+        return roomRepository.save(room);
+    }
+
+    @Override
+    public Room markOccupied(String roomId) throws NotFoundException, IllegalStateException {
+        Room room = findRoomById(roomId);
+        room.markOccupied();
+        return roomRepository.save(room);
+    }
+
+    @Override
+    public Room markOutOfService(String roomId) throws NotFoundException, IllegalStateException {
+        Room room = findRoomById(roomId);
+        room.markOutOfService();
+        return roomRepository.save(room);
+    }
 }
