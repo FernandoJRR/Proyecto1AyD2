@@ -29,6 +29,7 @@ public class SurgeryCalculationServiceTest {
     @Test
     public void shouldReturnTotalSurgeriesByConsultSuccessfully() {
         // Arrange
+        when(surgeryRepository.allSurgeriesPerformedByConsultId(CONSULT_ID)).thenReturn(true);
         when(surgeryRepository.sumSurgeryCostByConsultId(CONSULT_ID)).thenReturn(EXPECTED_TOTAL);
 
         // Act
@@ -37,19 +38,63 @@ public class SurgeryCalculationServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(EXPECTED_TOTAL, result);
-        verify(surgeryRepository, times(1)).sumSurgeryCostByConsultId(CONSULT_ID);
+        verify(surgeryRepository).allSurgeriesPerformedByConsultId(CONSULT_ID);
+        verify(surgeryRepository).sumSurgeryCostByConsultId(CONSULT_ID);
     }
 
     @Test
-    public void shouldReturnZeroWhenNoSurgeriesAreFoundForConsult() {
+    public void shouldReturnZeroWhenTotalSurgeriesIsNull() {
         // Arrange
+        when(surgeryRepository.allSurgeriesPerformedByConsultId(CONSULT_ID)).thenReturn(true);
         when(surgeryRepository.sumSurgeryCostByConsultId(CONSULT_ID)).thenReturn(null);
 
         // Act
         Double result = surgeryCalculationService.totalSurgerisByConsult(CONSULT_ID);
 
         // Assert
-        assertNull(result); // o assertEquals(0.0, result); si se quiere manejar como cero
-        verify(surgeryRepository, times(1)).sumSurgeryCostByConsultId(CONSULT_ID);
+        assertNotNull(result);
+        assertEquals(0.0, result);
+        verify(surgeryRepository).allSurgeriesPerformedByConsultId(CONSULT_ID);
+        verify(surgeryRepository).sumSurgeryCostByConsultId(CONSULT_ID);
+    }
+
+    @Test
+    public void shouldThrowWhenNotAllSurgeriesPerformed() {
+        // Arrange
+        when(surgeryRepository.allSurgeriesPerformedByConsultId(CONSULT_ID)).thenReturn(false);
+
+        // Act & Assert
+        assertThrows(IllegalStateException.class, () -> {
+            surgeryCalculationService.totalSurgerisByConsult(CONSULT_ID);
+        });
+
+        verify(surgeryRepository).allSurgeriesPerformedByConsultId(CONSULT_ID);
+        verify(surgeryRepository, never()).sumSurgeryCostByConsultId(any());
+    }
+
+    @Test
+    public void shouldReturnTrueIfAllSurgeriesPerformed() {
+        // Arrange
+        when(surgeryRepository.allSurgeriesPerformedByConsultId(CONSULT_ID)).thenReturn(true);
+
+        // Act
+        Boolean result = surgeryCalculationService.allSurgeriesPerformedByConsultId(CONSULT_ID);
+
+        // Assert
+        assertTrue(result);
+        verify(surgeryRepository).allSurgeriesPerformedByConsultId(CONSULT_ID);
+    }
+
+    @Test
+    public void shouldReturnFalseIfNotAllSurgeriesPerformed() {
+        // Arrange
+        when(surgeryRepository.allSurgeriesPerformedByConsultId(CONSULT_ID)).thenReturn(false);
+
+        // Act
+        Boolean result = surgeryCalculationService.allSurgeriesPerformedByConsultId(CONSULT_ID);
+
+        // Assert
+        assertFalse(result);
+        verify(surgeryRepository).allSurgeriesPerformedByConsultId(CONSULT_ID);
     }
 }
