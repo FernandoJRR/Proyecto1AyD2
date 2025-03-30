@@ -97,6 +97,19 @@ export const updateConsult = async (
   return response;
 };
 
+export const markConsultAsInternado = async (
+  data: MarkConsultAsInternadoDTO
+) => {
+  const response = await $api<ConsultResponseDTO>(
+    `${CURRENT_CONSULT_URI}/mark-internado`,
+    {
+      method: "POST",
+      body: data,
+    }
+  );
+  return response;
+};
+
 export const payConsult = async (consultId: string) => {
   const response = await $api<TotalConsultResponseDTO>(
     `${CURRENT_CONSULT_URI}/pay/${consultId}`,

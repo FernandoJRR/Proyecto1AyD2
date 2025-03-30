@@ -14,15 +14,6 @@
         @click="showInternadoDialog = true"
         :disabled="initialValues.consult.isInternado"
       />
-
-      <Button
-        v-if="initialValues.consult.isInternado"
-        label="Asignar Habitación"
-        icon="pi pi-home"
-        severity="info"
-        outlined
-        @click="toast('Abrir diálogo para asignar habitación')"
-      />
     </div>
 
     <div v-if="consultState.status === 'pending'" class="mt-4">Cargando...</div>
@@ -449,6 +440,7 @@ import {
   deleteEmployeeFromConsult,
   employeesConsult,
   getConsult,
+  markConsultAsInternado,
   updateConsult,
   type AddDeleteEmployeeConsultRequestDTO,
   type ConsultResponseDTO,
@@ -595,7 +587,7 @@ const confirmarInternado = () => {
     consultId: useRoute().params.id as string,
     roomId: habitacionSeleccionada.value.id,
   } as MarkConsultAsInternadoDTO;
-  console.log(["Payload", payload]);
+  markAsInternadoMutate(payload);
   habitacionSeleccionada.value = null;
   showInternadoDialog.value = false;
   showConfirmInternadoDialog.value = false;
@@ -629,6 +621,23 @@ const { mutate: updateConsultMutation, asyncStatus: asyncUpdateConsultStatus } =
       recargarConsulta();
     },
   });
+
+const {
+  mutate: markAsInternadoMutate,
+  asyncStatus: asyncMarkAsInternadoStatus,
+} = useMutation({
+  mutation: (payload: MarkConsultAsInternadoDTO) =>
+    markConsultAsInternado(payload),
+  onError: (error) => {
+    toast.error("Ocurrió un error al convertir la consulta en internado", {
+      description: error.message,
+    });
+  },
+  onSuccess: () => {
+    toast.success("Consulta convertida a internado correctamente");
+    recargarConsulta();
+  },
+});
 
 const { mutate: deleteSurgeryMutate, asyncStatus: asyncDeleteSurgeryStatus } =
   useMutation({

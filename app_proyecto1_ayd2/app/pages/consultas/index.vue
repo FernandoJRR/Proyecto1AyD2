@@ -82,7 +82,7 @@
           <label for="paid">Pagado</label>
         </div>
 
-        <!-- Checkbox internado -->
+        <!-- Checkbox internado
         <div class="flex items-center gap-2">
           <Checkbox
             v-model="isInternado"
@@ -91,7 +91,7 @@
             @change="buscarConsultas"
           />
           <label for="internado">Internado</label>
-        </div>
+        </div> -->
       </div>
       <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
         <div class="flex flex-wrap justify-between gap-4 mb-4">
@@ -104,7 +104,7 @@
                 searchTerm = '';
                 idConsulta = '';
                 isPaid = false;
-                isInternado = false;
+                isInternado = null;
                 buscarConsultas();
               }
             "
@@ -223,7 +223,7 @@ import { InputText, Button, Checkbox } from "primevue";
 const searchTerm = ref("");
 const idConsulta = ref("");
 const isPaid = ref(false);
-const isInternado = ref(false);
+const isInternado = ref(null);
 
 const { employee } = storeToRefs(useAuthStore());
 
