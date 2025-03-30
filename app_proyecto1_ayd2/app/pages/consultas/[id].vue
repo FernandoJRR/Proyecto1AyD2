@@ -14,15 +14,6 @@
         @click="showInternadoDialog = true"
         :disabled="initialValues.consult.isInternado"
       />
-
-      <Button
-        v-if="initialValues.consult.isInternado"
-        label="Asignar Habitación"
-        icon="pi pi-home"
-        severity="info"
-        outlined
-        @click="toast('Abrir diálogo para asignar habitación')"
-      />
     </div>
 
     <div v-if="consultState.status === 'pending'" class="mt-4">Cargando...</div>
@@ -173,8 +164,14 @@
           <Column header="Estado">
             <template #body="slotProps">
               <Tag
-                :value="slotProps.data.performedDate !== null ? 'Realizada' : 'Pendiente'"
-                :severity="slotProps.data.performedDate !== null ? 'success' : 'warn'"
+                :value="
+                  slotProps.data.performedDate !== null
+                    ? 'Realizada'
+                    : 'Pendiente'
+                "
+                :severity="
+                  slotProps.data.performedDate !== null ? 'success' : 'warn'
+                "
               />
             </template>
           </Column>
@@ -197,9 +194,7 @@
                   />
                 </RouterLink>
 
-                <RouterLink
-                  :to="`/cirugias/editar/${slotProps.data.id}`"
-                >
+                <RouterLink :to="`/cirugias/editar/${slotProps.data.id}`">
                   <Button
                     v-if="slotProps.data.performedDate === null"
                     icon="pi pi-pencil"
@@ -235,11 +230,153 @@
     <Dialog
       v-model:visible="showInternadoDialog"
       modal
-      header="Confirmar acción"
+      header="Seleccionar Habitación"
     >
-      <p>¿Estás seguro que deseas convertir esta consulta en un internado?</p>
+      <template #default>
+        <div v-if="!habitacionSeleccionada">
+          <div class="flex justify-between items-center mb-4 gap-4">
+            <div>
+              <DataTable
+                :value="stateRooms.data as any[]"
+                tableStyle="min-width: 50rem"
+                stripedRows
+                :loading="roomsAsyncStatus == 'loading'"
+              >
+                <template #header>
+                  <div
+                    class="flex flex-wrap items-center justify-between gap-2"
+                  >
+                    <span class="text-xl font-bold">Habitaciones</span>
+                    <Button
+                      icon="pi pi-refresh"
+                      label="Recargar"
+                      @click="recargarHabitaciones"
+                      rounded
+                      outlined
+                      severity="help"
+                    />
+                  </div>
+                </template>
+                <Column header="Numero de habitación">
+                  <template #body="slotProps">
+                    <template v-if="slotProps.data.number !== null">
+                      {{ `${slotProps.data.number}` }}
+                    </template>
+                    <template v-else>
+                      {{ `error` }}
+                    </template>
+                  </template>
+                </Column>
+
+                <Column header="Costo de mantenimiento diario">
+                  <template #body="slotProps">
+                    <template
+                      v-if="slotProps.data.dailyMaintenanceCost !== null"
+                    >
+                      {{ `Q${slotProps.data.dailyMaintenanceCost}` }}
+                    </template>
+                    <template v-else>
+                      {{ `error` }}
+                    </template>
+                  </template>
+                </Column>
+
+                <Column header="Precio diario">
+                  <template #body="slotProps">
+                    <template v-if="slotProps.data.dailyPrice !== null">
+                      {{ `Q${slotProps.data.dailyPrice}` }}
+                    </template>
+                    <template v-else>
+                      {{ `error` }}
+                    </template>
+                  </template>
+                </Column>
+
+                <Column header="Estado">
+                  <template #body="slotProps">
+                    <Tag :value="slotProps.data.status" />
+                  </template>
+                </Column>
+
+                <!--Botones de acciones-->
+                <Column header="Acciones">
+                  <template #body="slotProps">
+                    <Button
+                      label="Seleccionar"
+                      severity="success"
+                      rounded
+                      text
+                      @click="habitacionSeleccionada = slotProps.data"
+                    />
+                  </template>
+                </Column>
+                <template #footer>
+                  Hay en total
+                  {{ stateRooms.data ? (stateRooms.data as any[]).length : 0 }}
+                  habitaciones.
+                </template>
+              </DataTable>
+            </div>
+          </div>
+        </div>
+        <div v-else>
+          <h3 class="text-xl font-bold mb-4">Habitación Seleccionada</h3>
+          <div class="bg-gray-100 p-4 rounded">
+            <p><strong>Número:</strong> {{ habitacionSeleccionada.number }}</p>
+            <p>
+              <strong>Precio Diario:</strong> Q{{
+                habitacionSeleccionada.dailyPrice?.toFixed(2) || "0.00"
+              }}
+            </p>
+            <p>
+              <strong>Mantenimiento Diario:</strong> Q{{
+                habitacionSeleccionada.dailyMaintenanceCost?.toFixed(2) ||
+                "0.00"
+              }}
+            </p>
+          </div>
+          <Button
+            class="mt-4"
+            label="Eliminar Selección"
+            icon="pi pi-times"
+            outlined
+            severity="danger"
+            @click="habitacionSeleccionada = null"
+          />
+        </div>
+      </template>
       <template #footer>
-        <Button label="Cancelar" text @click="showInternadoDialog = false" />
+        <Button
+          label="Cancelar"
+          text
+          @click="
+            () => {
+              habitacionSeleccionada = null;
+              showInternadoDialog = false;
+            }
+          "
+        />
+        <Button
+          label="Continuar"
+          severity="warning"
+          @click="() => (showConfirmInternadoDialog = true)"
+          :disabled="!habitacionSeleccionada"
+        />
+      </template>
+    </Dialog>
+
+    <Dialog
+      v-model:visible="showConfirmInternadoDialog"
+      modal
+      header="Confirmar Internado"
+    >
+      <p>Estas seguro que deseas convertir esta consulta en internado?</p>
+      <template #footer>
+        <Button
+          label="Cancelar"
+          text
+          @click="showConfirmInternadoDialog = false"
+        />
         <Button
           label="Confirmar"
           severity="warning"
@@ -303,10 +440,12 @@ import {
   deleteEmployeeFromConsult,
   employeesConsult,
   getConsult,
+  markConsultAsInternado,
   updateConsult,
   type AddDeleteEmployeeConsultRequestDTO,
   type ConsultResponseDTO,
   type EmployeeConsultResponseDTO,
+  type MarkConsultAsInternadoDTO,
   type UpdateConsultRequestDTO,
 } from "~/lib/api/consults/consult";
 import { Tag, Button, Dialog } from "primevue";
@@ -316,13 +455,16 @@ import {
   markAsCompletedSurgery,
   type SurgeryResponseDTO,
 } from "../../lib/api/surgeries/surgeries";
+import { getAllAvailableRooms } from "~/lib/api/habitaciones/room";
 
 const showInternadoDialog = ref(false);
+const showConfirmInternadoDialog = ref(false);
 const showDeleteDialog = ref(false);
 const empleadoAEliminar = ref<string | null>(null);
 const showEliminarDialog = ref(false);
 const showRealizadaDialog = ref(false);
 const cirugiaSeleccionada = ref<any | null>(null);
+const habitacionSeleccionada = ref<any | null>(null);
 
 const initialValues = reactive({
   consult: {
@@ -342,6 +484,15 @@ const initialValues = reactive({
   } as ConsultResponseDTO,
   consultEmployees: [] as EmployeeConsultResponseDTO[],
   surgerysConsult: [] as SurgeryResponseDTO[],
+});
+
+const {
+  state: stateRooms,
+  refetch: refetchRooms,
+  asyncStatus: roomsAsyncStatus,
+} = useCustomQuery({
+  key: ["rooms-available"],
+  query: () => getAllAvailableRooms(),
 });
 
 const {
@@ -402,6 +553,10 @@ const recargarCirugiasAsignadas = () => {
   refetchConsultSurgeries();
 };
 
+const recargarHabitaciones = () => {
+  refetchRooms();
+};
+
 const recargarConsulta = () => {
   refecthConsult();
   recargarEmpleadosAsignados();
@@ -424,12 +579,18 @@ const confirmarEliminacionEmpleado = () => {
 };
 
 const confirmarInternado = () => {
+  if (!habitacionSeleccionada.value) {
+    toast.error("Selecciona una habitación primero");
+    showConfirmInternadoDialog.value = false;
+  }
   const payload = {
-    costoConsulta: null,
-    isInternado: true,
-  } as UpdateConsultRequestDTO;
-  updateConsultMutation(payload);
+    consultId: useRoute().params.id as string,
+    roomId: habitacionSeleccionada.value.id,
+  } as MarkConsultAsInternadoDTO;
+  markAsInternadoMutate(payload);
+  habitacionSeleccionada.value = null;
   showInternadoDialog.value = false;
+  showConfirmInternadoDialog.value = false;
 };
 
 const { mutate: deleteEmployee, asyncStatus: asyncDeleteEmployeeStatus } =
@@ -460,6 +621,23 @@ const { mutate: updateConsultMutation, asyncStatus: asyncUpdateConsultStatus } =
       recargarConsulta();
     },
   });
+
+const {
+  mutate: markAsInternadoMutate,
+  asyncStatus: asyncMarkAsInternadoStatus,
+} = useMutation({
+  mutation: (payload: MarkConsultAsInternadoDTO) =>
+    markConsultAsInternado(payload),
+  onError: (error) => {
+    toast.error("Ocurrió un error al convertir la consulta en internado", {
+      description: error.message,
+    });
+  },
+  onSuccess: () => {
+    toast.success("Consulta convertida a internado correctamente");
+    recargarConsulta();
+  },
+});
 
 const { mutate: deleteSurgeryMutate, asyncStatus: asyncDeleteSurgeryStatus } =
   useMutation({

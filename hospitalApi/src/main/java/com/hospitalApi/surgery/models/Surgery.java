@@ -29,7 +29,7 @@ public class Surgery extends Auditor {
     @JoinColumn(nullable = false)
     private Consult consult;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(nullable = false)
     private SurgeryType surgeryType;
 

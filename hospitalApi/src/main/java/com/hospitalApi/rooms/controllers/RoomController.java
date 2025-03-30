@@ -138,4 +138,18 @@ public class RoomController {
         // mapear el room creado al response
         return roomMapper.fromRoomsToResponseDtos(findedRooms);
     }
+
+    @Operation(summary = "Obtener todas las habitaciones disponibles.", description = "Este endpoint permite obtener la lista de todas las habitaciones disponibles registradas en el sistema.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Listado de habitaciones disponibles obtenido exitosamente"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @GetMapping("/all/available")
+    public List<RoomResponseDTO> getAllAvailableRooms() {
+        // mandmaos a traer todas las rooms
+        List<Room> findedRooms = forRoomPort.findAllRoomsAvailable();
+        // mapear el room creado al response
+        return roomMapper.fromRoomsToResponseDtos(findedRooms);
+    }
+
 }

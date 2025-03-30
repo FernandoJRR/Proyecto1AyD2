@@ -38,8 +38,12 @@ export interface CreateConsultRequestDTO {
 }
 
 export interface UpdateConsultRequestDTO {
-  isInternado?: boolean | null;
-  costoConsulta?: number | null;
+  costoConsulta: number | null;
+}
+
+export interface MarkConsultAsInternadoDTO {
+  consultId: string;
+  roomId: string;
 }
 
 export interface TotalConsultResponseDTO {
@@ -87,6 +91,19 @@ export const updateConsult = async (
     `${CURRENT_CONSULT_URI}/${id}`,
     {
       method: "PATCH",
+      body: data,
+    }
+  );
+  return response;
+};
+
+export const markConsultAsInternado = async (
+  data: MarkConsultAsInternadoDTO
+) => {
+  const response = await $api<ConsultResponseDTO>(
+    `${CURRENT_CONSULT_URI}/mark-internado`,
+    {
+      method: "POST",
       body: data,
     }
   );
