@@ -6,7 +6,6 @@ import java.util.List;
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.hospitalApi.rooms.enums.RoomStatus;
-import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.CascadeType;
@@ -27,7 +26,7 @@ public class Room extends Auditor {
     /**
      * Este es el numero d ela habitacion
      */
-    @Column(unique = true, nullable = false)
+    @Column(length = 100, unique = true, nullable = false)
     private String number;
     /*
      * Costo de mantenimiento diario
@@ -71,6 +70,44 @@ public class Room extends Auditor {
             return;
         }
         status = RoomStatus.AVAILABLE;
+    }
+
+    public RoomStatus markVacant() throws IllegalStateException {
+        if (status == RoomStatus.OCCUPIED) {
+            status = RoomStatus.AVAILABLE;
+            return status;
+        } else {
+            throw new IllegalStateException(
+                    "La habitación " + number + " no está ocupada. No se puede marcar como vacía.");
+        }
+    }
+
+    public RoomStatus markAvailable() throws IllegalStateException {
+        if (status == RoomStatus.OCCUPIED) {
+            throw new IllegalStateException(
+                    "La habitación " + number + " está ocupada. No se puede cambiar su estado mientras esté en uso.");
+        }
+        status = RoomStatus.AVAILABLE;
+        return status;
+    }
+
+    public RoomStatus markOutOfService() throws IllegalStateException {
+        if (status == RoomStatus.OCCUPIED) {
+            throw new IllegalStateException(
+                    "La habitación " + number + " está ocupada. No se puede cambiar su estado mientras esté en uso.");
+        }
+        status = RoomStatus.OUT_OF_SERVICE;
+        return status;
+    }
+
+    public RoomStatus markOccupied() throws IllegalStateException {
+        if (status == RoomStatus.OUT_OF_SERVICE) {
+            throw new IllegalStateException(
+                    "La habitación " + number
+                            + " está fuera de servicio. No se puede cambiar su estado");
+        }
+        status = RoomStatus.OCCUPIED;
+        return status;
     }
 
 }

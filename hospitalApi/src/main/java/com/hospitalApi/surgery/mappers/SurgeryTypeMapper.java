@@ -9,5 +9,6 @@ import com.hospitalApi.surgery.models.SurgeryType;
 
 @Mapper(componentModel = "spring")
 public interface SurgeryTypeMapper {
+    public SurgeryTypeResponseDTO fromSurgeryTypeToSurgeryTypeResponseDTO(SurgeryType surgeryType);
     public List<SurgeryTypeResponseDTO> fromSurgeryTypeListToSurgeryTypeResponseDTOList(List<SurgeryType> surgeryTypes);
 }

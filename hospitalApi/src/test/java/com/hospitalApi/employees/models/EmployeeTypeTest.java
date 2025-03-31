@@ -9,9 +9,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EmployeeTypeTest {
 
-    private static final String ID = "type-001";
+    private static final String ID = "dasfgh-asdfgg";
     private static final String NAME = "ADMIN";
-    private static final Permission PERMISSION = new Permission("CAN_EDIT", "EDITAR");
+    private static final Permission PERMISSION = new Permission("EDIT", "EDITAR");
     private static final List<Permission> PERMISSIONS = List.of(PERMISSION);
 
     /**

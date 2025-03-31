@@ -12,10 +12,12 @@ import com.hospitalApi.employees.ports.ForHistoryTypePort;
 import com.hospitalApi.employees.repositories.HistoryTypeRepository;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(rollbackOn = Exception.class)
 public class HistoryTypeService implements ForHistoryTypePort {
 
 
@@ -25,6 +27,7 @@ public class HistoryTypeService implements ForHistoryTypePort {
      * @param historyTypeName
      * @throws NotFoundException si el nombre del tipo empleado no existe
      */
+    @Override
     public HistoryType findHistoryTypeByName(String historyTypeName) throws NotFoundException {
         Optional<HistoryType> foundHistoryType = historyTypeRepository.findByType(historyTypeName);
         if (foundHistoryType.isEmpty()) {
@@ -33,7 +36,7 @@ public class HistoryTypeService implements ForHistoryTypePort {
 
         return foundHistoryType.get();
     }
-
+    @Override
     public HistoryType findHistoryTypeById(String historyTypeId) throws NotFoundException {
         Optional<HistoryType> foundHistoryType = historyTypeRepository.findById(historyTypeId);
         if (foundHistoryType.isEmpty()) {
@@ -42,7 +45,7 @@ public class HistoryTypeService implements ForHistoryTypePort {
 
         return foundHistoryType.get();
     }
-
+    @Override
     public List<HistoryType> findDeactivationHistoryTypes() {
         List<HistoryType> deactivationHistoryTypes = new ArrayList<>();
         Optional<HistoryType> firingOptional = historyTypeRepository.findByType(HistoryTypeEnum.DESPIDO.getType());

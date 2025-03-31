@@ -21,10 +21,12 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(rollbackOn = Exception.class)
 public class LoginService implements ForLogin {
 
     private final AuthenticationManager authenticationManager;

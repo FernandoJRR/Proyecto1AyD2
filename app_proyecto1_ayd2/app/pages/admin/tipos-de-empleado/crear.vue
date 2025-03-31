@@ -136,9 +136,9 @@ const { state: permissions } = useCustomQuery({
 
 const { mutate, asyncStatus } = useMutation({
     mutation: (employeeData: EmployeeTypePayLoad) => createEmployeeType(employeeData),
-    onError(error:any) {
+    onError(error) {
         toast.error('Ocurrió un error al crear el tipo de empleado', {
-            description: `${(error.response._data)}`
+            description: `${(error.message)}`
         })
     },
     onSuccess() {

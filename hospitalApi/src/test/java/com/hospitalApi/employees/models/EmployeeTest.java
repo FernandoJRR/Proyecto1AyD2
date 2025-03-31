@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EmployeeTest {
 
+    private static final String CUI = "2345330910901";
     private static final String FIRST_NAME = "Luis";
     private static final String LAST_NAME = "Monterroso";
     private static final BigDecimal SALARY = new BigDecimal("5000.00");
@@ -45,9 +46,10 @@ class EmployeeTest {
     @Test
     public void shouldCreateEmployeeWithMainConstructorWithoutId() {
         // arrange y act
-        Employee employee = new Employee(FIRST_NAME, LAST_NAME, SALARY, IGSS, IRTRA);
+        Employee employee = new Employee(CUI, FIRST_NAME, LAST_NAME, SALARY, IGSS, IRTRA);
         // assert
         assertAll(
+                () -> assertEquals(CUI, employee.getCui()),
                 () -> assertEquals(FIRST_NAME, employee.getFirstName()),
                 () -> assertEquals(LAST_NAME, employee.getLastName()),
                 () -> assertEquals(SALARY, employee.getSalary()),
@@ -67,9 +69,11 @@ class EmployeeTest {
     @Test
     public void shouldCreateEmployeeWithAllFieldsConstructorExeptId() {
         // arrange y act
-        Employee employee = new Employee(FIRST_NAME, LAST_NAME, SALARY, IGSS, IRTRA, RESIGN_DATE, employeeType, user);
+        Employee employee = new Employee(CUI, FIRST_NAME, LAST_NAME, SALARY, IGSS, IRTRA, RESIGN_DATE, employeeType,
+                user);
         // asert
         assertAll(
+                () -> assertEquals(CUI, employee.getCui()),
                 () -> assertEquals(FIRST_NAME, employee.getFirstName()),
                 () -> assertEquals(LAST_NAME, employee.getLastName()),
                 () -> assertEquals(SALARY, employee.getSalary()),
@@ -78,6 +82,27 @@ class EmployeeTest {
                 () -> assertEquals(employeeType, employee.getEmployeeType()),
                 () -> assertEquals(user, employee.getUser()),
                 () -> assertNull(employee.getId()));
+
+    }
+
+    /**
+     * dado: un empleado instanciado con el constructor que omite el campo ID.
+     * cuando: se invoca el método getFullName().
+     * entonces: se retorna correctamente el nombre completo concatenando nombre y
+     * apellido.
+     */
+    @Test
+    public void shouldReturnFullNameWhenEmployeeIsCreatedWithConstructorWithoutId() {
+        // arrange
+        Employee employee = new Employee(CUI, FIRST_NAME, LAST_NAME, SALARY, IGSS, IRTRA, RESIGN_DATE, employeeType,
+                user);
+        String expectedFullname = String.format("%s %s", FIRST_NAME, LAST_NAME);
+
+        String result = employee.getFullName();
+
+        // asert
+        assertAll(
+                () -> assertEquals(expectedFullname, result));
 
     }
 

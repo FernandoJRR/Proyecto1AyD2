@@ -228,6 +228,9 @@ import {
 const { employee } = storeToRefs(useAuthStore());
 
 const isAdmin = computed(() => employee.value?.employeeType?.name === "Admin");
+const isDoctor = computed(
+  () => employee.value?.employeeType?.name === "Doctor"
+);
 
 const searchTerm = ref("");
 const searchDoctor = ref("");
@@ -302,9 +305,19 @@ const crearConsulta = () => {
   const payload: CreateConsultRequestDTO = {
     costoConsulta: initialValues.costoConsulta,
     patientId: pacienteSeleccionado.value.id,
-    employeeId: isAdmin.value ? doctorSeleccionado.value.id : null,
+    employeeId: employeeIdSend(),
   };
   createConsultMutation(payload);
+};
+
+const employeeIdSend = () => {
+  if (isAdmin.value) {
+    return doctorSeleccionado.value?.id;
+  }
+  if (isDoctor.value) {
+    return employee.value?.id;
+  }
+  return null;
 };
 
 const { mutate: createConsultMutation, asyncStatus: asyncCreateConsultStatus } =

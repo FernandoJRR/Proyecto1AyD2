@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.consults.port.ForConsultPort;
+import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.medicines.dtos.CreateSaleMedicineConsultRequestDTO;
 import com.hospitalApi.medicines.dtos.CreateSaleMedicineFarmaciaRequestDTO;
 import com.hospitalApi.medicines.models.Medicine;
@@ -16,17 +17,20 @@ import com.hospitalApi.medicines.ports.ForMedicinePort;
 import com.hospitalApi.medicines.ports.ForSaleMedicinePort;
 import com.hospitalApi.medicines.repositories.SaleMedicineRepository;
 import com.hospitalApi.shared.exceptions.NotFoundException;
+import com.hospitalApi.users.ports.AuthenticationProviderPort;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(rollbackOn = Exception.class)
 public class SaleMedicineService implements ForSaleMedicinePort {
 
     private final SaleMedicineRepository saleMedicineRepository;
     private final ForMedicinePort forMedicinePort;
     private final ForConsultPort forConsultPort;
+    private final AuthenticationProviderPort authenticationProviderPort;
 
     @Override
     public SaleMedicine findById(String id) throws NotFoundException {
@@ -34,44 +38,84 @@ public class SaleMedicineService implements ForSaleMedicinePort {
                 .orElseThrow(() -> new NotFoundException("Venta de medicamento con id " + id + " no encontrada"));
     }
 
+    // @Override
+    // public SaleMedicine createSaleMedicine(String medicineId, Integer quantity)
+    // throws NotFoundException {
+    // // Obtenemos la medicina en base al id
+    // Medicine medicine = forMedicinePort.getMedicine(medicineId);
+    // // Verificamos si hay suficiente stock
+    // if (medicine.getQuantity() < quantity) {
+    // throw new NotFoundException("No hay suficiente stock para el medicamento con
+    // id " + medicineId);
+    // }
+    // // Creamos una nueva instancia de SaleMedicine
+    // SaleMedicine newSaleMedicine = new SaleMedicine(medicine, quantity);
+    // // Guardamos la nueva venta de medicamento en la base de datos
+    // SaleMedicine saleMedicine = saleMedicineRepository.save(newSaleMedicine);
+    // // Actualizamos el stock de la medicina
+    // forMedicinePort.subtractStockMedicine(medicineId, quantity);
+    // return saleMedicine;
+    // }
+
+    // @Override
+    // public SaleMedicine createSaleMedicine(String consultId, String medicineId,
+    // Integer quantity)
+    // throws NotFoundException {
+    // Consult consult = forConsultPort.findConsultAndIsNotPaid(consultId);
+    // // Obtenemos la medicina en base al id
+    // Medicine medicine = forMedicinePort.getMedicine(medicineId);
+    // // Verificamos si hay suficiente stock
+    // if (medicine.getQuantity() < quantity) {
+    // throw new NotFoundException("No hay suficiente stock para el medicamento con
+    // id " + medicineId);
+    // }
+    // // Creamos una nueva instancia de SaleMedicine
+    // SaleMedicine newSaleMedicine = new SaleMedicine(consult, medicine, quantity);
+    // // Guardamos la nueva venta de medicamento en la base de datos
+    // SaleMedicine saleMedicine = saleMedicineRepository.save(newSaleMedicine);
+    // // Actualizamos el stock de la medicina
+    // forMedicinePort.subtractStockMedicine(medicineId, quantity);
+    // return saleMedicine;
+    // }
+
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public SaleMedicine createSaleMedicine(String medicineId, Integer quantity) throws NotFoundException {
-        // Obtenemos la medicina en base al id
-        Medicine medicine = forMedicinePort.getMedicine(medicineId);
-        if (medicine == null) {
-            throw new NotFoundException("Medicamento con id " + medicineId + " no encontrado");
-        }
-        // Verificamos si hay suficiente stock
-        if (medicine.getQuantity() < quantity) {
-            throw new NotFoundException("No hay suficiente stock para el medicamento con id " + medicineId);
-        }
-        // Creamos una nueva instancia de SaleMedicine
-        SaleMedicine newSaleMedicine = new SaleMedicine(medicine, quantity);
-        // Guardamos la nueva venta de medicamento en la base de datos
-        SaleMedicine saleMedicine = saleMedicineRepository.save(newSaleMedicine);
-        // Actualizamos el stock de la medicina
-        forMedicinePort.subtractStockMedicine(medicineId, quantity);
-        return saleMedicine;
+        return createSaleMedicineInternal(null, medicineId, quantity);
     }
 
     @Override
     public SaleMedicine createSaleMedicine(String consultId, String medicineId, Integer quantity)
             throws NotFoundException {
-        Consult consult = forConsultPort.findById(consultId);
+        // en esta version mandaremos a crear la venta asignandole una consulta,
+        // entonces mandamos a traer
+        // la consulta por su id
+        Consult consult = forConsultPort.findConsultAndIsNotPaid(consultId);
+        return createSaleMedicineInternal(consult, medicineId, quantity);
+    }
+
+    private SaleMedicine createSaleMedicineInternal(Consult consult, String medicineId, Integer quantity)
+            throws NotFoundException {
         // Obtenemos la medicina en base al id
         Medicine medicine = forMedicinePort.getMedicine(medicineId);
+        // obtenemos el usuario autenticado
+        Employee employee = authenticationProviderPort.getAutenticatedEmployee();
         // Verificamos si hay suficiente stock
         if (medicine.getQuantity() < quantity) {
             throw new NotFoundException("No hay suficiente stock para el medicamento con id " + medicineId);
         }
         // Creamos una nueva instancia de SaleMedicine
-        SaleMedicine newSaleMedicine = new SaleMedicine(consult, medicine, quantity);
+        SaleMedicine newSaleMedicine = (consult == null)
+                ? new SaleMedicine(medicine, quantity)
+                : new SaleMedicine(consult, medicine, quantity);
+        // le adjuntamos el empleado a la venta a guardar indicando que este empleado
+        // hizo la venta
+        newSaleMedicine.setEmployee(employee);
         // Guardamos la nueva venta de medicamento en la base de datos
-        SaleMedicine saleMedicine = saleMedicineRepository.save(newSaleMedicine);
+        SaleMedicine savedSale = saleMedicineRepository.save(newSaleMedicine);
         // Actualizamos el stock de la medicina
         forMedicinePort.subtractStockMedicine(medicineId, quantity);
-        return saleMedicine;
+
+        return savedSale;
     }
 
     @Override
@@ -99,6 +143,34 @@ public class SaleMedicineService implements ForSaleMedicinePort {
         LocalDate end = LocalDate.parse(endDate);
         // Obtener las ventas de medicina entre las fechas
         return saleMedicineRepository.findByCreatedAtBetween(start, end);
+    }
+
+    /**
+     * Obtiene todas las ventas de medicamentos realizadas en un rango de fechas
+     * específico
+     * y cuyo nombre de medicamento coincida parcialmente con el valor
+     * proporcionado.
+     *
+     * @param startDate    la fecha de inicio del rango a consultar.
+     * @param endDate      la fecha de fin del rango a consultar.
+     * @param medicineName el nombre (o parte del nombre) del medicamento a buscar.
+     * @return una lista de ventas de medicamentos que coinciden con los filtros
+     *         aplicados.
+     */
+    @Override
+    public List<SaleMedicine> getSalesMedicineBetweenDatesAndMedicineName(LocalDate startDate, LocalDate endDate,
+            String medicineName) {
+        // Obtener las ventas de medicina entre las fechas
+        return saleMedicineRepository
+                .findByCreatedAtBetweenAndMedicineNameLike(startDate, endDate, medicineName);
+    }
+
+
+    @Override
+    public List<SaleMedicine> getSalesMedicineByEmployeeNameAndCui(String employeeName, String employeeCui) {
+        // Obtener las ventas de medicina entre las fechas
+        return saleMedicineRepository
+                .findAllByEmployeeNameAndCui(employeeName, employeeCui);
     }
 
     @Override
@@ -135,7 +207,6 @@ public class SaleMedicineService implements ForSaleMedicinePort {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public List<SaleMedicine> createSaleMedicines(
             List<CreateSaleMedicineFarmaciaRequestDTO> createSaleMedicineFarmaciaRequestDTOs) throws NotFoundException {
         List<SaleMedicine> saleMedicines = new ArrayList<>();

@@ -20,21 +20,25 @@ import com.hospitalApi.employees.repositories.EmployeeHistoryRepository;
 import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(rollbackOn = Exception.class)
 public class EmployeeHistoryService implements ForEmployeeHistoryPort {
 
     private final EmployeeHistoryRepository employeeHistoryRepository;
     private final ForHistoryTypePort forHistoryTypePort;
 
+    @Override
     public EmployeeHistory createEmployeeHistoryHiring(Employee employee, LocalDate hiringDate)
             throws NotFoundException {
         HistoryType historyTypeContratacion = forHistoryTypePort
                 .findHistoryTypeByName(HistoryTypeEnum.CONTRATACION.getType());
 
-        EmployeeHistory employeeHistory = new EmployeeHistory("Se realizo la contratacion con un salario de Q."+employee.getSalary());
+        EmployeeHistory employeeHistory = new EmployeeHistory(
+                "Se realizo la contratacion con un salario de Q." + employee.getSalary());
 
         employeeHistory.setHistoryType(historyTypeContratacion);
         employeeHistory.setEmployee(employee);
@@ -43,6 +47,7 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
         return employeeHistoryRepository.save(employeeHistory);
     }
 
+    @Override
     public EmployeeHistory createEmployeeHistorySalaryIncrease(Employee employee, BigDecimal newSalary,
             LocalDate increaseDate)
             throws NotFoundException, InvalidPeriodException {
@@ -63,6 +68,7 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
         return employeeHistoryRepository.save(employeeHistory);
     }
 
+    @Override
     public EmployeeHistory createEmployeeHistorySalaryDecrease(Employee employee, BigDecimal newSalary,
             LocalDate decreaseDate)
             throws NotFoundException, InvalidPeriodException {
@@ -83,7 +89,9 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
         return employeeHistoryRepository.save(employeeHistory);
     }
 
-    public EmployeeHistory createEmployeeHistoryDeactivation(Employee employee, LocalDate deactivationDate, HistoryType historyTypeReason)
+    @Override
+    public EmployeeHistory createEmployeeHistoryDeactivation(Employee employee, LocalDate deactivationDate,
+            HistoryType historyTypeReason)
             throws NotFoundException, InvalidPeriodException {
 
         if (!isValidEmployeePeriodDeactivationDate(employee, deactivationDate)) {
@@ -93,7 +101,8 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
         HistoryType historyTypeDeactivation = forHistoryTypePort
                 .findHistoryTypeById(historyTypeReason.getId());
 
-        EmployeeHistory employeeHistory = new EmployeeHistory("El empleado se ha desactivado por "+historyTypeDeactivation.getType());
+        EmployeeHistory employeeHistory = new EmployeeHistory(
+                "El empleado se ha desactivado por " + historyTypeDeactivation.getType());
 
         employeeHistory.setHistoryType(historyTypeDeactivation);
         employeeHistory.setEmployee(employee);
@@ -102,6 +111,7 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
         return employeeHistoryRepository.save(employeeHistory);
     }
 
+    @Override
     public EmployeeHistory createEmployeeHistoryReactivation(Employee employee, LocalDate reactivationDate)
             throws NotFoundException, InvalidPeriodException {
 
@@ -121,10 +131,12 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
         return employeeHistoryRepository.save(employeeHistory);
     }
 
+    @Override
     public List<EmployeeHistory> getEmployeeHistory(Employee employee) throws NotFoundException {
         return employeeHistoryRepository.findAllByEmployee_IdOrderByHistoryDateAsc(employee.getId());
     }
 
+    @Override
     public Optional<EmployeeHistory> getLastEmployeeSalaryUntilDate(Employee employee, LocalDate date)
             throws NotFoundException {
         HistoryType aumentoHistoryType = this.forHistoryTypePort
@@ -137,6 +149,7 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
                         employee.getId(), salaryHistoryTypes, date);
     }
 
+    @Override
     public Optional<EmployeeHistory> getMostRecentEmployeeSalary(Employee employee) throws NotFoundException {
         HistoryType aumentoHistoryType = this.forHistoryTypePort
                 .findHistoryTypeByName(HistoryTypeEnum.AUMENTO_SALARIAL.getType());
@@ -147,10 +160,12 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
                 .findFirstByEmployee_IdAndHistoryType_IdInOrderByHistoryDateDesc(employee.getId(), salaryHistoryTypes);
     }
 
+    @Override
     public Optional<EmployeeHistory> getEmployeeHiringDate(Employee employee) throws NotFoundException {
         return employeeHistoryRepository.findFirstByEmployee_IdOrderByHistoryDateAsc(employee.getId());
     }
 
+    @Override
     public boolean isValidEmployeePeriod(Employee employee, LocalDate date) {
         List<String> startTypes = Arrays.asList(HistoryTypeEnum.CONTRATACION.getType(),
                 HistoryTypeEnum.RECONTRATACION.getType());
@@ -187,7 +202,6 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
             }
         }
 
-
         // se itera sobre todos los periodos para ver si la fecha entra en alguno
         for (EmployeePeriod period : periods) {
             // si no tiene fecha de fin el periodo es el actual
@@ -205,6 +219,7 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
         return false;
     }
 
+    @Override
     public boolean isValidEmployeePeriodDeactivationDate(Employee employee, LocalDate deactivationDate) {
         List<String> startTypes = Arrays.asList(HistoryTypeEnum.CONTRATACION.getType(),
                 HistoryTypeEnum.RECONTRATACION.getType());
@@ -217,11 +232,12 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
 
         // se obtiene la ultima desactivacion del cliente y su fecha de contratacion
         Optional<EmployeeHistory> hiringDateHistoryOptional = employeeHistoryRepository
-            .findFirstByEmployee_IdOrderByHistoryDateAsc(employee.getId());
+                .findFirstByEmployee_IdOrderByHistoryDateAsc(employee.getId());
         Optional<EmployeeHistory> lastDeactivationHistoryOptional = employeeHistoryRepository
                 .findFirstByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateDesc(employee.getId(), endTypes);
 
-        // en caso de que se quiera desactivar en una fecha previa a la contratacion el periodo es invalido
+        // en caso de que se quiera desactivar en una fecha previa a la contratacion el
+        // periodo es invalido
         if (hiringDateHistoryOptional.get().getHistoryDate().isAfter(deactivationDate)) {
             return false;
         }
@@ -248,11 +264,12 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
 
         // se obtiene la ultima desactivacion del cliente y su fecha de contratacion
         Optional<EmployeeHistory> hiringDateHistoryOptional = employeeHistoryRepository
-            .findFirstByEmployee_IdOrderByHistoryDateAsc(employee.getId());
+                .findFirstByEmployee_IdOrderByHistoryDateAsc(employee.getId());
         Optional<EmployeeHistory> lastDeactivationHistoryOptional = employeeHistoryRepository
                 .findFirstByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateDesc(employee.getId(), endTypes);
 
-        // en caso de que se quiera reactivar en una fecha previa a la contratacion el periodo es invalido
+        // en caso de que se quiera reactivar en una fecha previa a la contratacion el
+        // periodo es invalido
         if (hiringDateHistoryOptional.get().getHistoryDate().isAfter(reactivationDate)) {
             return false;
         }

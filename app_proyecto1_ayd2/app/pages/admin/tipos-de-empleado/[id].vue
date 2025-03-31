@@ -70,7 +70,7 @@ const queryCache = useQueryCache()
 const route = useRoute();//con esto traemos la ruta
 const employeeTypeId = route.params.id as string;//de la ruta extraemos el id
 
-
+//estos son los valores inciales del form, marcados como ref para que vue implemente reactividad
 const formInitialValues = ref<{ name: string }>({ name: '' });
 const isReady = ref(false);
 

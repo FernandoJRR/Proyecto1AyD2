@@ -64,6 +64,7 @@ public class EmployeeHistoryServiceTest {
 
     // Constantes para el empleado de test
     private static final String EMPLOYEE_ID = "adsfgdh-arsgdfhg-adfgh";
+    private static final String CUI = "3214356432";
     private static final String EMPLOYEE_FIRST_NAME = "Fernando";
     private static final String EMPLOYEE_LAST_NAME = "Rodriguez";
     private static final BigDecimal EMPLOYEE_SALARY = new BigDecimal(1200);
@@ -97,13 +98,12 @@ public class EmployeeHistoryServiceTest {
     @BeforeEach
     private void setUp() {
         MockitoAnnotations.openMocks(this);
-        employee = new Employee(
+        employee = new Employee(CUI,
                 EMPLOYEE_FIRST_NAME,
                 EMPLOYEE_LAST_NAME,
                 EMPLOYEE_SALARY,
                 EMPLOYEE_IGSS,
-                EMPLOYEE_IRTRA
-                );
+                EMPLOYEE_IRTRA);
         employee.setId(EMPLOYEE_ID);
 
         historyType = new HistoryType(HISTORY_TYPE);
@@ -152,7 +152,8 @@ public class EmployeeHistoryServiceTest {
         when(employeeHistoryRepository.save(any(EmployeeHistory.class))).thenReturn(employeeHistoryHiring);
 
         // actuar
-        EmployeeHistory resultEmployeeHistory = employeeHistoryService.createEmployeeHistoryHiring(employee, EMPLOYEE_HISTORY_LOCAL_DATE);
+        EmployeeHistory resultEmployeeHistory = employeeHistoryService.createEmployeeHistoryHiring(employee,
+                EMPLOYEE_HISTORY_LOCAL_DATE);
 
         // evaluar
         ArgumentCaptor<EmployeeHistory> employeeHistoryCaptor = ArgumentCaptor.forClass(EmployeeHistory.class);
@@ -166,8 +167,7 @@ public class EmployeeHistoryServiceTest {
                 () -> assertNotNull(resultEmployeeHistory),
                 () -> assertEquals(resultEmployeeHistory.getCommentary(), capturedEmployeeHistory.getCommentary()),
                 () -> assertEquals(resultEmployeeHistory.getHistoryDate(), capturedEmployeeHistory.getHistoryDate()),
-                () -> assertEquals(resultEmployeeHistory.getHistoryType(), capturedEmployeeHistory.getHistoryType())
-        );
+                () -> assertEquals(resultEmployeeHistory.getHistoryType(), capturedEmployeeHistory.getHistoryType()));
     }
 
     @Test
@@ -176,13 +176,13 @@ public class EmployeeHistoryServiceTest {
         BigDecimal newSalary = new BigDecimal(EMPLOYEE_NEW_SALARY);
 
         when(employeeHistoryRepository.findByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateAsc(
-            eq(employee.getId()), anyList()))
-        .thenReturn(List.of(employeeHistoryHiring));
+                eq(employee.getId()), anyList()))
+                .thenReturn(List.of(employeeHistoryHiring));
 
         when(forHistoryTypePort.findHistoryTypeByName(HISTORY_TYPE_INCREASE)).thenReturn(historyTypeIncrease);
 
         when(employeeHistoryRepository.save(any(EmployeeHistory.class)))
-            .thenReturn(employeeHistoryIncrease);
+                .thenReturn(employeeHistoryIncrease);
 
         // ACT
         EmployeeHistory resultEmployeeHistory = employeeHistoryService
@@ -194,12 +194,11 @@ public class EmployeeHistoryServiceTest {
         EmployeeHistory capturedEmployeeHistory = employeeHistoryCaptor.getValue();
 
         assertAll(
-            () -> assertNotNull(resultEmployeeHistory),
-            () -> assertEquals(newSalary.toString(), capturedEmployeeHistory.getCommentary()),
-            () -> assertEquals(EMPLOYEE_HISTORY_LOCAL_DATE_INCREASE, capturedEmployeeHistory.getHistoryDate()),
-            () -> assertEquals(historyTypeIncrease, capturedEmployeeHistory.getHistoryType()),
-            () -> assertEquals(employee, capturedEmployeeHistory.getEmployee())
-        );
+                () -> assertNotNull(resultEmployeeHistory),
+                () -> assertEquals(newSalary.toString(), capturedEmployeeHistory.getCommentary()),
+                () -> assertEquals(EMPLOYEE_HISTORY_LOCAL_DATE_INCREASE, capturedEmployeeHistory.getHistoryDate()),
+                () -> assertEquals(historyTypeIncrease, capturedEmployeeHistory.getHistoryType()),
+                () -> assertEquals(employee, capturedEmployeeHistory.getEmployee()));
     }
 
     @Test
@@ -209,7 +208,7 @@ public class EmployeeHistoryServiceTest {
 
         when(employeeHistoryRepository.findByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateAsc(
                 eq(employee.getId()), anyList()))
-            .thenReturn(List.of());
+                .thenReturn(List.of());
 
         // ASSERT
         assertThrows(InvalidPeriodException.class, () -> {
@@ -225,11 +224,11 @@ public class EmployeeHistoryServiceTest {
 
         when(employeeHistoryRepository.findByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateAsc(
                 eq(employee.getId()), anyList()))
-            .thenReturn(List.of(employeeHistoryHiring));
+                .thenReturn(List.of(employeeHistoryHiring));
 
         when(forHistoryTypePort.findHistoryTypeByName(HISTORY_TYPE_DECREASE)).thenReturn(historyTypeDecrease);
         when(employeeHistoryRepository.save(any(EmployeeHistory.class)))
-            .thenAnswer(invocation -> invocation.getArgument(0));
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // ACT
         EmployeeHistory resultEmployeeHistory = employeeHistoryService
@@ -241,12 +240,11 @@ public class EmployeeHistoryServiceTest {
         EmployeeHistory capturedEmployeeHistory = employeeHistoryCaptor.getValue();
 
         assertAll(
-            () -> assertNotNull(resultEmployeeHistory),
-            () -> assertEquals(newSalary.toString(), capturedEmployeeHistory.getCommentary()),
-            () -> assertEquals(decreaseDate, capturedEmployeeHistory.getHistoryDate()),
-            () -> assertEquals(historyTypeDecrease, capturedEmployeeHistory.getHistoryType()),
-            () -> assertEquals(employee, capturedEmployeeHistory.getEmployee())
-        );
+                () -> assertNotNull(resultEmployeeHistory),
+                () -> assertEquals(newSalary.toString(), capturedEmployeeHistory.getCommentary()),
+                () -> assertEquals(decreaseDate, capturedEmployeeHistory.getHistoryDate()),
+                () -> assertEquals(historyTypeDecrease, capturedEmployeeHistory.getHistoryType()),
+                () -> assertEquals(employee, capturedEmployeeHistory.getEmployee()));
     }
 
     @Test
@@ -256,7 +254,7 @@ public class EmployeeHistoryServiceTest {
 
         when(employeeHistoryRepository.findByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateAsc(
                 eq(employee.getId()), anyList()))
-            .thenReturn(List.of());
+                .thenReturn(List.of());
 
         // ASSERT
         assertThrows(InvalidPeriodException.class, () -> {
@@ -283,16 +281,15 @@ public class EmployeeHistoryServiceTest {
         when(employeeHistoryRepository
                 .findFirstByEmployee_IdAndHistoryType_IdInAndHistoryDateLessThanEqualOrderByHistoryDateDesc(
                         eq(employee.getId()), eq(expectedTypes), eq(targetDate)))
-            .thenReturn(Optional.of(expectedHistory));
+                .thenReturn(Optional.of(expectedHistory));
 
         // ACT
         Optional<EmployeeHistory> result = employeeHistoryService.getLastEmployeeSalaryUntilDate(employee, targetDate);
 
         // ASSERT
         assertAll(
-            () -> assertNotNull(result),
-            () -> assertEquals(expectedHistory, result.get())
-        );
+                () -> assertNotNull(result),
+                () -> assertEquals(expectedHistory, result.get()));
     }
 
     @Test
@@ -312,32 +309,31 @@ public class EmployeeHistoryServiceTest {
         when(employeeHistoryRepository
                 .findFirstByEmployee_IdAndHistoryType_IdInOrderByHistoryDateDesc(
                         eq(employee.getId()), eq(expectedTypes)))
-            .thenReturn(Optional.of(expectedHistory));
+                .thenReturn(Optional.of(expectedHistory));
 
         // ACT
         Optional<EmployeeHistory> result = employeeHistoryService.getMostRecentEmployeeSalary(employee);
 
         // ASSERT
         assertAll(
-            () -> assertNotNull(result),
-            () -> assertEquals(expectedHistory, result.get())
-        );
+                () -> assertNotNull(result),
+                () -> assertEquals(expectedHistory, result.get()));
     }
 
     @Test
     public void shouldCreateDeactivationHistorySuccessfully() throws NotFoundException, InvalidPeriodException {
         // ARRANGE
         when(employeeHistoryRepository.findFirstByEmployee_IdOrderByHistoryDateAsc(eq(employee.getId())))
-             .thenReturn(Optional.of(employeeHistoryHiring));
+                .thenReturn(Optional.of(employeeHistoryHiring));
 
         when(employeeHistoryRepository.findFirstByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateDesc(
-             eq(employee.getId()), anyList()))
-             .thenReturn(Optional.of(employeeHistoryLastDeactivation));
+                eq(employee.getId()), anyList()))
+                .thenReturn(Optional.of(employeeHistoryLastDeactivation));
 
         when(forHistoryTypePort.findHistoryTypeById(deactivationReason.getId())).thenReturn(deactivationReason);
 
         when(employeeHistoryRepository.save(any(EmployeeHistory.class)))
-             .thenAnswer(invocation -> invocation.getArgument(0));
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // ACT
         EmployeeHistory result = employeeHistoryService
@@ -351,33 +347,33 @@ public class EmployeeHistoryServiceTest {
         String expectedCommentary = "El empleado se ha desactivado por " + deactivationReason.getType();
 
         assertAll(
-            () -> assertNotNull(result),
-            () -> assertEquals(expectedCommentary, capturedHistory.getCommentary()),
-            () -> assertEquals(EMPLOYEE_DEACTIVATION_LOCAL_DATE, capturedHistory.getHistoryDate()),
-            () -> assertEquals(deactivationReason, capturedHistory.getHistoryType()),
-            () -> assertEquals(employee, capturedHistory.getEmployee())
-        );
+                () -> assertNotNull(result),
+                () -> assertEquals(expectedCommentary, capturedHistory.getCommentary()),
+                () -> assertEquals(EMPLOYEE_DEACTIVATION_LOCAL_DATE, capturedHistory.getHistoryDate()),
+                () -> assertEquals(deactivationReason, capturedHistory.getHistoryType()),
+                () -> assertEquals(employee, capturedHistory.getEmployee()));
     }
 
     @Test
     public void shouldCreateReactivationHistorySuccessfully() throws NotFoundException, InvalidPeriodException {
         // ARRANGE
         when(employeeHistoryRepository.findFirstByEmployee_IdOrderByHistoryDateAsc(eq(employee.getId())))
-            .thenReturn(Optional.of(employeeHistoryHiring)); // employeeHistoryHiring.date is 2022-11-23
+                .thenReturn(Optional.of(employeeHistoryHiring)); // employeeHistoryHiring.date is 2022-11-23
 
         when(employeeHistoryRepository.findFirstByEmployee_IdAndHistoryType_TypeInOrderByHistoryDateDesc(
-            eq(employee.getId()), anyList()))
-            .thenReturn(Optional.of(employeeHistoryLastDeactivation));
+                eq(employee.getId()), anyList()))
+                .thenReturn(Optional.of(employeeHistoryLastDeactivation));
 
         when(forHistoryTypePort.findHistoryTypeByName(HistoryTypeEnum.RECONTRATACION.getType()))
-            .thenReturn(reactivationHistoryType);
+                .thenReturn(reactivationHistoryType);
 
         // Stub saving: simply return the passed EmployeeHistory.
         when(employeeHistoryRepository.save(any(EmployeeHistory.class)))
-            .thenAnswer(invocation -> invocation.getArgument(0));
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // ACT
-        EmployeeHistory result = employeeHistoryService.createEmployeeHistoryReactivation(employee, EMPLOYEE_REACTIVATION_DATE);
+        EmployeeHistory result = employeeHistoryService.createEmployeeHistoryReactivation(employee,
+                EMPLOYEE_REACTIVATION_DATE);
 
         // ASSERT
         ArgumentCaptor<EmployeeHistory> captor = ArgumentCaptor.forClass(EmployeeHistory.class);
@@ -387,11 +383,10 @@ public class EmployeeHistoryServiceTest {
         String expectedCommentary = "El empleado se ha recontratado.";
 
         assertAll(
-            () -> assertNotNull(result),
-            () -> assertEquals(expectedCommentary, capturedHistory.getCommentary()),
-            () -> assertEquals(EMPLOYEE_REACTIVATION_DATE, capturedHistory.getHistoryDate()),
-            () -> assertEquals(reactivationHistoryType, capturedHistory.getHistoryType()),
-            () -> assertEquals(employee, capturedHistory.getEmployee())
-        );
+                () -> assertNotNull(result),
+                () -> assertEquals(expectedCommentary, capturedHistory.getCommentary()),
+                () -> assertEquals(EMPLOYEE_REACTIVATION_DATE, capturedHistory.getHistoryDate()),
+                () -> assertEquals(reactivationHistoryType, capturedHistory.getHistoryType()),
+                () -> assertEquals(employee, capturedHistory.getEmployee()));
     }
 }

@@ -14,6 +14,7 @@ import java.util.List;
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.hospitalApi.consults.models.EmployeeConsult;
+import com.hospitalApi.medicines.models.SaleMedicine;
 import com.hospitalApi.shared.models.Auditor;
 import com.hospitalApi.surgery.models.SurgeryEmployee;
 import com.hospitalApi.users.models.User;
@@ -40,6 +41,8 @@ import lombok.NoArgsConstructor;
 @DynamicUpdate
 public class Employee extends Auditor {
 
+    @Column(length = 100, unique = true, nullable = false)
+    private String cui;
     @Column(length = 100)
     private String firstName;
     @Column(length = 100)
@@ -50,8 +53,6 @@ public class Employee extends Auditor {
     private BigDecimal igssPercentage;
     @Column(precision = 5, scale = 2, nullable = true)
     private BigDecimal irtraPercentage;
-    //@Column(nullable = true)
-    //private LocalDateTime resignDate;
     @Column(nullable = true)
     private LocalDate desactivatedAt;
 
@@ -60,6 +61,9 @@ public class Employee extends Auditor {
 
     @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL)
     private User user;
+
+    @OneToMany(mappedBy = "employee")
+    private List<SaleMedicine> employeeSales;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
     private List<EmployeeHistory> employeeHistories;
@@ -82,33 +86,37 @@ public class Employee extends Auditor {
      * @param igssPercentage
      * @param irtraPercentage
      */
-    public Employee(String firstName, String lastName, BigDecimal salary, BigDecimal igssPercentage,
-            BigDecimal irtraPercentage
-            //LocalDateTime resignDate
-            ) {
+    public Employee(String cui, String firstName, String lastName, BigDecimal salary, BigDecimal igssPercentage,
+            BigDecimal irtraPercentage) {
         super();
+        this.cui = cui;
         this.firstName = firstName;
         this.lastName = lastName;
         this.salary = salary;
         this.igssPercentage = igssPercentage;
         this.irtraPercentage = irtraPercentage;
-        //this.resignDate = resignDate;
     }
 
-    public Employee(String firstName, String lastName, BigDecimal salary, BigDecimal igssPercentage,
+    public Employee(String cui, String firstName, String lastName, BigDecimal salary, BigDecimal igssPercentage,
             BigDecimal irtraPercentage, LocalDateTime resignDate, EmployeeType employeeType, User user) {
+        this.cui = cui;
         this.firstName = firstName;
         this.lastName = lastName;
         this.salary = salary;
         this.igssPercentage = igssPercentage;
         this.irtraPercentage = irtraPercentage;
-        //this.resignDate = resignDate;
         this.employeeType = employeeType;
         this.user = user;
     }
 
     public Employee(String id) {
         super(id);
+    }
+
+    public String getFullName() {
+        // este format da un espacio entre el firtname y el lastname
+        String fullname = String.format("%s %s", firstName, lastName);
+        return fullname;
     }
 
 }
