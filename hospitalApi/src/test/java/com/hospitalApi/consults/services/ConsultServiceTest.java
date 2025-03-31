@@ -20,10 +20,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
+import com.hospitalApi.consults.dtos.ConsutlFilterDTO;
 import com.hospitalApi.consults.dtos.UpdateConsultRequestDTO;
 import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.consults.port.ForEmployeeConsultPort;
@@ -519,6 +523,38 @@ public class ConsultServiceTest {
 
         verify(forRoomUsagePort).asignRoomToConsult(ROOM_ID, consult);
         verify(consultRepository, never()).save(any());
+    }
+
+    @Test
+    public void shouldReturnFilteredConsultsSuccessfully() {
+        // Arrange
+        ConsutlFilterDTO filterDTO = new ConsutlFilterDTO();
+        filterDTO.setConsultId("CONSULT-001");
+        filterDTO.setPatientDpi("123456789");
+        filterDTO.setPatientFirstnames("Jose");
+        filterDTO.setPatientLastnames("Perez");
+        filterDTO.setEmployeeId("EMPLOYEE-001");
+        filterDTO.setEmployeeFirstName("Carlos");
+        filterDTO.setEmployeeLastName("Lopez");
+        filterDTO.setIsPaid(false);
+        filterDTO.setIsInternado(false);
+
+        Consult consult1 = new Consult("CONSULT-001", patient, false, 200.0, 200.0);
+        Consult consult2 = new Consult("CONSULT-002", patient, false, 300.0, 300.0);
+        List<Consult> filteredList = List.of(consult1, consult2);
+
+        when(consultRepository.findAll(any(Specification.class), ArgumentMatchers.<Sort>any())).thenReturn(filteredList);
+
+        // Act
+        List<Consult> result = consultService.getConsults(filterDTO);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("CONSULT-001", result.get(0).getId());
+        assertEquals("CONSULT-002", result.get(1).getId());
+
+        verify(consultRepository, times(1)).findAll(any(Specification.class), any(Sort.class));
     }
 
 }
