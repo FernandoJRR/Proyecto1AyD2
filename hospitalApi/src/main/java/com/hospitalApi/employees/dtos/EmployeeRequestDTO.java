@@ -8,8 +8,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,6 +32,10 @@ public class EmployeeRequestDTO {
     @DecimalMin(value = "0.00", inclusive = false, message = "El salario debe ser mayor a 0")
     @Digits(integer = 10, fraction = 2, message = "El salario debe tener máximo 10 dígitos enteros y 2 decimales")
     private BigDecimal salary;
+
+    @NotBlank(message = "El CUI es obligatorio")
+    @Pattern(regexp = "^[0-9]{13}$", message = "El CUI debe ser un numero entero de 13 digitos")
+    private String cui;
 
     @DecimalMin(value = "0.00", inclusive = true, message = "El porcentaje de IGSS no puede ser negativo")
     @DecimalMax(value = "100.00", inclusive = true, message = "El porcentaje de IGSS no puede ser mayor a 100")

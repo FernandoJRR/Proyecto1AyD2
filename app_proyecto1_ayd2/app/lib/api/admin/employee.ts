@@ -41,6 +41,7 @@ export interface EmployeeHistoryDatePayload {
 export interface EmployeePayload {
   firstName: string;
   lastName: string;
+  cui: number;
   salary: number;
   iggsPercentage: number | null;
   irtraPercentage: number | null;
