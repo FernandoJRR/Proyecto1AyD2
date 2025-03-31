@@ -1,6 +1,6 @@
 package com.hospitalApi.reports.ports;
 
-public interface ReportService<Return,Filters> {
+public interface ReportService<R, F> {
 
-    public Return generateReport(Filters filters);
+    public R generateReport(F filter);
 }

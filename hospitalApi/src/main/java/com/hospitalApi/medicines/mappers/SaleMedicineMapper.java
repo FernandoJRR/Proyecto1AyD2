@@ -13,9 +13,7 @@ public interface SaleMedicineMapper {
 
     // esta onda deja el id de la consulta en null
     @Mapping(target = "consultId", ignore = true)
-    // esta onda multiplica el precio por la cantidad y lo deja en el total
-    @Mapping(target = "total", expression = "java(saleMedicine.getPrice() * saleMedicine.getQuantity())")
     public SaleMedicineResponseDTO fromMedicineSaleToSaleMedicineDTO(SaleMedicine saleMedicine);
-    
+
     public List<SaleMedicineResponseDTO> fromSaleMedicineListToSaleMedicineDTOList(List<SaleMedicine> saleMedicines);
 }

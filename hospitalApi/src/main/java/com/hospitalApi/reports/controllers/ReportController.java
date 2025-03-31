@@ -1,5 +1,6 @@
 package com.hospitalApi.reports.controllers;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hospitalApi.medicines.dtos.MedicineResponseDTO;
 import com.hospitalApi.medicines.mappers.MedicineMapper;
 import com.hospitalApi.medicines.models.Medicine;
+import com.hospitalApi.reports.dtos.request.MedicationProfitFilter;
+import com.hospitalApi.reports.dtos.request.MedicationReportFilter;
+import com.hospitalApi.reports.dtos.response.medicationProfitReport.MedicationProfitSummary;
 import com.hospitalApi.reports.ports.ReportService;
 
 import lombok.RequiredArgsConstructor;
@@ -21,16 +25,28 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ReportController {
 
-    private final ReportService<List<Medicine>, String> medicineReport;
+    private final ReportService<List<Medicine>, MedicationReportFilter> medicationReportPort;
+    private final ReportService<MedicationProfitSummary, MedicationProfitFilter> medicationProfitReportPort;
 
     private final MedicineMapper medicineMapper;
 
-    @GetMapping("/getMedicinesReport")
+    @GetMapping("/getMedicationReport")
     @ResponseStatus(HttpStatus.OK)
     public List<MedicineResponseDTO> getMedicinesReport(
             @RequestParam(required = false) String name) {
-        List<Medicine> medicines = medicineReport.generateReport(name);
+        List<Medicine> medicines = medicationReportPort.generateReport(new MedicationReportFilter(name));
         List<MedicineResponseDTO> medicinesDTO = medicineMapper.fromMedicineListToMedicineResponseDTOList(medicines);
         return medicinesDTO;
+    }
+
+    @GetMapping("/getMedicationProfitReport")
+    @ResponseStatus(HttpStatus.OK)
+    public MedicationProfitSummary getMedicationProfitReport(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate) {
+        MedicationProfitSummary report = medicationProfitReportPort
+                .generateReport(new MedicationProfitFilter(name, startDate, endDate));
+        return report;
     }
 }

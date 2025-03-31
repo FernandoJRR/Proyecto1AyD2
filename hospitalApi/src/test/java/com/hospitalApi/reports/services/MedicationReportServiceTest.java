@@ -2,6 +2,7 @@ package com.hospitalApi.reports.services;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.hospitalApi.medicines.models.Medicine;
 import com.hospitalApi.medicines.ports.ForMedicinePort;
+import com.hospitalApi.reports.dtos.request.MedicationReportFilter;
 
 @ExtendWith(MockitoExtension.class)
 public class MedicationReportServiceTest {
@@ -32,6 +34,7 @@ public class MedicationReportServiceTest {
 
     private Medicine medicine1;
     private Medicine medicine2;
+    private MedicationReportFilter medicationFilter;
 
     @BeforeEach
     void setUp() {
@@ -39,6 +42,7 @@ public class MedicationReportServiceTest {
         medicine1.setName(MEDICINE_NAME);
         medicine2 = new Medicine();
         medicine2.setName(MEDICINE_NAME_2);
+        medicationFilter = new MedicationReportFilter(MEDICINE_NAME);
     }
 
     /**
@@ -50,10 +54,10 @@ public class MedicationReportServiceTest {
     void testGenerateReport() {
         List<Medicine> mockMedicines = List.of(medicine1, medicine2);
         // Arrange
-        when(forMedicinePort.getAllMedicines(MEDICINE_NAME)).thenReturn(mockMedicines);
+        when(forMedicinePort.getAllMedicines(anyString())).thenReturn(mockMedicines);
 
         // Act
-        List<Medicine> result = medicationReportService.generateReport(MEDICINE_NAME);
+        List<Medicine> result = medicationReportService.generateReport(medicationFilter);
 
         // Assert
         assertAll(

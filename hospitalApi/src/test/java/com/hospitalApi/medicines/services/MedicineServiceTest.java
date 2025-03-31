@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,16 +48,16 @@ public class MedicineServiceTest {
     private static final String MEDICINE_DESCRIPTION = "Medicina para el dolor de cabeza";
     private static final Integer MEDICINE_QUANTITY = 10;
     private static final Integer MEDICINE_MIN_QUANTITY = 5;
-    private static final Double MEDICINE_PRICE = 5.00;
-    private static final Double MEDICINE_COST = 4.00;;
+    private static final BigDecimal MEDICINE_PRICE = new BigDecimal(5.00);
+    private static final BigDecimal MEDICINE_COST = new BigDecimal(4.00);
 
     private static final String MEDICINE_ID_2 = "23434-23434-23434-23434";
     private static final String MEDICINE_NAME_2 = "Amoxicilina";
     private static final String MEDICINE_DESCRIPTION_2 = "Antibiótico de amplio espectro";
     private static final Integer MEDICINE_QUANTITY_2 = 3;
     private static final Integer MEDICINE_MIN_QUANTITY_2 = 5;
-    private static final Double MEDICINE_PRICE_2 = 8.50;
-    private static final Double MEDICINE_COST_2 = 7.00;;
+    private static final BigDecimal MEDICINE_PRICE_2 = new BigDecimal(8.50);
+    private static final BigDecimal MEDICINE_COST_2 = new BigDecimal(7.00);
 
     private static final String MEDICINE_NAME_UPDATED = "Ibuprofeno";
 
@@ -68,7 +69,7 @@ public class MedicineServiceTest {
                 MEDICINE_QUANTITY,
                 MEDICINE_MIN_QUANTITY,
                 MEDICINE_PRICE,
-                   MEDICINE_COST);
+                MEDICINE_COST);
 
         updateDTO = new UpdateMedicineRequestDTO(
                 MEDICINE_NAME_UPDATED,
@@ -84,7 +85,7 @@ public class MedicineServiceTest {
                 MEDICINE_DESCRIPTION,
                 MEDICINE_QUANTITY,
                 MEDICINE_MIN_QUANTITY,
-                MEDICINE_PRICE ,
+                MEDICINE_PRICE,
                 MEDICINE_COST);
     }
 
