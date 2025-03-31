@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class EmployeeConsultServiceTest {
@@ -127,4 +128,77 @@ public class EmployeeConsultServiceTest {
         assertTrue(ex.getMessage().contains("porque es el único empleado asignado"));
         verify(employeeConsultRepository, never()).deleteByConsultIdAndEmployeeId(any(), any());
     }
+
+    @Test
+    void shouldCreateEmployeeConsultSuccessfully() throws NotFoundException {
+        // Arrange
+        when(forEmployeesPort.findEmployeeById(EMPLOYEE_ID)).thenReturn(employee);
+        when(employeeConsultRepository.save(any(EmployeeConsult.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        EmployeeConsult result = employeeConsultService.createEmployeeConsult(consult, EMPLOYEE_ID);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(employee, result.getEmployee());
+        assertEquals(consult, result.getConsult());
+
+        ArgumentCaptor<EmployeeConsult> captor = ArgumentCaptor.forClass(EmployeeConsult.class);
+        verify(employeeConsultRepository).save(captor.capture());
+
+        EmployeeConsult captured = captor.getValue();
+        assertEquals(employee, captured.getEmployee());
+        assertEquals(consult, captured.getConsult());
+
+        verify(forEmployeesPort).findEmployeeById(EMPLOYEE_ID);
+        verify(employeeConsultRepository).save(any(EmployeeConsult.class));
+    }
+
+    /**
+     * dado: que el empleado no está aún asignado a la consulta.
+     * cuando: se llama a addEmployeeConsultsByConsultIdAndEmployeeId.
+     * entonces: se crea la asignación y se retorna la lista de asignaciones
+     * actualizada.
+     */
+    @Test
+    void shouldAddEmployeeConsultsSuccessfully() throws NotFoundException {
+        // Arrange
+        when(employeeConsultRepository.existsByConsultIdAndEmployeeId(CONSULT_ID, EMPLOYEE_ID)).thenReturn(false);
+        when(forEmployeesPort.findEmployeeById(EMPLOYEE_ID)).thenReturn(employee);
+        when(employeeConsultRepository.save(any(EmployeeConsult.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(employeeConsultRepository.findByConsultId(CONSULT_ID))
+                .thenReturn(List.of(new EmployeeConsult(consult, employee)));
+
+        // Act
+        List<EmployeeConsult> result = employeeConsultService.addEmployeeConsultsByConsultIdAndEmployeeId(consult,
+                EMPLOYEE_ID);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(consult, result.get(0).getConsult());
+        assertEquals(employee, result.get(0).getEmployee());
+
+        verify(employeeConsultRepository).existsByConsultIdAndEmployeeId(CONSULT_ID, EMPLOYEE_ID);
+        verify(employeeConsultRepository).save(any(EmployeeConsult.class));
+        verify(employeeConsultRepository).findByConsultId(CONSULT_ID);
+        verify(forEmployeesPort).findEmployeeById(EMPLOYEE_ID);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenEmployeeAlreadyAssignedToConsult() throws NotFoundException {
+        // Arrange
+        when(employeeConsultRepository.existsByConsultIdAndEmployeeId(CONSULT_ID, EMPLOYEE_ID)).thenReturn(true);
+
+        // Act & Assert
+        assertThrows(IllegalStateException.class, () -> {
+            employeeConsultService.addEmployeeConsultsByConsultIdAndEmployeeId(consult, EMPLOYEE_ID);
+        });
+
+        verify(employeeConsultRepository, never()).save(any());
+        verify(forEmployeesPort, never()).findEmployeeById(any());
+    }
+
 }
