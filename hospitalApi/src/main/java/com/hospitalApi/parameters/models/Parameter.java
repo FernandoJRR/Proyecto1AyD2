@@ -1,4 +1,4 @@
-package com.hospitalApi.vacations.models;
+package com.hospitalApi.parameters.models;
 
 import java.time.LocalDate;
 
@@ -7,8 +7,6 @@ import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -17,20 +15,13 @@ import lombok.NoArgsConstructor;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class Vacations extends Auditor {
-    @Column
-    private Integer periodo_anio;
-
-    @ManyToOne
-    @JoinColumn
-    private Employee employee;
+public class Parameter extends Auditor {
+    @Column(unique = true)
+    private String key;
 
     @Column
-    private LocalDate fechaInicio;
+    private String value;
 
     @Column
-    private LocalDate fechaFin;
-
-    @Column
-    private Boolean se_utilizo;
+    private String name;
 }
