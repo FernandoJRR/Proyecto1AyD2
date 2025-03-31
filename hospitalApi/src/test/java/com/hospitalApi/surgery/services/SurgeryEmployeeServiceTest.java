@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -168,17 +169,30 @@ public class SurgeryEmployeeServiceTest {
 
     @Test
     public void shouldRemoveEmployeeSuccessfully() throws NotFoundException {
+        // Arrange
+        SurgeryEmployee anotherEmployee = new SurgeryEmployee();
+        anotherEmployee.setSurgery(surgery);
+        anotherEmployee.setEmployee(new Employee("EMP-002"));
+
         when(forSurgeryPort.getSurgery(SURGERY_ID)).thenReturn(surgery);
         when(forSurgeryPort.surgeryAsPerformed(SURGERY_ID)).thenReturn(false);
         when(forEmployeesPort.findEmployeeById(EMPLOYEE_ID)).thenReturn(employee);
         when(surgeryEmployeeRepository.existsBySurgeryIdAndEmployeeId(SURGERY_ID, EMPLOYEE_ID)).thenReturn(true);
-        when(surgeryEmployeeRepository.findBySurgeryId(SURGERY_ID)).thenReturn(List.of(surgeryEmployee));
+        when(surgeryEmployeeRepository.findBySurgeryId(SURGERY_ID))
+                .thenReturn(List.of(surgeryEmployee, anotherEmployee)) // primera llamada: para validar si hay más de
+                                                                       // uno
+                .thenReturn(List.of(anotherEmployee)); // segunda llamada: después de eliminar
 
+        // Act
         List<SurgeryEmployee> result = surgeryEmployeeService.removeEmployeeFromSurgery(SURGERY_ID, EMPLOYEE_ID);
 
+        // Assert
         assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("EMP-002", result.get(0).getEmployee().getId());
+
         verify(surgeryEmployeeRepository).deleteBySurgeryIdAndEmployeeId(SURGERY_ID, EMPLOYEE_ID);
-        verify(surgeryEmployeeRepository).findBySurgeryId(SURGERY_ID);
+        verify(surgeryEmployeeRepository, times(2)).findBySurgeryId(SURGERY_ID); // se llama 2 veces
     }
 
     @Test
@@ -198,6 +212,12 @@ public class SurgeryEmployeeServiceTest {
         when(forSurgeryPort.getSurgery(SURGERY_ID)).thenReturn(surgery);
         when(forSurgeryPort.surgeryAsPerformed(SURGERY_ID)).thenReturn(false);
         when(forEmployeesPort.findEmployeeById(EMPLOYEE_ID)).thenReturn(employee);
+
+        SurgeryEmployee anotherEmployee = new SurgeryEmployee();
+        anotherEmployee.setEmployee(new Employee());
+        when(surgeryEmployeeRepository.findBySurgeryId(SURGERY_ID))
+                .thenReturn(List.of(surgeryEmployee, anotherEmployee));
+
         when(surgeryEmployeeRepository.existsBySurgeryIdAndEmployeeId(SURGERY_ID, EMPLOYEE_ID)).thenReturn(false);
 
         assertThrows(NotFoundException.class, () -> {
@@ -220,11 +240,20 @@ public class SurgeryEmployeeServiceTest {
     public void shouldThrowWhenEmployeeNotFoundOnRemoveEmployee() throws NotFoundException {
         when(forSurgeryPort.getSurgery(SURGERY_ID)).thenReturn(surgery);
         when(forSurgeryPort.surgeryAsPerformed(SURGERY_ID)).thenReturn(false);
+
+        SurgeryEmployee anotherEmployee = new SurgeryEmployee();
+        anotherEmployee.setEmployee(new Employee());
+        when(surgeryEmployeeRepository.findBySurgeryId(SURGERY_ID))
+                .thenReturn(List.of(surgeryEmployee, anotherEmployee));
+
         when(forEmployeesPort.findEmployeeById(EMPLOYEE_ID)).thenThrow(new NotFoundException("not found"));
 
         assertThrows(NotFoundException.class, () -> {
             surgeryEmployeeService.removeEmployeeFromSurgery(SURGERY_ID, EMPLOYEE_ID);
         });
+
+        verify(forEmployeesPort).findEmployeeById(EMPLOYEE_ID);
+        verify(surgeryEmployeeRepository, never()).deleteBySurgeryIdAndEmployeeId(any(), any());
     }
 
     @Test
@@ -303,18 +332,30 @@ public class SurgeryEmployeeServiceTest {
 
     @Test
     public void shouldRemoveSpecialistSuccessfully() throws Exception {
+        // Arrange
+        SurgeryEmployee anotherEmployee = new SurgeryEmployee();
+        anotherEmployee.setSurgery(surgery);
+        anotherEmployee.setEmployee(new Employee("EMP-002")); // otro doctor asignado
+
         when(forSurgeryPort.getSurgery(SURGERY_ID)).thenReturn(surgery);
         when(forSurgeryPort.surgeryAsPerformed(SURGERY_ID)).thenReturn(false);
         when(forSpecialistEmployeePort.getSpecialistEmployeeById(SPECIALIST_ID)).thenReturn(specialist);
         when(surgeryEmployeeRepository.existsBySurgeryIdAndSpecialistEmployeeId(SURGERY_ID, SPECIALIST_ID))
                 .thenReturn(true);
-        when(surgeryEmployeeRepository.findBySurgeryId(SURGERY_ID)).thenReturn(List.of());
+        when(surgeryEmployeeRepository.findBySurgeryId(SURGERY_ID))
+                .thenReturn(List.of(surgeryEmployee, anotherEmployee)) // primera llamada: validación de mínimo 2
+                .thenReturn(List.of(anotherEmployee)); // segunda llamada: resultado final tras eliminar
 
+        // Act
         List<SurgeryEmployee> result = surgeryEmployeeService.removeSpecialistFromSurgery(SURGERY_ID, SPECIALIST_ID);
 
+        // Assert
         assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals("EMP-002", result.get(0).getEmployee().getId());
+
         verify(surgeryEmployeeRepository).deleteBySurgeryIdAndSpecialistEmployeeId(SURGERY_ID, SPECIALIST_ID);
-        verify(surgeryEmployeeRepository).findBySurgeryId(SURGERY_ID);
+        verify(surgeryEmployeeRepository, times(2)).findBySurgeryId(SURGERY_ID);
     }
 
     @Test
@@ -332,12 +373,19 @@ public class SurgeryEmployeeServiceTest {
         when(forSurgeryPort.getSurgery(SURGERY_ID)).thenReturn(surgery);
         when(forSurgeryPort.surgeryAsPerformed(SURGERY_ID)).thenReturn(false);
         when(forSpecialistEmployeePort.getSpecialistEmployeeById(SPECIALIST_ID)).thenReturn(specialist);
+
+        SurgeryEmployee another = new SurgeryEmployee();
+        another.setEmployee(new Employee());
+        when(surgeryEmployeeRepository.findBySurgeryId(SURGERY_ID)).thenReturn(List.of(surgeryEmployee, another));
+
         when(surgeryEmployeeRepository.existsBySurgeryIdAndSpecialistEmployeeId(SURGERY_ID, SPECIALIST_ID))
                 .thenReturn(false);
 
         assertThrows(NotFoundException.class, () -> {
             surgeryEmployeeService.removeSpecialistFromSurgery(SURGERY_ID, SPECIALIST_ID);
         });
+
+        verify(surgeryEmployeeRepository, never()).deleteBySurgeryIdAndSpecialistEmployeeId(any(), any());
     }
 
     @Test
@@ -353,12 +401,24 @@ public class SurgeryEmployeeServiceTest {
     public void shouldThrowWhenSpecialistNotFoundOnRemoveSpecialist() throws Exception {
         when(forSurgeryPort.getSurgery(SURGERY_ID)).thenReturn(surgery);
         when(forSurgeryPort.surgeryAsPerformed(SURGERY_ID)).thenReturn(false);
+
+        SurgeryEmployee doctor = new SurgeryEmployee();
+        doctor.setEmployee(new Employee());
+        SurgeryEmployee specialistAssigned = new SurgeryEmployee();
+        specialistAssigned.setSpecialistEmployee(specialist);
+
+        when(surgeryEmployeeRepository.findBySurgeryId(SURGERY_ID))
+                .thenReturn(List.of(doctor, specialistAssigned));
+
         when(forSpecialistEmployeePort.getSpecialistEmployeeById(SPECIALIST_ID))
                 .thenThrow(new NotFoundException("not found"));
 
         assertThrows(NotFoundException.class, () -> {
             surgeryEmployeeService.removeSpecialistFromSurgery(SURGERY_ID, SPECIALIST_ID);
         });
+
+        verify(forSpecialistEmployeePort).getSpecialistEmployeeById(SPECIALIST_ID);
+        verify(surgeryEmployeeRepository, never()).deleteBySurgeryIdAndSpecialistEmployeeId(any(), any());
     }
 
     @Test
@@ -367,7 +427,8 @@ public class SurgeryEmployeeServiceTest {
         when(forSurgeryPort.surgeryAsPerformed(SURGERY_ID)).thenReturn(false);
         when(forSpecialistEmployeePort.getSpecialistEmployeeById(SPECIALIST_ID)).thenReturn(specialist);
         when(forSurgeryTypePort.getSurgeryType(surgeryType.getId())).thenReturn(surgeryType);
-        when(surgeryEmployeeRepository.existsBySurgeryIdAndSpecialistEmployeeId(SURGERY_ID, SPECIALIST_ID)).thenReturn(false);
+        when(surgeryEmployeeRepository.existsBySurgeryIdAndSpecialistEmployeeId(SURGERY_ID, SPECIALIST_ID))
+                .thenReturn(false);
         when(surgeryEmployeeRepository.findBySurgeryId(SURGERY_ID)).thenReturn(List.of());
 
         List<SurgeryEmployee> result = surgeryEmployeeService.addDoctorToSurgery(SURGERY_ID, SPECIALIST_ID, true);

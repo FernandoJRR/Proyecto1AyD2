@@ -318,4 +318,351 @@ public class RoomServiceTest {
                 () -> roomService.findRoomByNumber(ROOM_NUMBER));
     }
 
+    /**
+     * dado: que existen habitaciones disponibles con estado AVAILABLE.
+     * cuando: se llama al método findAllRoomsAvailable().
+     * entonces: se retorna una lista con todas las habitaciones disponibles.
+     */
+    @Test
+    public void findAllRoomsAvailableShouldReturnAvailableRooms() {
+        // arrange
+        room.setStatus(RoomStatus.AVAILABLE);
+        updatedRoom.setStatus(RoomStatus.AVAILABLE);
+
+        when(roomRepository.findByStatus(RoomStatus.AVAILABLE)).thenReturn(List.of(room, updatedRoom));
+
+        // act
+        List<Room> result = roomService.findAllRoomsAvailable();
+
+        // assert
+        verify(roomRepository, times(1)).findByStatus(RoomStatus.AVAILABLE);
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(2, result.size()),
+                () -> assertTrue(result.contains(room)),
+                () -> assertTrue(result.contains(updatedRoom)),
+                () -> assertEquals(RoomStatus.AVAILABLE, result.get(0).getStatus()));
+    }
+
+    /**
+     * dado: que no existen habitaciones disponibles.
+     * cuando: se llama al método findAllRoomsAvailable().
+     * entonces: se retorna una lista vacía.
+     */
+    @Test
+    public void findAllRoomsAvailableShouldReturnEmptyListWhenNoRoomsAvailable() {
+        // arrange
+        when(roomRepository.findByStatus(RoomStatus.AVAILABLE)).thenReturn(List.of());
+
+        // act
+        List<Room> result = roomService.findAllRoomsAvailable();
+
+        // assert
+        verify(roomRepository, times(1)).findByStatus(RoomStatus.AVAILABLE);
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertTrue(result.isEmpty()));
+    }
+
+    /**
+     * dado: que la habitación existe y su estado es AVAILABLE.
+     * cuando: se llama al método roomIsAvailable().
+     * entonces: se retorna true.
+     */
+    @Test
+    public void roomIsAvailableShouldReturnTrueWhenRoomIsAvailable() throws NotFoundException {
+        // arrange
+        room.setId(ROOM_ID);
+        room.setStatus(RoomStatus.AVAILABLE);
+
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
+
+        // act
+        boolean result = roomService.roomIsAvailable(ROOM_ID);
+
+        // assert
+        assertTrue(result);
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+    }
+
+    /**
+     * dado: que la habitación existe pero su estado no es AVAILABLE.
+     * cuando: se llama al método roomIsAvailable().
+     * entonces: se retorna false.
+     */
+    @Test
+    public void roomIsAvailableShouldReturnFalseWhenRoomIsNotAvailable() throws NotFoundException {
+        // arrange
+        room.setId(ROOM_ID);
+        room.setStatus(RoomStatus.OCCUPIED);
+
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
+
+        // act
+        boolean result = roomService.roomIsAvailable(ROOM_ID);
+
+        // assert
+        assertEquals(false, result);
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+    }
+
+    /**
+     * dado: que la habitación no existe.
+     * cuando: se llama al método roomIsAvailable().
+     * entonces: se lanza una excepción NotFoundException.
+     */
+    @Test
+    public void roomIsAvailableShouldThrowNotFoundExceptionWhenRoomDoesNotExist() {
+        // arrange
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.empty());
+
+        // act & assert
+        assertThrows(NotFoundException.class, () -> roomService.roomIsAvailable(ROOM_ID));
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+    }
+
+    /**
+     * dado: que la habitación existe y está en estado OCCUPIED.
+     * cuando: se llama al método markVacant().
+     * entonces: se cambia su estado a AVAILABLE y se guarda.
+     */
+    @Test
+    public void shouldMarkRoomAsVacantSuccessfullyWhenOccupied() throws NotFoundException {
+        // arrange
+        room.setId(ROOM_ID);
+        room.setStatus(RoomStatus.OCCUPIED);
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
+        when(roomRepository.save(room)).thenReturn(room);
+
+        // act
+        Room result = roomService.markVacant(ROOM_ID);
+
+        // assert
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(RoomStatus.AVAILABLE, result.getStatus()));
+
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+        verify(roomRepository, times(1)).save(room);
+    }
+
+    /**
+     * dado: que la habitación existe pero no está en estado OCCUPIED.
+     * cuando: se llama al método markVacant().
+     * entonces: se lanza una excepción IllegalStateException.
+     */
+    @Test
+    public void shouldThrowExceptionWhenMarkVacantOnNonOccupiedRoom() {
+        // arrange
+        room.setId(ROOM_ID);
+        room.setStatus(RoomStatus.OUT_OF_SERVICE);
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
+
+        // act & assert
+        assertThrows(IllegalStateException.class, () -> roomService.markVacant(ROOM_ID));
+
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+        verify(roomRepository, never()).save(any());
+    }
+
+    /**
+     * dado: que la habitación no existe.
+     * cuando: se llama al método markVacant().
+     * entonces: se lanza una excepción NotFoundException.
+     */
+    @Test
+    public void shouldThrowNotFoundExceptionWhenRoomDoesNotExistForMarkVacant() {
+        // arrange
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.empty());
+
+        // act & assert
+        assertThrows(NotFoundException.class, () -> roomService.markVacant(ROOM_ID));
+
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+        verify(roomRepository, never()).save(any());
+    }
+
+    /**
+     * dado: que la habitación existe y no está en estado OCCUPIED.
+     * cuando: se llama al método markAvailable().
+     * entonces: se cambia su estado a AVAILABLE y se guarda correctamente.
+     */
+    @Test
+    public void shouldMarkRoomAsAvailableSuccessfully() throws NotFoundException {
+        // arrange
+        room.setId(ROOM_ID);
+        room.setStatus(RoomStatus.OUT_OF_SERVICE); // estado válido para cambiar a AVAILABLE
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
+        when(roomRepository.save(room)).thenReturn(room);
+
+        // act
+        Room result = roomService.markAvailable(ROOM_ID);
+
+        // assert
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(RoomStatus.AVAILABLE, result.getStatus()));
+
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+        verify(roomRepository, times(1)).save(room);
+    }
+
+    /**
+     * dado: que la habitación existe y está en estado OCCUPIED.
+     * cuando: se llama al método markAvailable().
+     * entonces: se lanza una excepción IllegalStateException.
+     */
+    @Test
+    public void shouldThrowIllegalStateExceptionWhenMarkAvailableAndRoomIsOccupied() {
+        // arrange
+        room.setId(ROOM_ID);
+        room.setStatus(RoomStatus.OCCUPIED);
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
+
+        // act & assert
+        assertThrows(IllegalStateException.class, () -> roomService.markAvailable(ROOM_ID));
+
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+        verify(roomRepository, never()).save(any());
+    }
+
+    /**
+     * dado: que la habitación no existe.
+     * cuando: se llama al método markAvailable().
+     * entonces: se lanza una excepción NotFoundException.
+     */
+    @Test
+    public void shouldThrowNotFoundExceptionWhenRoomNotFoundInMarkAvailable() {
+        // arrange
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.empty());
+
+        // act & assert
+        assertThrows(NotFoundException.class, () -> roomService.markAvailable(ROOM_ID));
+
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+        verify(roomRepository, never()).save(any());
+    }
+
+    /**
+     * dado: que la habitación existe y no está fuera de servicio.
+     * cuando: se llama al método markOccupied().
+     * entonces: se cambia su estado a OCCUPIED y se guarda correctamente.
+     */
+    @Test
+    public void shouldMarkRoomAsOccupiedSuccessfully() throws NotFoundException {
+        // arrange
+        room.setId(ROOM_ID);
+        room.setStatus(RoomStatus.AVAILABLE); // estado válido para pasar a OCCUPIED
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
+        when(roomRepository.save(room)).thenReturn(room);
+
+        // act
+        Room result = roomService.markOccupied(ROOM_ID);
+
+        // assert
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(RoomStatus.OCCUPIED, result.getStatus()));
+
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+        verify(roomRepository, times(1)).save(room);
+    }
+
+    /**
+     * dado: que la habitación existe pero está en estado OUT_OF_SERVICE.
+     * cuando: se llama al método markOccupied().
+     * entonces: se lanza una excepción IllegalStateException.
+     */
+    @Test
+    public void shouldThrowIllegalStateExceptionWhenMarkOccupiedAndRoomIsOutOfService() {
+        // arrange
+        room.setId(ROOM_ID);
+        room.setStatus(RoomStatus.OUT_OF_SERVICE);
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
+
+        // act & assert
+        assertThrows(IllegalStateException.class, () -> roomService.markOccupied(ROOM_ID));
+
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+        verify(roomRepository, never()).save(any());
+    }
+
+    /**
+     * dado: que la habitación no existe en la base de datos.
+     * cuando: se llama al método markOccupied().
+     * entonces: se lanza una excepción NotFoundException.
+     */
+    @Test
+    public void shouldThrowNotFoundExceptionWhenRoomNotFoundInMarkOccupied() {
+        // arrange
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.empty());
+
+        // act & assert
+        assertThrows(NotFoundException.class, () -> roomService.markOccupied(ROOM_ID));
+
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+        verify(roomRepository, never()).save(any());
+    }
+
+    /**
+     * dado: que la habitación existe y no está ocupada.
+     * cuando: se llama al método markOutOfService().
+     * entonces: se cambia su estado a OUT_OF_SERVICE y se guarda correctamente.
+     */
+    @Test
+    public void shouldMarkRoomAsOutOfServiceSuccessfully() throws NotFoundException {
+        // arrange
+        room.setId(ROOM_ID);
+        room.setStatus(RoomStatus.AVAILABLE); // estado válido para cambiar a OUT_OF_SERVICE
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
+        when(roomRepository.save(room)).thenReturn(room);
+
+        // act
+        Room result = roomService.markOutOfService(ROOM_ID);
+
+        // assert
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(RoomStatus.OUT_OF_SERVICE, result.getStatus()));
+
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+        verify(roomRepository, times(1)).save(room);
+    }
+
+    /**
+     * dado: que la habitación está en estado OCCUPIED.
+     * cuando: se llama al método markOutOfService().
+     * entonces: se lanza una excepción IllegalStateException.
+     */
+    @Test
+    public void shouldThrowIllegalStateExceptionWhenRoomIsOccupiedInMarkOutOfService() {
+        // arrange
+        room.setId(ROOM_ID);
+        room.setStatus(RoomStatus.OCCUPIED); // estado inválido
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.of(room));
+
+        // act & assert
+        assertThrows(IllegalStateException.class, () -> roomService.markOutOfService(ROOM_ID));
+
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+        verify(roomRepository, never()).save(any());
+    }
+
+    /**
+     * dado: que la habitación no existe.
+     * cuando: se llama al método markOutOfService().
+     * entonces: se lanza una excepción NotFoundException.
+     */
+    @Test
+    public void shouldThrowNotFoundExceptionWhenRoomNotFoundInMarkOutOfService() {
+        // arrange
+        when(roomRepository.findById(ROOM_ID)).thenReturn(Optional.empty());
+
+        // act & assert
+        assertThrows(NotFoundException.class, () -> roomService.markOutOfService(ROOM_ID));
+
+        verify(roomRepository, times(1)).findById(ROOM_ID);
+        verify(roomRepository, never()).save(any());
+    }
+
 }

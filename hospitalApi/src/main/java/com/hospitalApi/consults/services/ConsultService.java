@@ -14,6 +14,7 @@ import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.consults.port.ForConsultPort;
 import com.hospitalApi.consults.repositories.ConsultRepository;
 import com.hospitalApi.consults.specifications.ConsultSpecifications;
+import com.hospitalApi.medicines.ports.ForSaleMedicineCalculationPort;
 import com.hospitalApi.patients.models.Patient;
 import com.hospitalApi.patients.ports.ForPatientPort;
 import com.hospitalApi.rooms.models.RoomUsage;
@@ -33,6 +34,7 @@ public class ConsultService implements ForConsultPort {
 
     private final ConsultRepository consultRepository;
     private final ForPatientPort forPatientPort;
+    private final ForSaleMedicineCalculationPort forSaleMedicineCalculationPort;
     private final ForSurgeryCalculationPort forSurgeryCalculationService;
     private final ForEmployeeConsultPort forEmployeeConsultPort;
     private final ForRoomUsagePort forRoomUsagePort;
@@ -77,15 +79,16 @@ public class ConsultService implements ForConsultPort {
     }
 
     @Override
-    public Double obtenerTotalConsulta(String id) throws NotFoundException {
+    public Double obtenerTotalConsulta(String id) throws NotFoundException, IllegalStateException {
         Consult consult = findById(id);
         Double totalCirugias = forSurgeryCalculationService.totalSurgerisByConsult(id);
         Double totalHabitacion = 0.00;
         if (consult.getIsInternado()) {
-            RoomUsage roomUsage = forRoomUsagePort.closeRoomUsage(consult);
+            RoomUsage roomUsage = forRoomUsagePort.calcRoomUsage(consult);
             totalHabitacion = roomUsage.getPrice().multiply(BigDecimal.valueOf(roomUsage.getUsageDays())).doubleValue();
         }
-        Double newTotalCost = consult.getCostoConsulta() + totalCirugias + totalHabitacion;
+        Double totalMedicamentos = forSaleMedicineCalculationPort.totalSalesMedicinesByConsult(id);
+        Double newTotalCost = consult.getCostoConsulta() + totalCirugias + totalHabitacion + totalMedicamentos;
         consult.setCostoTotal(newTotalCost);
         consultRepository.save(consult);
         return consult.getCostoTotal();
@@ -94,9 +97,18 @@ public class ConsultService implements ForConsultPort {
     @Override
     public Consult pagarConsulta(String id) throws NotFoundException, IllegalStateException {
         Consult consult = findById(id);
+        // Verificar si las cirugías han sido realizadas
+        if (!forSurgeryCalculationService.allSurgeriesPerformedByConsultId(id)) {
+            throw new IllegalStateException(
+                    "No se puede pagar la consulta porque no todas las cirugías han sido realizadas.");
+        }
         // Verificar si la consulta ya fue pagada
         if (consult.getIsPaid()) {
             throw new IllegalStateException("La consulta con id " + id + " ya fue pagada");
+        }
+        // Cerrar el uso de la habitación si es que existe
+        if (consult.getIsInternado()) {
+            forRoomUsagePort.closeRoomUsage(consult);
         }
         consult.setIsPaid(true);
         return consultRepository.save(consult);
@@ -133,40 +145,10 @@ public class ConsultService implements ForConsultPort {
     @Override
     public Consult markConsultInternado(String id, String habitacionId)
             throws NotFoundException, IllegalStateException, DuplicatedEntryException {
-        Consult consult = findById(id);
-        // Verificar si la consulta ya fue pagada
-        if (consult.getIsPaid()) {
-            throw new IllegalStateException("La consulta con id " + id + " ya fue pagada no se puede modificar");
-        }
+        Consult consult = findConsultAndIsNotPaid(id);
         forRoomUsagePort.asignRoomToConsult(habitacionId, consult);
         consult.setIsInternado(true);
         consult = consultRepository.save(consult);
-        return consult;
-    }
-
-    @Override
-    public Consult endInternado(String id) throws NotFoundException, IllegalStateException {
-        Consult consult = findById(id);
-        if (!consult.getIsInternado()) {
-            throw new IllegalStateException("La consulta con id " + id + " no es de tipo internado");
-        }
-        // Verificar si la consulta ya fue pagada
-        if (consult.getIsPaid()) {
-            throw new IllegalStateException("La consulta con id " + id + " ya fue pagada no se puede modificar");
-        }
-        obtenerTotalConsulta(id);
-        consult = findById(id);
-        return consult;
-    }
-
-    @Override
-    public Consult endConsult(String id) throws NotFoundException, IllegalStateException {
-        Consult consult = findById(id);
-        if (consult.getIsPaid()) {
-            throw new IllegalStateException("La consulta con id " + id + " ya fue pagada no se puede modificar");
-        }
-        obtenerTotalConsulta(id);
-        consult = findById(id);
         return consult;
     }
 }

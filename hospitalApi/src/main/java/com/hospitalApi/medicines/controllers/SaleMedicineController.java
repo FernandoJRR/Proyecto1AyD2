@@ -51,7 +51,8 @@ public class SaleMedicineController {
                                 createSaleMedicineFarmaciaRequestDTO.getMedicineId(),
                                 createSaleMedicineFarmaciaRequestDTO.getQuantity());
                 // Convertimos el sale de la medicina a un DTO
-                SaleMedicineResponseDTO saleMedicineDTO = saleMedicineMapper.fromMedicineSaleToSaleMedicineDTO(medicine);
+                SaleMedicineResponseDTO saleMedicineDTO = saleMedicineMapper
+                                .fromMedicineSaleToSaleMedicineDTO(medicine);
                 return saleMedicineDTO;
         }
 
@@ -90,7 +91,8 @@ public class SaleMedicineController {
                                 createSaleMedicineConsultRequestDTO.getMedicineId(),
                                 createSaleMedicineConsultRequestDTO.getQuantity());
                 // Convertimos el sale de la medicina a un DTO
-                SaleMedicineResponseDTO saleMedicineDTO = saleMedicineMapper.fromMedicineSaleToSaleMedicineDTO(medicine);
+                SaleMedicineResponseDTO saleMedicineDTO = saleMedicineMapper
+                                .fromMedicineSaleToSaleMedicineDTO(medicine);
                 return saleMedicineDTO;
         }
 
@@ -123,8 +125,22 @@ public class SaleMedicineController {
                         @PathVariable("id") @NotBlank(message = "El id de la venta de medicamento es requerido") String id)
                         throws NotFoundException {
                 SaleMedicine saleMedicine = saleMedicinePort.findById(id);
-                SaleMedicineResponseDTO saleMedicineDTO = saleMedicineMapper.fromMedicineSaleToSaleMedicineDTO(saleMedicine);
+                SaleMedicineResponseDTO saleMedicineDTO = saleMedicineMapper
+                                .fromMedicineSaleToSaleMedicineDTO(saleMedicine);
                 return saleMedicineDTO;
+        }
+
+        @Operation(summary = "Obtener ventas de medicamento por id de medicina", description = "Obtiene ventas de medicamento por id de medicina.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Ventas de medicamento obtenidas exitosamente"),
+                        @ApiResponse(responseCode = "404", description = "La consulta no fue encontrada"),
+        })
+        @GetMapping("/consult/{consultId}")
+        public List<SaleMedicineResponseDTO> getSalesMedicinesByConsultId(
+                        @PathVariable("consultId") @NotBlank(message = "El id de la consulta es requerido") String consultId)
+                        throws NotFoundException {
+                List<SaleMedicine> saleMedicines = saleMedicinePort.getSalesMedicinesByConsultId(consultId);
+                return saleMedicineMapper.fromSaleMedicineListToSaleMedicineDTOList(saleMedicines);
         }
 
 }

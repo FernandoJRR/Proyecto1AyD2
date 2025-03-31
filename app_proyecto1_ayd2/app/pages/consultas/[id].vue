@@ -1,5 +1,5 @@
 <template>
-  <div class="m-6 ml-12 text-black">
+  <div class="m-6 pb-6 ml-12 text-black">
     <router-link to="/consultas">
       <Button label="Ver Consultas" icon="pi pi-arrow-left" text />
     </router-link>
@@ -9,10 +9,18 @@
       <Button
         label="Convertir en Internado"
         icon="pi pi-user-plus"
-        severity="warning"
+        severity="warn"
         outlined
         @click="showInternadoDialog = true"
-        :disabled="initialValues.consult.isInternado"
+        :disabled="initialValues.consult.isInternado || initialValues.consult.isPaid"
+      />
+      <Button
+        label="Pagar Consulta"
+        icon="pi pi-dollar"
+        severity="danger"
+        outlined
+        @click="abrirDialogoPagarCalcularTotal"
+        :disabled="initialValues.consult.isPaid"
       />
     </div>
 
@@ -42,7 +50,7 @@
           :severity="initialValues.consult.isInternado ? 'danger' : 'info'"
         />
       </div>
-
+      <!-- Información de la consulta -->
       <p>
         <strong>Paciente:</strong>
         {{ initialValues.consult.patient.firstnames }}
@@ -71,15 +79,19 @@
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-xl font-semibold">Empleados Asignados</h2>
           <div class="flex gap-2">
-            <Button
-              icon="pi pi-plus"
-              label="Agregar Empleado"
-              severity="success"
-              rounded
-              outlined
-              :disabled="!initialValues.consult.isInternado"
-              @click="() => toast('Abrir diálogo para agregar empleado')"
-            />
+            <router-link
+              v-if="initialValues.consult.isInternado"
+              :to="`/consultas/empleados/agregar/${initialValues.consult.id}`"
+            >
+              <Button
+                icon="pi pi-plus"
+                label="Agregar Empleado"
+                severity="success"
+                rounded
+                outlined
+                :disabled="!initialValues.consult.isInternado || initialValues.consult.isPaid"
+              />
+            </router-link>
             <Button
               icon="pi pi-refresh"
               label="Recargar"
@@ -108,6 +120,7 @@
                 severity="danger"
                 rounded
                 text
+                :disabled="initialValues.consult.isPaid"
                 @click="openDeleteDialog(slotProps.data.employeeId)"
               />
             </template>
@@ -130,8 +143,9 @@
           >
             <Button
               icon="pi pi-plus"
-              label="Crear Cirugía"
+              label="Agregar Cirugía"
               severity="success"
+              :disabled="initialValues.consult.isPaid"
               outlined
             />
           </router-link>
@@ -209,6 +223,7 @@
                   text
                   severity="danger"
                   @click="eliminarCirugia(slotProps.data)"
+                  :disabled="initialValues.consult.isPaid"
                   :pt="{ root: { title: 'Eliminar Cirugía' } }"
                 />
                 <Button
@@ -220,6 +235,53 @@
                   :pt="{ root: { title: 'Marcar como Realizada' } }"
                 />
               </div>
+            </template>
+          </Column>
+        </DataTable>
+      </div>
+
+      <!-- Tabla de las medicinas asignadas en consulta-->
+      <div class="mt-12">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold">Medicinas</h2>
+          <router-link :to="`/consultas/farmacia/${initialValues.consult.id}`">
+            <Button
+              icon="pi pi-plus"
+              label="Agregar Medicina"
+              severity="success"
+              :disabled="initialValues.consult.isPaid"
+              outlined
+            />
+          </router-link>
+        </div>
+        <DataTable
+          :value="initialValues.medicinesConsult"
+          tableStyle="min-width: 30rem"
+          stripedRows
+        >
+          <Column header="Nombre">
+            <template #body="slotProps">
+              {{ slotProps.data.medicine.name }}
+            </template>
+          </Column>
+
+          <Column header="Cantidad">
+            <template #body="slotProps">
+              {{ slotProps.data.quantity }}
+            </template>
+          </Column>
+          <Column header="Precio">
+            <template #body="slotProps">
+              Q{{ slotProps.data.medicine.price.toFixed(2) }}
+            </template>
+          </Column>
+          <Column header="Total">
+            <template #body="slotProps">
+              Q{{
+                (
+                  slotProps.data.medicine.price * slotProps.data.quantity
+                ).toFixed(2)
+              }}
             </template>
           </Column>
         </DataTable>
@@ -364,7 +426,7 @@
         />
       </template>
     </Dialog>
-
+    <!-- Dialogo Confirmar Internado -->
     <Dialog
       v-model:visible="showConfirmInternadoDialog"
       modal
@@ -381,6 +443,23 @@
           label="Confirmar"
           severity="warning"
           @click="confirmarInternado"
+        />
+      </template>
+    </Dialog>
+
+    <!-- Dialogo Pagar Consulta -->
+    <Dialog v-model:visible="pagarConsultaDialog" modal header="Pagar Consulta">
+      <p>¿Estas seguro que deseas pagar la consulta?</p>
+      <p>
+        El costo total de la consulta es de
+        <strong>Q{{ initialValues.consult.costoTotal.toFixed(2) }}</strong>
+      </p>
+      <template #footer>
+        <Button label="Cancelar" text @click="pagarConsultaDialog = false" />
+        <Button
+          label="Pagar"
+          severity="danger"
+          @click="confirmarPagarConsulta"
         />
       </template>
     </Dialog>
@@ -437,10 +516,12 @@
 import { toast } from "vue-sonner";
 import { reactive, ref, watch } from "vue";
 import {
+  calcTotalConsult,
   deleteEmployeeFromConsult,
   employeesConsult,
   getConsult,
   markConsultAsInternado,
+  payConsult,
   updateConsult,
   type AddDeleteEmployeeConsultRequestDTO,
   type ConsultResponseDTO,
@@ -456,8 +537,13 @@ import {
   type SurgeryResponseDTO,
 } from "../../lib/api/surgeries/surgeries";
 import { getAllAvailableRooms } from "~/lib/api/habitaciones/room";
+import {
+  getSaleMedicinesConsult,
+  type LineaVentaMedicine,
+} from "~/lib/api/medicines/medicine";
 
 const showInternadoDialog = ref(false);
+const pagarConsultaDialog = ref(false);
 const showConfirmInternadoDialog = ref(false);
 const showDeleteDialog = ref(false);
 const empleadoAEliminar = ref<string | null>(null);
@@ -484,6 +570,7 @@ const initialValues = reactive({
   } as ConsultResponseDTO,
   consultEmployees: [] as EmployeeConsultResponseDTO[],
   surgerysConsult: [] as SurgeryResponseDTO[],
+  medicinesConsult: [] as LineaVentaMedicine[],
 });
 
 const {
@@ -514,6 +601,24 @@ const { state: consultSurgeriesState, refetch: refetchConsultSurgeries } =
     key: ["consultSurgeries", useRoute().params.id as string],
     query: () => getSurgeriesbyConsultId(useRoute().params.id as string),
   });
+
+const {
+  state: consultMedicinesSurgery,
+  refetch: refetchConsultMedicinesDurgery,
+} = useQuery({
+  key: ["consultMedicinesSurgery", useRoute().params.id as string],
+  query: () => getSaleMedicinesConsult(useRoute().params.id as string),
+});
+
+watch(
+  () => consultMedicinesSurgery.value,
+  (value) => {
+    if (consultMedicinesSurgery.value.status === "success" && value.data) {
+      initialValues.medicinesConsult = value.data;
+    }
+  },
+  { immediate: true }
+);
 
 watch(
   () => consultSurgeriesState.value,
@@ -557,10 +662,30 @@ const recargarHabitaciones = () => {
   refetchRooms();
 };
 
+const recargarMedicinas = () => {
+  refetchConsultMedicinesDurgery();
+};
+
+const abrirDialogoPagarCalcularTotal = () => {
+  if (initialValues.consult.isPaid) {
+    toast.error("La consulta ya ha sido pagada");
+    return;
+  }
+  calcularCostoConsulta(useRoute().params.id as string);
+  pagarConsultaDialog.value = true;
+};
+
 const recargarConsulta = () => {
   refecthConsult();
   recargarEmpleadosAsignados();
   recargarCirugiasAsignadas();
+};
+
+const reloadAll = () => {
+  recargarConsulta();
+  recargarEmpleadosAsignados();
+  recargarCirugiasAsignadas();
+  recargarMedicinas();
 };
 
 const openDeleteDialog = (id: string) => {
@@ -667,6 +792,38 @@ const { mutate: markAsPerformed, asyncStatus: asyncMarkAsPerformedStatus } =
     },
   });
 
+const {
+  mutate: calcularCostoConsulta,
+  asyncStatus: asyncCalcularCostoConsultaStatus,
+} = useMutation({
+  mutation: (consultId: string) => calcTotalConsult(consultId),
+  onError: (error) => {
+    toast.error("Ocurrió un error al calcular el costo de la consulta", {
+      description: error.message,
+    });
+    // Cerramos la ventana de pago
+    pagarConsultaDialog.value = false;
+  },
+  onSuccess: () => {
+    toast.success("Costo de consulta calculado correctamente");
+    reloadAll();
+  },
+});
+
+const { mutate: payConsultMutate, asyncStatus: asyncPayConsultStatus } =
+  useMutation({
+    mutation: (consultId: string) => payConsult(consultId),
+    onError: (error) => {
+      toast.error("Ocurrió un error al pagar la consulta", {
+        description: error.message,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Consulta pagada correctamente");
+      reloadAll();
+    },
+  });
+
 const eliminarCirugia = (cirugia: any) => {
   cirugiaSeleccionada.value = cirugia;
   showEliminarDialog.value = true;
@@ -677,6 +834,19 @@ const confirmarEliminarCirugia = () => {
   deleteSurgeryMutate(cirugiaSeleccionada.value.id);
   showEliminarDialog.value = false;
   cirugiaSeleccionada.value = null;
+};
+
+const confirmarPagarConsulta = () => {
+  const payload = {
+    consultId: useRoute().params.id as string,
+    isPaid: true,
+  };
+  // updateConsultMutation(payload);
+  toast.success("Consulta pagada correctamente", {
+    description: String(payload),
+  });
+  payConsultMutate(useRoute().params.id as string);
+  pagarConsultaDialog.value = false;
 };
 
 const marcarComoRealizada = (cirugia: any) => {

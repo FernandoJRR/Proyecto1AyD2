@@ -17,6 +17,12 @@ export interface PayloadSaleMedicineFarmacia {
   quantity: number;
 }
 
+export interface PayloadSaleMedicineConsulta {
+  medicineId: string;
+  consultId: string;
+  quantity: number;
+}
+
 export interface LineaVentaMedicine {
   id: string;
   name: string;
@@ -29,12 +35,28 @@ export interface LineaVentaMedicine {
 export const mapLineaVentaMedicineToPayloadSaleMedicineFarmacia = (
   lineasVenta: LineaVentaMedicine[]
 ) => {
-  return lineasVenta.map((lineaVenta) => ({
-    medicineId: lineaVenta.id,
-    quantity: lineaVenta.quantity,
-  }));
+  return lineasVenta.map(
+    (lineaVenta) =>
+      ({
+        medicineId: lineaVenta.id,
+        quantity: lineaVenta.quantity,
+      } as PayloadSaleMedicineFarmacia)
+  );
 };
 
+export const mapLineaVentaMedicineToPayloadSaleMedicineConsulta = (
+  lineasVenta: LineaVentaMedicine[],
+  consultId: string
+) => {
+  return lineasVenta.map(
+    (lineaVenta) =>
+      ({
+        medicineId: lineaVenta.id,
+        consultId: consultId,
+        quantity: lineaVenta.quantity,
+      } as PayloadSaleMedicineConsulta)
+  );
+};
 export interface MedicinePayload {
   name: string;
   description: string;
@@ -43,7 +65,6 @@ export interface MedicinePayload {
   quantity: number;
   minQuantity: number;
 }
-
 
 export const createMedicine = async (data: MedicinePayload) => {
   const response = await $api<Medicine>(`${CURRENT_MEDICINE_URI}/create`, {
@@ -58,10 +79,7 @@ export const getMedicine = async (id: string) => {
   return response;
 };
 
-export const updateMedicine = async (
-  id: string,
-  data: MedicinePayload
-) => {
+export const updateMedicine = async (id: string, data: MedicinePayload) => {
   const response = await $api<Medicine>(`${CURRENT_MEDICINE_URI}/${id}`, {
     method: "PATCH",
     body: data,
@@ -95,3 +113,23 @@ export const ventaVariosFarmacia = async (
   );
   return response;
 };
+
+export const ventaVariosConsulta = async (
+  data: PayloadSaleMedicineConsulta[]
+) => {
+  const response = await $api<LineaVentaMedicine[]>(
+    `${CURRENT_SALE_MEDICINE_URI}/consult/varios`,
+    {
+      method: "POST",
+      body: data,
+    }
+  );
+  return response;
+};
+
+export const getSaleMedicinesConsult = async (consultId: string) => {
+  const response = await $api<LineaVentaMedicine[]>(
+    `${CURRENT_SALE_MEDICINE_URI}/consult/${consultId}`
+  );
+  return response;
+}

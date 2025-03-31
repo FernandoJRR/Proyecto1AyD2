@@ -114,7 +114,7 @@ export const payConsult = async (consultId: string) => {
   const response = await $api<TotalConsultResponseDTO>(
     `${CURRENT_CONSULT_URI}/pay/${consultId}`,
     {
-      method: "PATCH",
+      method: "POST",
     }
   );
   return response;

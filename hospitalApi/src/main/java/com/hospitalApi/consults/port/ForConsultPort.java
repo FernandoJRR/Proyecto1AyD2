@@ -20,16 +20,12 @@ public interface ForConsultPort {
 	public Consult updateConsult(String id, UpdateConsultRequestDTO updateConsultRequestDTO)
 			throws NotFoundException, IllegalStateException;
 
-	public Double obtenerTotalConsulta(String id) throws NotFoundException;
+	public Double obtenerTotalConsulta(String id) throws NotFoundException, IllegalStateException;
 
 	public Consult pagarConsulta(String id) throws NotFoundException, IllegalStateException;
 
 	public Consult markConsultInternado(String id, String habitacionId)
 			throws NotFoundException, IllegalStateException, DuplicatedEntryException;
-
-	public Consult endInternado(String id) throws NotFoundException, IllegalStateException;
-
-	public Consult endConsult(String id) throws NotFoundException, IllegalStateException;
 
 	public List<Consult> getAllConsults();
 
