@@ -44,4 +44,6 @@ public interface ForSaleMedicinePort {
 
         public List<SaleMedicine> getAllSalesMedicines();
 
+        public List<SaleMedicine> getSalesMedicineByEmployeeNameAndCui(String employeeName, String employeeCui);
+
 }

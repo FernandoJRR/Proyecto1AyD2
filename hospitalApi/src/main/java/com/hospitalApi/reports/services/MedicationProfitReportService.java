@@ -1,10 +1,10 @@
 package com.hospitalApi.reports.services;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -16,8 +16,8 @@ import com.hospitalApi.reports.dtos.request.MedicationProfitFilter;
 import com.hospitalApi.reports.dtos.response.medicationProfitReport.MedicationProfitSummary;
 import com.hospitalApi.reports.dtos.response.medicationProfitReport.SalePerMedicationDTO;
 import com.hospitalApi.reports.ports.ReportService;
-import com.hospitalApi.shared.FinancialCalculator;
 import com.hospitalApi.shared.dtos.FinancialSummaryDTO;
+import com.hospitalApi.shared.utils.FinancialCalculator;
 
 import lombok.RequiredArgsConstructor;
 
@@ -59,18 +59,9 @@ public class MedicationProfitReportService implements ReportService<MedicationPr
     }
 
     private Map<String, List<SaleMedicine>> groupSalesByMedicineName(List<SaleMedicine> medicationSales) {
-        HashMap<String, List<SaleMedicine>> groupedSalesByMedicineName = new HashMap<>();
-
-        for (SaleMedicine sale : medicationSales) {
-            // el nombre de la medicina sera la key en nuestro hashMap
-            String medicineName = sale.getMedicine().getName();
-
-            // si la key no existe crea una nueva ocurrencia en el mapa, si la key existe
-            groupedSalesByMedicineName
-                    .computeIfAbsent(medicineName, k -> new ArrayList<>())
-                    .add(sale);
-        }
-
+        //con un stream usamo collectors para poder agrupar por el nombre de la medicina
+        Map<String, List<SaleMedicine>> groupedSalesByMedicineName = 
+        medicationSales.stream().collect(Collectors.groupingBy(sale-> sale.getMedicine().getName()));
         return groupedSalesByMedicineName;
     }
 

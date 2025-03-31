@@ -13,7 +13,7 @@ import com.hospitalApi.reports.dtos.request.MedicationProfitFilter;
 @ExtendWith(MockitoExtension.class)
 public class MedicationProfitFilterTest {
 
-    private final String MEDICATION_NAME = "Aspirin";
+    private final String MEDICATION_NAME = "Aspirina";
     private final LocalDate START_DATE = LocalDate.of(2023, 1, 1);
     private final LocalDate END_DATE = LocalDate.of(2023, 12, 31);
 

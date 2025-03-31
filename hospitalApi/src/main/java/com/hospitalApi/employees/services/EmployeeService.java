@@ -225,6 +225,17 @@ public class EmployeeService implements ForEmployeesPort {
     }
 
     @Override
+    public Employee findEmployeeByUsername(String username) throws NotFoundException {
+        String errorMessage = String.format("El nombre de usuario %s no pertenece a ningun empleado.", username);
+        // manda a traer el employee si el optional esta vacio entonces retorna un
+        // notfound exception
+        Employee employee = employeeRepository.findByUser_Username(username).orElseThrow(
+                () -> new NotFoundException(errorMessage));
+
+        return employee;
+    }
+
+    @Override
     public List<Employee> findEmployees() {
         // manda a traer el employee si el optional esta vacio entonces retorna un
         // notfound exception

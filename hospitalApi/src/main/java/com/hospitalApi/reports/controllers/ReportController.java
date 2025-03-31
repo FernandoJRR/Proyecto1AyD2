@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hospitalApi.medicines.dtos.MedicineResponseDTO;
 import com.hospitalApi.medicines.mappers.MedicineMapper;
 import com.hospitalApi.medicines.models.Medicine;
+import com.hospitalApi.reports.dtos.request.EmployeeProfitFilter;
 import com.hospitalApi.reports.dtos.request.MedicationProfitFilter;
 import com.hospitalApi.reports.dtos.request.MedicationReportFilter;
+import com.hospitalApi.reports.dtos.response.employeeSalesReport.EmployeeProfitSummary;
 import com.hospitalApi.reports.dtos.response.medicationProfitReport.MedicationProfitSummary;
 import com.hospitalApi.reports.ports.ReportService;
 
@@ -27,6 +29,7 @@ public class ReportController {
 
     private final ReportService<List<Medicine>, MedicationReportFilter> medicationReportPort;
     private final ReportService<MedicationProfitSummary, MedicationProfitFilter> medicationProfitReportPort;
+    private final ReportService<EmployeeProfitSummary, EmployeeProfitFilter> employeeProfitReportPort;
 
     private final MedicineMapper medicineMapper;
 
@@ -47,6 +50,16 @@ public class ReportController {
             @RequestParam(required = false) LocalDate endDate) {
         MedicationProfitSummary report = medicationProfitReportPort
                 .generateReport(new MedicationProfitFilter(name, startDate, endDate));
+        return report;
+    }
+
+    @GetMapping("/getEmployeeProfitReport")
+    @ResponseStatus(HttpStatus.OK)
+    public EmployeeProfitSummary getEmployeeProfitReport(
+            @RequestParam(required = false) String employeeName,
+            @RequestParam(required = false) String employeeCui) {
+        EmployeeProfitSummary report = employeeProfitReportPort
+                .generateReport(new EmployeeProfitFilter(employeeName, employeeCui));
         return report;
     }
 }

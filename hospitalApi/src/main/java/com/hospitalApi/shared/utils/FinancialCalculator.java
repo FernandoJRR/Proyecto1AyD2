@@ -1,4 +1,4 @@
-package com.hospitalApi.shared;
+package com.hospitalApi.shared.utils;
 
 /**
  * Define un contrato genérico para clases que realizan cálculos financieros

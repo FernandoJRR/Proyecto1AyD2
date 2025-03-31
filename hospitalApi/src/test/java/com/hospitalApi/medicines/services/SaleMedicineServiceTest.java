@@ -36,12 +36,16 @@ import com.hospitalApi.medicines.ports.ForMedicinePort;
 import com.hospitalApi.medicines.repositories.SaleMedicineRepository;
 import com.hospitalApi.patients.models.Patient;
 import com.hospitalApi.shared.exceptions.NotFoundException;
+import com.hospitalApi.users.ports.AuthenticationProviderPort;
 
 @ExtendWith(MockitoExtension.class)
 public class SaleMedicineServiceTest {
 
     @Mock
     private SaleMedicineRepository saleMedicineRepository;
+
+    @Mock
+    private AuthenticationProviderPort authenticationProviderPort;
 
     @Mock
     private ForMedicinePort forMedicinePort;
@@ -525,7 +529,7 @@ public class SaleMedicineServiceTest {
 
         List<SaleMedicine> expectedSales = List.of(saleMedicine);
 
-        when(saleMedicineRepository.findByCreatedAtBetweenAndMedicine_NameLike(
+        when(saleMedicineRepository.findByCreatedAtBetweenAndMedicineNameLike(
                 any(), any(), anyString()))
                 .thenReturn(expectedSales);
 
@@ -536,9 +540,25 @@ public class SaleMedicineServiceTest {
         // Assert
         assertAll(
                 () -> assertNotNull(result),
-                () -> assertEquals(1, result.size())
-        );
+                () -> assertEquals(1, result.size()));
 
+    }
+
+    @Test
+    public void shouldReturnSalesByEmployeeNameAndCuiSuccessfully() {
+        // Arrange
+        List<SaleMedicine> expectedSales = List.of(saleMedicine);
+        when(saleMedicineRepository.findAllByEmployee_FirstnameLikeAndemployee_CuiLike(anyString(), anyString()))
+                .thenReturn(expectedSales);
+
+        // Act
+        List<SaleMedicine> result = saleMedicineService.getSalesMedicineByEmployeeNameAndCui("", "");
+
+        // Assert
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(1, result.size()),
+                () -> assertEquals(saleMedicine, result.get(0)));
     }
 
 }

@@ -5,16 +5,13 @@ import java.math.BigDecimal;
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.hospitalApi.consults.models.Consult;
+import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -26,21 +23,22 @@ import lombok.NoArgsConstructor;
 @DynamicUpdate
 public class SaleMedicine extends Auditor {
 
-    @ManyToOne(optional = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "consult_id", nullable = true)
+    @ManyToOne
+    @JoinColumn(name = "consult_id")
     private Consult consult;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "medicine_id", nullable = false)
     private Medicine medicine;
+    /**
+     * Empleaod que realizio la venta
+     */
+    @ManyToOne
+    private Employee employee;
 
-    @NotNull(message = "La cantidad del medicamento es requerida")
     @Column(nullable = false)
-    @Min(value = 1, message = "La cantidad del medicamento no puede ser menor a 1")
     private Integer quantity;
 
-    @NotNull(message = "El precio del medicamento es requerido")
-    @DecimalMin(value = "0.01", inclusive = true, message = "El precio del medicamento debe ser mayor a 0")
     @Column(nullable = false)
     private BigDecimal price;
 
