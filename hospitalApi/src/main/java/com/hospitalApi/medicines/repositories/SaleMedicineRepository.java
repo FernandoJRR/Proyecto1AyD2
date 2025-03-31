@@ -39,7 +39,7 @@ public interface SaleMedicineRepository extends JpaRepository<SaleMedicine, Stri
             @Param("endDate") LocalDate endDate);
 
     List<SaleMedicine> findByCreatedAtBetween(LocalDate startDate, LocalDate endDate);
-
+    List<SaleMedicine> findByCreatedAtBetweenAndMedicine_NameLike(LocalDate startDate, LocalDate endDate, String medicineNme);
     @Query("""
                 SELECT SUM(sm.price * sm.quantity)
                 FROM SaleMedicine sm

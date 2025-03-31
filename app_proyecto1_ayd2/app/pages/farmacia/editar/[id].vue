@@ -8,31 +8,16 @@
 
     <h1 class="text-4xl font-bold mb-6">Editar Medicamento</h1>
 
-    <div
-      v-if="medicineState.status === 'pending'"
-      class="flex justify-center items-center h-64 text-black"
-    >
+    <div v-if="medicineState.status === 'pending'" class="flex justify-center items-center h-64 text-black">
       Cargando datos...
     </div>
 
-    <div
-      v-else-if="medicineState.status === 'error'"
-      class="flex justify-center items-center h-64 text-red-600"
-    >
+    <div v-else-if="medicineState.status === 'error'" class="flex justify-center items-center h-64 text-red-600">
       Error al cargar los datos del medicamento
     </div>
 
-    <div
-      v-else
-      class="space-y-8 bg-white shadow-md rounded-2xl p-6 border border-gray-200"
-    >
-      <Form
-        v-slot="$form"
-        :initialValues
-        :resolver
-        @submit="onFormSubmit"
-        class="mt-8 flex justify-center"
-      >
+    <div v-else class="space-y-8 bg-white shadow-md rounded-2xl p-6 border border-gray-200">
+      <Form v-slot="$form" :initialValues :resolver @submit="onFormSubmit" class="mt-8 flex justify-center">
         <div class="flex flex-col gap-1 w-full">
           <h1 class="text-2xl font-semibold mb-6 text-black">
             Datos del Medicamento
@@ -44,12 +29,7 @@
                 <label for="name">Nombre del Medicamento</label>
                 <InputText name="name" type="text" fluid />
               </FloatLabel>
-              <Message
-                v-if="$form.name?.invalid"
-                severity="error"
-                size="small"
-                variant="simple"
-              >
+              <Message v-if="$form.name?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.name.error?.message }}
               </Message>
             </div>
@@ -59,12 +39,7 @@
                 <label for="description">Descripción</label>
                 <InputText name="description" type="text" fluid />
               </FloatLabel>
-              <Message
-                v-if="$form.description?.invalid"
-                severity="error"
-                size="small"
-                variant="simple"
-              >
+              <Message v-if="$form.description?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.description.error?.message }}
               </Message>
             </div>
@@ -74,43 +49,31 @@
             <div class="w-full">
               <FloatLabel>
                 <label for="price">Precio</label>
-                <InputNumber
-                  name="price"
-                  :min="0.01"
-                  :minFractionDigits="2"
-                  :maxFractionDigits="2"
-                  mode="currency"
-                  currency="GTQ"
-                  placeholder="Precio del Medicamento"
-                  fluid
-                />
+                <InputNumber name="price" :min="0.01" :minFractionDigits="2" :maxFractionDigits="2" mode="currency"
+                  currency="GTQ" placeholder="Precio del Medicamento" fluid />
               </FloatLabel>
-              <Message
-                v-if="$form.price?.invalid"
-                severity="error"
-                size="small"
-                variant="simple"
-              >
+              <Message v-if="$form.price?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.price.error?.message }}
               </Message>
             </div>
 
             <div class="w-full">
               <FloatLabel>
-                <label for="quantity">Cantidad</label>
-                <InputNumber
-                  name="quantity"
-                  :min="0"
-                  placeholder="Cantidad en Stock"
-                  fluid
-                />
+                <label for="cost">Costo del Medicamento</label>
+                <InputNumber name="cost" :min="0.01" :minFractionDigits="2" :maxFractionDigits="2" mode="currency"
+                  currency="GTQ" placeholder="Costo del Medicamento" fluid />
               </FloatLabel>
-              <Message
-                v-if="$form.quantity?.invalid"
-                severity="error"
-                size="small"
-                variant="simple"
-              >
+              <Message v-if="$form.cost?.invalid" severity="error" size="small" variant="simple">
+                {{ $form.cost.error?.message }}
+              </Message>
+            </div>
+
+            <div class="w-full">
+              <FloatLabel>
+                <label for="quantity">Cantidad</label>
+                <InputNumber name="quantity" :min="0" placeholder="Cantidad en Stock" fluid />
+              </FloatLabel>
+              <Message v-if="$form.quantity?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.quantity.error?.message }}
               </Message>
             </div>
@@ -118,31 +81,15 @@
             <div class="w-full">
               <FloatLabel>
                 <label for="minQuantity">Cantidad Mínima</label>
-                <InputNumber
-                  name="minQuantity"
-                  :min="1"
-                  placeholder="Cantidad Mínima"
-                  fluid
-                />
+                <InputNumber name="minQuantity" :min="1" placeholder="Cantidad Mínima" fluid />
               </FloatLabel>
-              <Message
-                v-if="$form.minQuantity?.invalid"
-                severity="error"
-                size="small"
-                variant="simple"
-              >
+              <Message v-if="$form.minQuantity?.invalid" severity="error" size="small" variant="simple">
                 {{ $form.minQuantity.error?.message }}
               </Message>
             </div>
           </div>
 
-          <Button
-            type="submit"
-            severity="secondary"
-            label="Guardar Cambios"
-            icon="pi pi-save"
-            class="mt-8"
-          />
+          <Button type="submit" severity="secondary" label="Editar" icon="pi pi-pencil" class="mt-8" />
         </div>
       </Form>
     </div>
@@ -162,10 +109,10 @@ import {
 import { reactive, ref, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import { useQuery } from '@pinia/colada';
-import { getMedicine, updateMedicine, type MedicineUpdatePayload } from '~/lib/api/medicines/medicine';
+import { getMedicine, updateMedicine, type MedicinePayload } from '~/lib/api/medicines/medicine';
 
 const { state: medicineState } = useCustomQuery({
-  key: ['medicine-edit',useRoute().params.id as string],
+  key: ['medicine-edit', useRoute().params.id as string],
   query: () => getMedicine(useRoute().params.id as string),
 });
 
@@ -173,9 +120,10 @@ const { state: medicineState } = useCustomQuery({
 const initialValues = reactive({
   name: '',
   description: '',
-  price: 0,
-  quantity: 0,
-  minQuantity: 0,
+  price: 0.01,
+  cost: 0.01,
+  quantity: 1,
+  minQuantity: 1,
 });
 
 // Cargar valores cuando el query se resuelva
@@ -186,6 +134,7 @@ watch(
       initialValues.name = value.data.name;
       initialValues.description = value.data.description;
       initialValues.price = value.data.price;
+      initialValues.cost = value.data.cost;
       initialValues.quantity = value.data.quantity;
       initialValues.minQuantity = value.data.minQuantity;
     }
@@ -202,6 +151,9 @@ const resolver = ref(
       price: z
         .number({ message: 'El precio es obligatorio.' })
         .min(0.01, 'El precio debe ser mayor a 0.01.'),
+      cost: z
+        .number({ message: 'El costo es obligatorio.' })
+        .min(0.01, 'El costo debe ser mayor a 0.01.'),
       quantity: z
         .number({ message: 'La cantidad es obligatoria.' })
         .min(0, 'La cantidad debe ser mayor o igual a 0.'),
@@ -215,10 +167,11 @@ const resolver = ref(
 // Acción de submit
 const onFormSubmit = (e: any) => {
   if (e.valid) {
-    const payload: MedicineUpdatePayload = {
+    const payload: MedicinePayload = {
       name: e.values.name,
       description: e.values.description,
       price: e.values.price,
+      cost: e.values.cost,
       quantity: e.values.quantity,
       minQuantity: e.values.minQuantity,
     };
@@ -228,7 +181,7 @@ const onFormSubmit = (e: any) => {
 
 // Mutación para actualizar el medicamento
 const { mutate, asyncStatus } = useMutation({
-  mutation: (medicineData: MedicineUpdatePayload) => updateMedicine(useRoute().params.id as string, medicineData),
+  mutation: (medicineData: MedicinePayload) => updateMedicine(useRoute().params.id as string, medicineData),
   onError(error) {
     console.error(error);
     toast.error('Ocurrió un error al actualizar el medicamento', {

@@ -15,6 +15,7 @@ import com.hospitalApi.shared.dtos.ErrorResponseDTO;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 
 /**
@@ -63,7 +64,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ErrorResponseDTO handleAccessDeniedException(AccessDeniedException ex) {
+    public ErrorResponseDTO handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
         return new ErrorResponseDTO("Acceso denegado, no tienes permisos suficientes para realizar esta acción.");
 
     }

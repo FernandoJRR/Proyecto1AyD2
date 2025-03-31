@@ -21,6 +21,7 @@ public class RoomService implements ForRoomPort {
 
     private final RoomRepository roomRepository;
 
+    @Override
     public Room createRoom(Room room) throws IllegalStateException {
         // si ya existe una room con el mismo numero entonces retornamos excepcion
         if (roomRepository.existsByNumber(room.getNumber())) {
@@ -32,6 +33,7 @@ public class RoomService implements ForRoomPort {
         return roomRepository.save(room);
     }
 
+    @Override
     public Room editRoom(String idUpdatedRoom, Room room) throws DuplicatedEntryException, NotFoundException {
         // mandamos atraer por su id
         Room existingRoom = findRoomById(idUpdatedRoom);
@@ -48,6 +50,7 @@ public class RoomService implements ForRoomPort {
         return roomRepository.save(existingRoom);
     }
 
+    @Override
     public Room toggleRoomAvailability(String roomId) throws NotFoundException {
         // mandamos atraer por su id
         Room existingRoom = findRoomById(roomId);
@@ -56,19 +59,61 @@ public class RoomService implements ForRoomPort {
         return roomRepository.save(existingRoom);
     }
 
+    @Override
     public Room findRoomByNumber(String number) throws NotFoundException {
         String errorMessage = String.format("No se encontró una habitación con el número %s", number);
         return roomRepository.findByNumber(number)
                 .orElseThrow(() -> new NotFoundException(errorMessage));
     }
 
+    @Override
     public Room findRoomById(String id) throws NotFoundException {
         String errorMessage = String.format("No se encontró una habitación con el ID %s", id);
         return roomRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(errorMessage));
     }
 
+    @Override
     public List<Room> findAllRooms() {
         return roomRepository.findAll();
+    }
+
+    @Override
+    public List<Room> findAllRoomsAvailable() {
+        return roomRepository.findByStatus(RoomStatus.AVAILABLE);
+    }
+
+    @Override
+    public boolean roomIsAvailable(String roomId) throws NotFoundException {
+        Room room = findRoomById(roomId);
+        return room.getStatus() == RoomStatus.AVAILABLE;
+    }
+
+    @Override
+    public Room markVacant(String roomId) throws NotFoundException, IllegalStateException {
+        Room room = findRoomById(roomId);
+        room.markVacant();
+        return roomRepository.save(room);
+    }
+
+    @Override
+    public Room markAvailable(String roomId) throws NotFoundException, IllegalStateException {
+        Room room = findRoomById(roomId);
+        room.markAvailable();
+        return roomRepository.save(room);
+    }
+
+    @Override
+    public Room markOccupied(String roomId) throws NotFoundException, IllegalStateException {
+        Room room = findRoomById(roomId);
+        room.markOccupied();
+        return roomRepository.save(room);
+    }
+
+    @Override
+    public Room markOutOfService(String roomId) throws NotFoundException, IllegalStateException {
+        Room room = findRoomById(roomId);
+        room.markOutOfService();
+        return roomRepository.save(room);
     }
 }

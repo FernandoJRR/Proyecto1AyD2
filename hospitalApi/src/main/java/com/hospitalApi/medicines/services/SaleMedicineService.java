@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(rollbackOn = Exception.class)
 public class SaleMedicineService implements ForSaleMedicinePort {
 
     private final SaleMedicineRepository saleMedicineRepository;
@@ -35,13 +36,9 @@ public class SaleMedicineService implements ForSaleMedicinePort {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public SaleMedicine createSaleMedicine(String medicineId, Integer quantity) throws NotFoundException {
         // Obtenemos la medicina en base al id
         Medicine medicine = forMedicinePort.getMedicine(medicineId);
-        if (medicine == null) {
-            throw new NotFoundException("Medicamento con id " + medicineId + " no encontrado");
-        }
         // Verificamos si hay suficiente stock
         if (medicine.getQuantity() < quantity) {
             throw new NotFoundException("No hay suficiente stock para el medicamento con id " + medicineId);
@@ -58,7 +55,7 @@ public class SaleMedicineService implements ForSaleMedicinePort {
     @Override
     public SaleMedicine createSaleMedicine(String consultId, String medicineId, Integer quantity)
             throws NotFoundException {
-        Consult consult = forConsultPort.findById(consultId);
+        Consult consult = forConsultPort.findConsultAndIsNotPaid(consultId);
         // Obtenemos la medicina en base al id
         Medicine medicine = forMedicinePort.getMedicine(medicineId);
         // Verificamos si hay suficiente stock
@@ -101,6 +98,27 @@ public class SaleMedicineService implements ForSaleMedicinePort {
         return saleMedicineRepository.findByCreatedAtBetween(start, end);
     }
 
+    /**
+     * Obtiene todas las ventas de medicamentos realizadas en un rango de fechas
+     * específico
+     * y cuyo nombre de medicamento coincida parcialmente con el valor
+     * proporcionado.
+     *
+     * @param startDate    la fecha de inicio del rango a consultar.
+     * @param endDate      la fecha de fin del rango a consultar.
+     * @param medicineName el nombre (o parte del nombre) del medicamento a buscar.
+     * @return una lista de ventas de medicamentos que coinciden con los filtros
+     *         aplicados.
+     */
+    @Override
+    public List<SaleMedicine> getSalesMedicineBetweenDatesAndMedicineName(LocalDate startDate, LocalDate endDate,
+            String medicineName) {
+        // Obtener las ventas de medicina entre las fechas
+        return saleMedicineRepository
+                .findByCreatedAtBetweenAndMedicine_NameLike(startDate, startDate,
+                        "%" + medicineName + "%");
+    }
+
     @Override
     public Double totalSalesMedicinesBetweenDates(String startDate, String endDate) {
         // Convertir las fechas a formato Date
@@ -135,7 +153,6 @@ public class SaleMedicineService implements ForSaleMedicinePort {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public List<SaleMedicine> createSaleMedicines(
             List<CreateSaleMedicineFarmaciaRequestDTO> createSaleMedicineFarmaciaRequestDTOs) throws NotFoundException {
         List<SaleMedicine> saleMedicines = new ArrayList<>();

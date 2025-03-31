@@ -18,6 +18,7 @@ import com.hospitalApi.surgery.ports.ForSurgeryPort;
 import com.hospitalApi.surgery.ports.ForSurgeryTypePort;
 import com.hospitalApi.surgery.repositories.SurgeryEmployeeRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -38,8 +39,12 @@ public class SurgeryEmployeeService implements ForSurgeryEmployeePort {
 
     @Override
     public List<SurgeryEmployee> addEmpleoyeeToSurgery(String surgeryId, String employeeId)
-            throws NotFoundException, DuplicatedEntryException {
+            throws NotFoundException, DuplicatedEntryException, IllegalStateException {
         Surgery surgery = forSurgeryPort.getSurgery(surgeryId);
+        if (forSurgeryPort.surgeryAsPerformed(surgeryId)) {
+            throw new IllegalStateException(
+                    "No se puede eliminar el especialista porque la cirugía ya ha sido realizada.");
+        }
         Employee employee = forEmployeesPort.findEmployeeById(employeeId);
         if (sugeryEmployeeRepository.existsBySurgeryIdAndEmployeeId(surgery.getId(), employeeId)) {
             throw new DuplicatedEntryException("El empleado con id " + employeeId + " ya está asignado a la cirugía");
@@ -50,9 +55,19 @@ public class SurgeryEmployeeService implements ForSurgeryEmployeePort {
     }
 
     @Override
+    @Transactional(rollbackOn = Exception.class)
     public List<SurgeryEmployee> removeEmployeeFromSurgery(String surgeryId, String employeeId)
-            throws NotFoundException {
+            throws NotFoundException, IllegalStateException {
         Surgery surgery = forSurgeryPort.getSurgery(surgeryId);
+        if (forSurgeryPort.surgeryAsPerformed(surgeryId)) {
+            throw new IllegalStateException(
+                    "No se puede eliminar el especialista porque la cirugía ya ha sido realizada.");
+        }
+        // Verificamos si la cantidad de asignaciones es mayor a 1, si es así no se
+        // puede eliminar
+        if (!(getSurgeryEmployees(surgeryId).size() > 1)) {
+            throw new IllegalStateException("Debe de haber al menos un doctor asignado a la cirugía.");
+        }
         Employee employee = forEmployeesPort.findEmployeeById(employeeId);
         if (!sugeryEmployeeRepository.existsBySurgeryIdAndEmployeeId(surgery.getId(), employeeId)) {
             throw new NotFoundException("El empleado con id " + employeeId + " no está asignado a la cirugía");
@@ -63,8 +78,12 @@ public class SurgeryEmployeeService implements ForSurgeryEmployeePort {
 
     @Override
     public List<SurgeryEmployee> addSpecialistToSurgery(String surgeryId, String specialistId)
-            throws NotFoundException, DuplicatedEntryException {
+            throws NotFoundException, DuplicatedEntryException, IllegalStateException {
         Surgery surgery = forSurgeryPort.getSurgery(surgeryId);
+        if (forSurgeryPort.surgeryAsPerformed(surgeryId)) {
+            throw new IllegalStateException(
+                    "No se puede eliminar el especialista porque la cirugía ya ha sido realizada.");
+        }
         SpecialistEmployee specialist = forSpecialistEmployeePort.getSpecialistEmployeeById(specialistId);
         SurgeryType surgeryType = forSurgeryTypePort.getSurgeryType(surgery.getSurgeryType().getId());
         if (sugeryEmployeeRepository.existsBySurgeryIdAndSpecialistEmployeeId(surgery.getId(), specialistId)) {
@@ -78,9 +97,19 @@ public class SurgeryEmployeeService implements ForSurgeryEmployeePort {
     }
 
     @Override
+    @Transactional(rollbackOn = Exception.class)
     public List<SurgeryEmployee> removeSpecialistFromSurgery(String surgeryId, String specialistId)
-            throws NotFoundException {
+            throws NotFoundException, IllegalStateException {
         Surgery surgery = forSurgeryPort.getSurgery(surgeryId);
+        if (forSurgeryPort.surgeryAsPerformed(surgeryId)) {
+            throw new IllegalStateException(
+                    "No se puede eliminar el especialista porque la cirugía ya ha sido realizada.");
+        }
+        // Verificamos si la cantidad de asignaciones es mayor a 1, si es así no se
+        // puede eliminar
+        if (!(getSurgeryEmployees(surgeryId).size() > 1)) {
+            throw new IllegalStateException("Debe de haber al menos un doctor asignado a la cirugía.");
+        }
         SpecialistEmployee specialist = forSpecialistEmployeePort.getSpecialistEmployeeById(specialistId);
         if (!sugeryEmployeeRepository.existsBySurgeryIdAndSpecialistEmployeeId(surgery.getId(), specialistId)) {
             throw new NotFoundException("El especialista con id " + specialistId + " no está asignado a la cirugía");
@@ -89,4 +118,29 @@ public class SurgeryEmployeeService implements ForSurgeryEmployeePort {
         return sugeryEmployeeRepository.findBySurgeryId(surgery.getId());
     }
 
+    @Override
+    public List<SurgeryEmployee> addDoctorToSurgery(String surgeryId, String doctorId, Boolean isSpecialist)
+            throws NotFoundException, DuplicatedEntryException, IllegalStateException {
+        if (isSpecialist == null) {
+            throw new IllegalStateException("El tipo de doctor no puede ser nulo");
+        }
+        if (isSpecialist) {
+            return addSpecialistToSurgery(surgeryId, doctorId);
+        } else {
+            return addEmpleoyeeToSurgery(surgeryId, doctorId);
+        }
+    }
+
+    @Override
+    public List<SurgeryEmployee> removeDoctorFromSurgery(String surgeryId, String doctorId, Boolean isSpecialist)
+            throws NotFoundException, IllegalStateException {
+        if (isSpecialist == null) {
+            throw new IllegalStateException("El tipo de doctor no puede ser nulo");
+        }
+        if (isSpecialist) {
+            return removeSpecialistFromSurgery(surgeryId, doctorId);
+        } else {
+            return removeEmployeeFromSurgery(surgeryId, doctorId);
+        }
+    }
 }

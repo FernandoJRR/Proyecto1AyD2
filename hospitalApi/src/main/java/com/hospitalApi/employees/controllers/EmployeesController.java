@@ -1,6 +1,5 @@
         package com.hospitalApi.employees.controllers;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -72,6 +71,7 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
         @PostMapping
+        @PreAuthorize("hasAuthority('CREATE_EMPLOYEE')")
         public ResponseEntity<EmployeeResponseDTO> createEmployee(
                         @RequestBody @Valid CreateEmployeeRequestDTO request)
                         throws DuplicatedEntryException, NotFoundException {
@@ -101,7 +101,7 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
 
         })
-        @PreAuthorize("hasAuthority('EDITAR_EMPLEADOS')") // el usuario necesita este permiso para entrar al endpoint
+        @PreAuthorize("hasAuthority('EDIT_EMPLOYEE')") 
         @PatchMapping("/{employeeId}")
         public ResponseEntity<EmployeeResponseDTO> updateEmployee(
                         @PathVariable("employeeId") String employeeId,
@@ -154,6 +154,7 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
         @PatchMapping("/{employeeId}/desactivate")
+        @PreAuthorize("hasAuthority('DESACTIVATE_EMPLOYEE')")
         public ResponseEntity<Void> desactivateEmployee(
                 @RequestBody @Valid EmployeeDeactivateRequestDTO request,
                 @PathVariable("employeeId") String employeeId)
@@ -175,6 +176,7 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "409", description = "Conflicto, el empleaod ya esta desactivado.", content = @Content(mediaType = "application/json")),
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
+        @PreAuthorize("hasAuthority('RESACTIVATE_EMPLOYEE')")
         @PatchMapping("/{employeeId}/reactivate")
         public ResponseEntity<Void> reactivateEmployee(
                 @RequestBody @Valid EmployeeReactivateRequestDTO request,
@@ -244,6 +246,25 @@ public class EmployeesController {
                         @RequestParam(value = "search", required = false) String search) throws NotFoundException {
                 // mandar a crear el employee al port
                 List<Employee> result = employeesPort.getDoctors(search);
+
+                // convertir el Employee al dto
+                List<EmployeeResponseDTO> response = employeeMapper.fromEmployeesToResponse(result);
+
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+        }
+
+        @Operation(summary = "Obtener todos los empleados de tipo enfermera", description = "Este endpoint permite la busqueda de todos los empleados de tipo enfermera.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Empleados encontrados exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
+                        @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "404", description = "No encontrado - Tipo de empleado no existe", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        })
+        @GetMapping("/nurses")
+        public ResponseEntity<List<EmployeeResponseDTO>> findNurseEmployees(
+                        @RequestParam(value = "search", required = false) String search) throws NotFoundException {
+                // mandar a crear el employee al port
+                List<Employee> result = employeesPort.getNurses(search);
 
                 // convertir el Employee al dto
                 List<EmployeeResponseDTO> response = employeeMapper.fromEmployeesToResponse(result);
