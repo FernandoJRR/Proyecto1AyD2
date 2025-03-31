@@ -1,5 +1,7 @@
 package com.hospitalApi.medicines.dtos;
 
+import java.math.BigDecimal;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,6 +15,6 @@ public class MedicineResponseDTO {
     private String description;
     private Integer quantity;
     private Integer minQuantity;
-    private Double price;
-    private Double cost;
+    private BigDecimal price;
+    private BigDecimal cost;
 }

@@ -6,8 +6,8 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 import com.hospitalApi.medicines.models.SaleMedicine;
-import com.hospitalApi.shared.FinancialCalculator;
 import com.hospitalApi.shared.dtos.FinancialSummaryDTO;
+import com.hospitalApi.shared.utils.FinancialCalculator;
 
 @Component
 public class MedicineSalesCalculator implements FinancialCalculator<FinancialSummaryDTO, List<SaleMedicine>> {
@@ -28,7 +28,7 @@ public class MedicineSalesCalculator implements FinancialCalculator<FinancialSum
 
         for (SaleMedicine sale : sales) {
             totalSales = totalSales.add(sale.getTotal());
-            totalCost = totalCost.add(sale.getMedicineCost());
+            totalCost = totalCost.add(sale.getMedicineCost().multiply(BigDecimal.valueOf(sale.getQuantity())));
             totalProfit = totalProfit.add(sale.getProfit());
         }
         return new FinancialSummaryDTO(totalSales, totalCost, totalProfit);

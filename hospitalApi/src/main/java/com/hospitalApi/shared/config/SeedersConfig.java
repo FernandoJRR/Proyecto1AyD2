@@ -111,7 +111,7 @@ public class SeedersConfig implements CommandLineRunner {
 
 		// creamos el nuevo empleado adminstrador
 		// creamos un nuevo empleado
-		Employee newEmployee = new Employee("Luis", "Monterroso", new BigDecimal(2000),
+		Employee newEmployee = new Employee("3349991110901","Luis", "Monterroso", new BigDecimal(2000),
 				new BigDecimal(10), new BigDecimal(10), null,
 				adminEmployeeType, null);
 		// creamos el usuario admin

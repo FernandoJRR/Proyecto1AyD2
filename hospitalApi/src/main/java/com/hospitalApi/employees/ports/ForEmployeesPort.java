@@ -32,16 +32,20 @@ public interface ForEmployeesPort {
 
         public Employee findEmployeeById(String employeeId) throws NotFoundException;
 
+        public Employee findEmployeeByUsername(String username) throws NotFoundException;
+
         public List<Employee> findEmployees();
 
         public Employee desactivateEmployee(String currentId, LocalDate deactivationDate, HistoryType historyTypeReason)
                         throws NotFoundException, IllegalStateException, InvalidPeriodException;
+
         public Employee reactivateEmployee(String currentId, LocalDate deactivationDate)
                         throws NotFoundException, IllegalStateException, InvalidPeriodException;
 
         public List<Employee> getEmployeesByType(String employeeTypeId, String search) throws NotFoundException;
 
         public List<Employee> getDoctors(String search) throws NotFoundException;
+
         public List<Employee> getNurses(String search) throws NotFoundException;
 
 }

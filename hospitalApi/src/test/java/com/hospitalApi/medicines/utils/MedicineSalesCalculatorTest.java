@@ -54,7 +54,8 @@ class MedicineSalesCalculatorTest {
         // arrange
 
         BigDecimal expectedSales = sale1.getTotal().add(sale2.getTotal());
-        BigDecimal expectedCost = sale1.getMedicineCost().add(sale2.getMedicineCost());
+        BigDecimal expectedCost = sale1.getMedicineCost().multiply(BigDecimal.valueOf(sale1.getQuantity()))
+                .add(sale2.getMedicineCost().multiply(BigDecimal.valueOf(sale2.getQuantity())));
         BigDecimal expectedProfit = sale1.getProfit().add(sale2.getProfit());
 
         // act

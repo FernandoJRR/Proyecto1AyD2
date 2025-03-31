@@ -14,4 +14,5 @@ public class SaleMedicineResponseDTO {
         BigDecimal total;
         BigDecimal medicineCost;
         BigDecimal profit;
+        String createdAt;
 }

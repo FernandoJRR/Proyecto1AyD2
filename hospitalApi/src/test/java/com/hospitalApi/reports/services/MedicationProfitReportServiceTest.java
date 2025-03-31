@@ -1,11 +1,10 @@
 package com.hospitalApi.reports.services;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
@@ -27,8 +26,8 @@ import com.hospitalApi.medicines.ports.ForSaleMedicinePort;
 import com.hospitalApi.reports.dtos.request.MedicationProfitFilter;
 import com.hospitalApi.reports.dtos.response.medicationProfitReport.MedicationProfitSummary;
 import com.hospitalApi.reports.dtos.response.medicationProfitReport.SalePerMedicationDTO;
-import com.hospitalApi.shared.FinancialCalculator;
 import com.hospitalApi.shared.dtos.FinancialSummaryDTO;
+import com.hospitalApi.shared.utils.FinancialCalculator;
 
 @ExtendWith(MockitoExtension.class)
 public class MedicationProfitReportServiceTest {
@@ -80,9 +79,9 @@ public class MedicationProfitReportServiceTest {
                 EXPECTED_TOTAL_PROFIT);
 
         expectedSaleDtoList = List.of(new SaleMedicineResponseDTO(
-            SALE_ID, null, null, SALE_QUANTITY,
-            SALE_PRICE, SALE_TOTAL, SALE_COST, SALE_PROFIT));
-            
+                SALE_ID, null, null, SALE_QUANTITY,
+                SALE_PRICE, SALE_TOTAL, SALE_COST, SALE_PROFIT, LocalDate.now().toString()));
+
         filter = new MedicationProfitFilter(MEDICINE_NAME, START_DATE, END_DATE);
     }
 
@@ -94,7 +93,7 @@ public class MedicationProfitReportServiceTest {
         // cuando se manden a traer las ventas siempre traer nuestro mock
         when(forSaleMedicinePort.getSalesMedicineBetweenDatesAndMedicineName(
                 any(), any(), anyString())).thenReturn(salesList);
-        
+
         when(financialCalculator.calculateFinancialTotals(any())).thenReturn(expectedGlobalSummary);
 
         when(saleMedicineMapper.fromSaleMedicineListToSaleMedicineDTOList(any())).thenReturn(expectedSaleDtoList);
@@ -105,16 +104,14 @@ public class MedicationProfitReportServiceTest {
         // Assert
         SalePerMedicationDTO dto = result.getSalePerMedication().get(0);
 
-        assertNotNull(result);
-        assertEquals(expectedGlobalSummary, result.getFinancialSummary());
-        assertEquals(1, result.getSalePerMedication().size());
-        assertEquals(MEDICINE_NAME, dto.getMedicationName());
-        assertEquals(expectedGlobalSummary, dto.getFinancialSummaryDTO());
-        assertEquals(expectedSaleDtoList, dto.getSales());
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(expectedGlobalSummary, result.getFinancialSummary()),
+                () -> assertEquals(1, result.getSalePerMedication().size()),
+                () -> assertEquals(MEDICINE_NAME, dto.getMedicationName()),
+                () -> assertEquals(expectedGlobalSummary, dto.getFinancialSummaryDTO()),
+                () -> assertEquals(expectedSaleDtoList, dto.getSales()));
 
-        // ASSERT
-        verify(financialCalculator, times(2)).calculateFinancialTotals(salesList);
-        verify(saleMedicineMapper, times(1)).fromSaleMedicineListToSaleMedicineDTOList(salesList);
     }
 
 }

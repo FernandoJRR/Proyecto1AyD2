@@ -20,12 +20,22 @@ public interface SaleMedicineRepository extends JpaRepository<SaleMedicine, Stri
                 FROM  SaleMedicine sm
                 WHERE sm.consult.id = :consultId
             """)
-    Double totalSalesMedicinesByConsult(@Param("consultId") String consultId);
+    public Double totalSalesMedicinesByConsult(@Param("consultId") String consultId);
 
     public List<SaleMedicine> findAll();
 
+    @Query("""
+             SELECT s FROM SaleMedicine s
+             WHERE (:name IS NULL OR LOWER(s.employee.firstName) LIKE LOWER(CONCAT('%', :name, '%')))
+               AND (:cui IS NULL OR LOWER(s.employee.cui) LIKE LOWER(CONCAT('%', :cui, '%')))
+            """)
+
+    public List<SaleMedicine> findAllByEmployeeNameAndCui(
+            @Param("name") String name,
+            @Param("cui") String cui);
+
     @Query("SELECT SUM(sm.price * sm.quantity) FROM SaleMedicine sm WHERE sm.medicine.id = :medicineId")
-    Double totalSalesMedicinesByMedicine(@Param("medicineId") String medicineId);
+    public Double totalSalesMedicinesByMedicine(@Param("medicineId") String medicineId);
 
     @Query("""
                 SELECT SUM(sm.price * sm.quantity)
@@ -33,19 +43,30 @@ public interface SaleMedicineRepository extends JpaRepository<SaleMedicine, Stri
                 WHERE sm.medicine.id = :medicineId
                 AND sm.createdAt BETWEEN :startDate AND :endDate
             """)
-    Double totalSalesMedicinesByMedicineBetweenDates(
+    public Double totalSalesMedicinesByMedicineBetweenDates(
             @Param("medicineId") String medicineId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    List<SaleMedicine> findByCreatedAtBetween(LocalDate startDate, LocalDate endDate);
-    List<SaleMedicine> findByCreatedAtBetweenAndMedicine_NameLike(LocalDate startDate, LocalDate endDate, String medicineNme);
+    public List<SaleMedicine> findByCreatedAtBetween(LocalDate startDate, LocalDate endDate);
+
+    @Query("""
+            SELECT s FROM SaleMedicine s
+            WHERE (:startDate IS NULL OR s.createdAt >= :startDate)
+            AND (:endDate IS NULL OR s.createdAt <= :endDate)
+            AND (:medicineName IS NULL OR LOWER(s.medicine.name) LIKE LOWER(CONCAT('%', :medicineName, '%')))
+                    """)
+    public List<SaleMedicine> findByCreatedAtBetweenAndMedicineNameLike(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            @Param("medicineName") String medicineName);
+
     @Query("""
                 SELECT SUM(sm.price * sm.quantity)
                 FROM SaleMedicine sm
                 WHERE sm.createdAt BETWEEN :startDate AND :endDate
             """)
-    Double totalSalesMedicinesBetweenDates(
+    public Double totalSalesMedicinesBetweenDates(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
