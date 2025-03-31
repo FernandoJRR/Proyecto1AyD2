@@ -1,5 +1,7 @@
 package com.hospitalApi.medicines.dtos;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import jakarta.validation.constraints.DecimalMin;
@@ -36,9 +38,9 @@ public class UpdateMedicineRequestDTO {
     @NotNull(message = "El costo del medicamento es requerido")
     @DecimalMin(value = "1.0", inclusive = true, message = "El precio del medicamento no puede ser menor a Q1.00")
     @Digits(integer = 10, fraction = 2, message = "El precio debe tener un máximo de 10 dígitos enteros y 2 decimales")
-    private Double price;
+    private BigDecimal price;
 
     @NotNull(message = "El costo del medicamento es requerido")
     @DecimalMin(value = "0.01", inclusive = true, message = "El costo del medicamento debe ser mayor a 0")
-    private Double cost;
+    private BigDecimal cost;
 }

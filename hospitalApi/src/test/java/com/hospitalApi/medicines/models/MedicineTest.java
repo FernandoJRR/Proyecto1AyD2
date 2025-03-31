@@ -1,8 +1,10 @@
 package com.hospitalApi.medicines.models;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import java.util.List;
+import java.math.BigDecimal;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,17 +16,24 @@ public class MedicineTest {
 
     private static final String ID = "MED-001";
     private static final String NAME = "Paracetamol";
-    private static final String DESC = "Pain reliever";
-    private static final Integer QTY = 50;
-    private static final Integer MIN_QTY = 5;
-    private static final Double PRICE = 10.0;
-    private static final Double COST = 6.0;
+    private static final String DESCRIPTION = "Pain reliever";
+    private static final Integer QUANTITY = 50;
+    private static final Integer MIN_QUANTITY = 5;
+    private static final BigDecimal PRICE = BigDecimal.valueOf(10.0);
+    private static final BigDecimal COST = BigDecimal.valueOf(6.0);
+
+    private static final String MEDICINE_NAME_UPDATED = "Ibuprofeno";
+    private static final String MEDICINE_DESCRIPTION_UPDATED = "Anti-inflamatorio";
+    private static final int MEDICINE_QUANTITY_UPDATED = 100;
+    private static final int MEDICINE_MIN_QUANTITY_UPDATED = 10;
+    private static final BigDecimal MEDICINE_PRICE_UPDATED = BigDecimal.valueOf(12.5);
+    private static final BigDecimal MEDICINE_COST_UPDATED = BigDecimal.valueOf(7.5);
 
     private Medicine medicine;
 
     @BeforeEach
     public void setup() {
-        medicine = new Medicine(ID, NAME, DESC, QTY, MIN_QTY, PRICE, COST);
+        medicine = new Medicine(ID, NAME, DESCRIPTION, QUANTITY, MIN_QUANTITY, PRICE, COST);
     }
 
     /**
@@ -37,9 +46,9 @@ public class MedicineTest {
         assertAll(
                 () -> assertEquals(ID, medicine.getId()),
                 () -> assertEquals(NAME, medicine.getName()),
-                () -> assertEquals(DESC, medicine.getDescription()),
-                () -> assertEquals(QTY, medicine.getQuantity()),
-                () -> assertEquals(MIN_QTY, medicine.getMinQuantity()),
+                () -> assertEquals(DESCRIPTION, medicine.getDescription()),
+                () -> assertEquals(QUANTITY, medicine.getQuantity()),
+                () -> assertEquals(MIN_QUANTITY, medicine.getMinQuantity()),
                 () -> assertEquals(PRICE, medicine.getPrice()),
                 () -> assertEquals(COST, medicine.getCost()));
     }
@@ -51,14 +60,14 @@ public class MedicineTest {
      */
     @Test
     public void shouldCreateMedicineFromCreateDTO() {
-        CreateMedicineRequestDTO dto = new CreateMedicineRequestDTO(NAME, DESC, QTY, MIN_QTY, PRICE, COST);
+        CreateMedicineRequestDTO dto = new CreateMedicineRequestDTO(NAME, DESCRIPTION, QUANTITY, MIN_QUANTITY, PRICE, COST);
         Medicine med = new Medicine(dto);
 
         assertAll(
                 () -> assertEquals(NAME, med.getName()),
-                () -> assertEquals(DESC, med.getDescription()),
-                () -> assertEquals(QTY, med.getQuantity()),
-                () -> assertEquals(MIN_QTY, med.getMinQuantity()),
+                () -> assertEquals(DESCRIPTION, med.getDescription()),
+                () -> assertEquals(QUANTITY, med.getQuantity()),
+                () -> assertEquals(MIN_QUANTITY, med.getMinQuantity()),
                 () -> assertEquals(PRICE, med.getPrice()),
                 () -> assertEquals(COST, med.getCost()));
     }
@@ -68,25 +77,26 @@ public class MedicineTest {
      * cuando: se actualiza el objeto Medicine
      * entonces: los valores del objeto deben cambiar
      */
+
     @Test
     public void shouldUpdateMedicineFromUpdateDTO() {
         UpdateMedicineRequestDTO dto = new UpdateMedicineRequestDTO(
-                "Ibuprofeno",
-                "Anti-inflamatorio",
-                100,
-                10,
-                12.5,
-                7.5);
+                MEDICINE_NAME_UPDATED,
+                MEDICINE_DESCRIPTION_UPDATED,
+                MEDICINE_QUANTITY_UPDATED,
+                MEDICINE_MIN_QUANTITY_UPDATED,
+                MEDICINE_PRICE_UPDATED,
+                MEDICINE_COST_UPDATED);
 
         medicine.updateFromDTO(dto);
 
         assertAll(
-                () -> assertEquals("Ibuprofeno", medicine.getName()),
-                () -> assertEquals("Anti-inflamatorio", medicine.getDescription()),
-                () -> assertEquals(100, medicine.getQuantity()),
-                () -> assertEquals(10, medicine.getMinQuantity()),
-                () -> assertEquals(12.5, medicine.getPrice()),
-                () -> assertEquals(7.5, medicine.getCost()));
+                () -> assertEquals(MEDICINE_NAME_UPDATED, medicine.getName()),
+                () -> assertEquals(MEDICINE_DESCRIPTION_UPDATED, medicine.getDescription()),
+                () -> assertEquals(MEDICINE_QUANTITY_UPDATED, medicine.getQuantity()),
+                () -> assertEquals(MEDICINE_MIN_QUANTITY_UPDATED, medicine.getMinQuantity()),
+                () -> assertEquals(MEDICINE_PRICE_UPDATED, medicine.getPrice()),
+                () -> assertEquals(MEDICINE_COST_UPDATED, medicine.getCost()));
     }
 
     /**
@@ -96,12 +106,12 @@ public class MedicineTest {
      */
     @Test
     public void shouldCreateMedicineWithoutId() {
-        Medicine med = new Medicine(NAME, DESC, QTY, MIN_QTY, PRICE, COST);
+        Medicine med = new Medicine(NAME, DESCRIPTION, QUANTITY, MIN_QUANTITY, PRICE, COST);
 
         assertAll(
                 () -> assertNull(med.getId()),
                 () -> assertEquals(NAME, med.getName()),
-                () -> assertEquals(DESC, med.getDescription()));
+                () -> assertEquals(DESCRIPTION, med.getDescription()));
     }
 
     /**

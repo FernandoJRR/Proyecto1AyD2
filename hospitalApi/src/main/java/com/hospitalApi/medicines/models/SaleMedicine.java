@@ -1,5 +1,7 @@
 package com.hospitalApi.medicines.models;
 
+import java.math.BigDecimal;
+
 import org.hibernate.annotations.DynamicUpdate;
 
 import com.hospitalApi.consults.models.Consult;
@@ -40,11 +42,16 @@ public class SaleMedicine extends Auditor {
     @NotNull(message = "El precio del medicamento es requerido")
     @DecimalMin(value = "0.01", inclusive = true, message = "El precio del medicamento debe ser mayor a 0")
     @Column(nullable = false)
-    private Double price;
+    private BigDecimal price;
 
     @Column(nullable = false)
-    private Double medicineCost;
+    private BigDecimal medicineCost;
 
+    @Column(nullable = false)
+    private BigDecimal total;
+
+    @Column(nullable = false)
+    private BigDecimal profit;
 
     /**
      * Inicializa una nueva instancia de la clase SaleMedicine en base a un
@@ -58,11 +65,14 @@ public class SaleMedicine extends Auditor {
         this.quantity = quantity;
         this.price = medicine.getPrice();
         this.medicineCost = medicine.getCost();
+        calculateTotal();
+        calculateProfit();
     }
 
     /**
      * Inicializa una nueva instancia de la clase SaleMedicine en base a una
      * consulta, un medicamento y una cantidad.
+     * 
      * @param consult
      * @param medicine
      * @param quantity
@@ -73,5 +83,23 @@ public class SaleMedicine extends Auditor {
         this.quantity = quantity;
         this.price = medicine.getPrice();
         this.medicineCost = medicine.getCost();
+        calculateTotal();
+        calculateProfit();
+    }
+
+    /**
+     * Calcula el total multiplicando el precio por la cantidad de articulos
+     * vendidos
+     */
+    private void calculateTotal() {
+        this.total = this.price.multiply(BigDecimal.valueOf(this.quantity));
+    }
+
+    /**
+     * Calcula la ganacia restando al total el costo total por vender esos articos
+     */
+    private void calculateProfit() {
+        BigDecimal totalCost = this.medicineCost.multiply(BigDecimal.valueOf(this.quantity));
+        this.profit = this.total.subtract(totalCost);
     }
 }

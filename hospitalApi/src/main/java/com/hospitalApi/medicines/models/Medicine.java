@@ -1,5 +1,6 @@
 package com.hospitalApi.medicines.models;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.hibernate.annotations.DynamicUpdate;
@@ -35,16 +36,16 @@ public class Medicine extends Auditor {
     private Integer minQuantity;
 
     @Column(nullable = false)
-    private Double price;
+    private BigDecimal price;
 
     @Column(nullable = false)
-    private Double cost;
+    private BigDecimal cost;
 
     @OneToMany(mappedBy = "medicine")
     private List<SaleMedicine> saleMedicines;
 
-    public Medicine(String id, String name, String description, Integer quantity, Integer minQuantity, Double price,
-            Double cost) {
+    public Medicine(String id, String name, String description, Integer quantity, Integer minQuantity, BigDecimal price,
+            BigDecimal cost) {
         super(id);
         this.name = name;
         this.description = description;
@@ -54,8 +55,8 @@ public class Medicine extends Auditor {
         this.cost = cost;
     }
 
-    public Medicine(String name, String description, Integer quantity, Integer minQuantity, Double price,
-            Double cost) {
+    public Medicine(String name, String description, Integer quantity, Integer minQuantity, BigDecimal price,
+            BigDecimal cost) {
         super();
         this.name = name;
         this.description = description;

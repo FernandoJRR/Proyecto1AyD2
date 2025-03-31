@@ -12,6 +12,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,8 +63,8 @@ public class SaleMedicineServiceTest {
     private static final String SALE_MEDICINE_ID = "99999-88888-77777-66666";
     private static final Integer MEDICINE_QUANTITY = 10;
     private static final Integer MEDICINE_MIN_QUANTITY = 5;
-    private static final Double MEDICINE_PRICE = 5.00;
-    private static final Double MEDICINE_COST = 4.00;;
+    private static final BigDecimal MEDICINE_PRICE = new BigDecimal(5);
+    private static final BigDecimal MEDICINE_COST = new BigDecimal(4);
     private static final Integer SALE_QUANTITY = 5;
 
     @BeforeEach
@@ -515,4 +516,29 @@ public class SaleMedicineServiceTest {
         verify(forMedicinePort, times(3)).subtractStockMedicine(MEDICINE_ID, SALE_QUANTITY);
         verify(saleMedicineRepository, times(3)).save(any(SaleMedicine.class));
     }
+
+    @Test
+    public void shouldGetSalesMedicineBetweenDatesAndMedicineNameSuccessfully() {
+        // Arrange
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = LocalDate.now().plusDays(3);
+
+        List<SaleMedicine> expectedSales = List.of(saleMedicine);
+
+        when(saleMedicineRepository.findByCreatedAtBetweenAndMedicine_NameLike(
+                any(), any(), anyString()))
+                .thenReturn(expectedSales);
+
+        // Act
+        List<SaleMedicine> result = saleMedicineService
+                .getSalesMedicineBetweenDatesAndMedicineName(startDate, endDate, medicine.getName());
+
+        // Assert
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals(1, result.size())
+        );
+
+    }
+
 }

@@ -6,13 +6,14 @@ import org.springframework.stereotype.Service;
 
 import com.hospitalApi.medicines.models.Medicine;
 import com.hospitalApi.medicines.ports.ForMedicinePort;
+import com.hospitalApi.reports.dtos.request.MedicationReportFilter;
 import com.hospitalApi.reports.ports.ReportService;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class MedicationReportService implements ReportService<List<Medicine>, String> {
+public class MedicationReportService implements ReportService<List<Medicine>, MedicationReportFilter> {
 
     private final ForMedicinePort forMedicinePort;
 
@@ -23,9 +24,9 @@ public class MedicationReportService implements ReportService<List<Medicine>, St
      * @return lista de medicamentos
      */
     @Override
-    public List<Medicine> generateReport(String name) {
+    public List<Medicine> generateReport(MedicationReportFilter filter) {
         // buscamos la medicina por nombre
-        List<Medicine> medicines = forMedicinePort.getAllMedicines(name);
+        List<Medicine> medicines = forMedicinePort.getAllMedicines(filter.getMedicationName());
         return medicines;
     }
 
