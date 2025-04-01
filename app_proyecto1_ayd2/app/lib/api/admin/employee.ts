@@ -16,6 +16,7 @@ export interface EmployeeHistory {
 export interface Employee extends Entity {
   firstName: string;
   lastName: string;
+  cui:string,
   salary: number;
   iggsPercentage: number;
   irtraPercentage: number;
@@ -53,6 +54,7 @@ export interface EmployeePayload {
 export interface EmployeeUpdatePayload {
   firstName: string;
   lastName: string;
+  cui:string,
   salary: number;
   iggsPercentage: number | null;
   irtraPercentage: number | null;
