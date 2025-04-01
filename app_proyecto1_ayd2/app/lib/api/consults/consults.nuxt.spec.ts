@@ -1,11 +1,14 @@
 import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 
-// Mock de la función $api y genParams
+// Mocks
 const mockApi = vi.fn();
-const mockGenParams = vi.fn(() => "?query=params");
+const mockGenParams = vi.fn(() => "?consultId=1&isPaid=true");
 
-vi.mock("~/utils/plainFetch", () => ({ $api: mockApi }));
-vi.mock("~/lib/api/utils/params", () => ({ genParams: mockGenParams }));
+// Mock completo del módulo plainFetch
+vi.mock("~/utils/plainFetch", () => ({
+  $api: mockApi,
+  genParams: mockGenParams,
+}));
 
 let getAllConsults: any;
 let getConsult: any;
@@ -37,126 +40,118 @@ beforeEach(() => {
 });
 
 describe("Consults API", () => {
-  it("getAllConsults llama a $api con filtros", async () => {
-    const filters = { patientDpi: "123", isPaid: true } as any;
-    const mockResponse = [{ id: "c1" }];
+  it("getAllConsults llama a $api con filtros y genParams", async () => {
+    const filters = { consultId: "1", isPaid: true };
+    const mockResponse = [{ id: "1" }];
     mockApi.mockResolvedValueOnce(mockResponse);
 
     const result = await getAllConsults(filters);
 
     expect(mockGenParams).toHaveBeenCalledWith(filters);
-    expect(mockApi).toHaveBeenCalledWith("/v1/consults/all?query=params");
+    expect(mockApi).toHaveBeenCalledWith("/v1/consults/all?consultId=1&isPaid=true");
     expect(result).toEqual(mockResponse);
   });
 
-  it("getConsult llama a $api con ID", async () => {
-    mockApi.mockResolvedValueOnce({ id: "c1" });
-    const result = await getConsult("c1");
+  it("getConsult llama a $api con el id correcto", async () => {
+    const mock = { id: "1" };
+    mockApi.mockResolvedValueOnce(mock);
 
-    expect(mockApi).toHaveBeenCalledWith("/v1/consults/c1");
-    expect(result.id).toBe("c1");
+    const result = await getConsult("1");
+    expect(mockApi).toHaveBeenCalledWith("/v1/consults/1");
+    expect(result).toEqual(mock);
   });
 
-  it("createConsult llama a $api con POST y datos", async () => {
-    const payload = {
-      patientId: "p1",
-      employeeId: "e1",
-      costoConsulta: 100,
-    };
-    const mockResponse = { id: "newConsult", ...payload };
-    mockApi.mockResolvedValueOnce(mockResponse);
+  it("createConsult llama a $api con POST y body correcto", async () => {
+    const payload = { patientId: "p1", costoConsulta: 100, employeeId: "e1" };
+    const mock = { id: "1", ...payload };
+    mockApi.mockResolvedValueOnce(mock);
 
     const result = await createConsult(payload);
-
     expect(mockApi).toHaveBeenCalledWith("/v1/consults/create", {
       method: "POST",
-      body: payload,
+      body: payload
     });
-    expect(result).toEqual(mockResponse);
+    expect(result).toEqual(mock);
   });
 
-  it("updateConsult llama a $api con PATCH", async () => {
-    const mockResponse = { id: "c1", costoConsulta: 200 };
-    const data = { costoConsulta: 200 };
-    mockApi.mockResolvedValueOnce(mockResponse);
+  it("updateConsult llama a $api con PATCH y body", async () => {
+    const payload = { costoConsulta: 200 };
+    const mock = { id: "1", ...payload };
+    mockApi.mockResolvedValueOnce(mock);
 
-    const result = await updateConsult("c1", data);
-
-    expect(mockApi).toHaveBeenCalledWith("/v1/consults/c1", {
+    const result = await updateConsult("1", payload);
+    expect(mockApi).toHaveBeenCalledWith("/v1/consults/1", {
       method: "PATCH",
-      body: data,
+      body: payload
     });
-    expect(result).toEqual(mockResponse);
+    expect(result).toEqual(mock);
   });
 
-  it("markConsultAsInternado hace POST", async () => {
-    const data = { consultId: "c1", roomId: "r1" };
-    const mockResponse = { id: "c1", isInternado: true };
-    mockApi.mockResolvedValueOnce(mockResponse);
+  it("markConsultAsInternado hace POST con datos", async () => {
+    const payload = { consultId: "1", roomId: "101" };
+    const mock = { id: "1", ...payload };
+    mockApi.mockResolvedValueOnce(mock);
 
-    const result = await markConsultAsInternado(data);
-
+    const result = await markConsultAsInternado(payload);
     expect(mockApi).toHaveBeenCalledWith("/v1/consults/mark-internado", {
       method: "POST",
-      body: data,
+      body: payload
     });
-    expect(result).toEqual(mockResponse);
+    expect(result).toEqual(mock);
   });
 
-  it("payConsult hace POST al endpoint correcto", async () => {
-    mockApi.mockResolvedValueOnce({ consultId: "c1", totalCost: 500 });
+  it("payConsult hace POST a /pay/:id", async () => {
+    const mock = { consultId: "1", totalCost: 200 };
+    mockApi.mockResolvedValueOnce(mock);
 
-    const result = await payConsult("c1");
-
-    expect(mockApi).toHaveBeenCalledWith("/v1/consults/pay/c1", {
-      method: "POST",
+    const result = await payConsult("1");
+    expect(mockApi).toHaveBeenCalledWith("/v1/consults/pay/1", {
+      method: "POST"
     });
-    expect(result.totalCost).toBe(500);
+    expect(result).toEqual(mock);
   });
 
-  it("calcTotalConsult llama a /total/:id", async () => {
-    mockApi.mockResolvedValueOnce({ consultId: "c1", totalCost: 800 });
+  it("calcTotalConsult llama a $api a /total/:id", async () => {
+    const mock = { consultId: "1", totalCost: 300 };
+    mockApi.mockResolvedValueOnce(mock);
 
-    const result = await calcTotalConsult("c1");
-
-    expect(mockApi).toHaveBeenCalledWith("/v1/consults/total/c1");
-    expect(result.totalCost).toBe(800);
+    const result = await calcTotalConsult("1");
+    expect(mockApi).toHaveBeenCalledWith("/v1/consults/total/1");
+    expect(result).toEqual(mock);
   });
 
-  it("employeesConsult obtiene lista de empleados de consulta", async () => {
-    mockApi.mockResolvedValueOnce([{ employeeId: "e1" }]);
+  it("employeesConsult llama a $api a /:id/employees", async () => {
+    const mock = [{ employeeId: "e1" }];
+    mockApi.mockResolvedValueOnce(mock);
 
-    const result = await employeesConsult("c1");
-
-    expect(mockApi).toHaveBeenCalledWith("/v1/consults/c1/employees");
-    expect(result).toHaveLength(1);
+    const result = await employeesConsult("1");
+    expect(mockApi).toHaveBeenCalledWith("/v1/consults/1/employees");
+    expect(result).toEqual(mock);
   });
 
-  it("addEmployeeToConsult hace POST con los datos", async () => {
-    const data = { consultId: "c1", employeeId: "e1" };
-    const mockResponse = { employeeId: "e1" };
-    mockApi.mockResolvedValueOnce(mockResponse);
+  it("addEmployeeToConsult hace POST con body", async () => {
+    const payload = { consultId: "1", employeeId: "e1" };
+    const mock = { employeeId: "e1" };
+    mockApi.mockResolvedValueOnce(mock);
 
-    const result = await addEmployeeToConsult(data);
-
+    const result = await addEmployeeToConsult(payload);
     expect(mockApi).toHaveBeenCalledWith("/v1/consults/add-employee", {
       method: "POST",
-      body: data,
+      body: payload
     });
-    expect(result).toEqual(mockResponse);
+    expect(result).toEqual(mock);
   });
 
-  it("deleteEmployeeFromConsult hace DELETE con los datos", async () => {
-    const data = { consultId: "c1", employeeId: "e1" };
-    const mockResponse = { success: true };
-    mockApi.mockResolvedValueOnce(mockResponse);
+  it("deleteEmployeeFromConsult hace DELETE con body", async () => {
+    const payload = { consultId: "1", employeeId: "e1" };
+    const mock = { employeeId: "e1" };
+    mockApi.mockResolvedValueOnce(mock);
 
-    const result = await deleteEmployeeFromConsult(data);
-
+    const result = await deleteEmployeeFromConsult(payload);
     expect(mockApi).toHaveBeenCalledWith("/v1/consults/delete-employee", {
       method: "DELETE",
-      body: data,
+      body: payload
     });
-    expect(result).toEqual(mockResponse);
+    expect(result).toEqual(mock);
   });
 });
