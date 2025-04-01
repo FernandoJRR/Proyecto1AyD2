@@ -45,6 +45,15 @@ public class HistoryTypeService implements ForHistoryTypePort {
 
         return foundHistoryType.get();
     }
+
+    /**
+     * Obtiene todos los tipos de historia que existen
+     */
+    @Override
+    public List<HistoryType> findAll(){
+        return historyTypeRepository.findAll();
+    }
+    
     @Override
     public List<HistoryType> findDeactivationHistoryTypes() {
         List<HistoryType> deactivationHistoryTypes = new ArrayList<>();

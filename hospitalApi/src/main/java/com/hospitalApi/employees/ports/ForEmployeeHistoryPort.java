@@ -12,27 +12,40 @@ import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
 public interface ForEmployeeHistoryPort {
-    public EmployeeHistory createEmployeeHistoryHiring(Employee employee, LocalDate hiringDate)
-                    throws NotFoundException;
+        public EmployeeHistory createEmployeeHistoryHiring(Employee employee, LocalDate hiringDate)
+                        throws NotFoundException;
 
-    public EmployeeHistory createEmployeeHistorySalaryIncrease(Employee employee, BigDecimal newSalary, LocalDate date)
-                    throws NotFoundException, InvalidPeriodException;
-    public EmployeeHistory createEmployeeHistorySalaryDecrease(Employee employee, BigDecimal newSalary, LocalDate date)
-                    throws NotFoundException, InvalidPeriodException;
+        public EmployeeHistory createEmployeeHistorySalaryIncrease(Employee employee, BigDecimal newSalary,
+                        LocalDate date)
+                        throws NotFoundException, InvalidPeriodException;
 
-    public EmployeeHistory createEmployeeHistoryDeactivation(Employee employee, LocalDate deactivationDate, HistoryType historyTypeReason)
-                    throws NotFoundException, InvalidPeriodException;
+        public EmployeeHistory createEmployeeHistorySalaryDecrease(Employee employee, BigDecimal newSalary,
+                        LocalDate date)
+                        throws NotFoundException, InvalidPeriodException;
 
-    public EmployeeHistory createEmployeeHistoryReactivation(Employee employee, LocalDate deactivationDate)
-                    throws NotFoundException, InvalidPeriodException;
+        public EmployeeHistory createEmployeeHistoryDeactivation(Employee employee, LocalDate deactivationDate,
+                        HistoryType historyTypeReason)
+                        throws NotFoundException, InvalidPeriodException;
 
-    public List<EmployeeHistory> getEmployeeHistory(Employee employee) throws NotFoundException;
+        public EmployeeHistory createEmployeeHistoryReactivation(Employee employee, LocalDate deactivationDate)
+                        throws NotFoundException, InvalidPeriodException;
 
-    public Optional<EmployeeHistory> getLastEmployeeSalaryUntilDate(Employee employee, LocalDate date) throws NotFoundException;
-    public Optional<EmployeeHistory> getMostRecentEmployeeSalary(Employee employee) throws NotFoundException;
+        public List<EmployeeHistory> getEmployeeHistory(Employee employee) throws NotFoundException;
 
-    public Optional<EmployeeHistory> getEmployeeHiringDate(Employee employee) throws NotFoundException;
+        public Optional<EmployeeHistory> getLastEmployeeSalaryUntilDate(Employee employee, LocalDate date)
+                        throws NotFoundException;
 
-    public boolean isValidEmployeePeriod(Employee employee, LocalDate date);
-    public boolean isValidEmployeePeriodDeactivationDate(Employee employee, LocalDate deactivationDate);
+        public Optional<EmployeeHistory> getMostRecentEmployeeSalary(Employee employee) throws NotFoundException;
+
+        public Optional<EmployeeHistory> getEmployeeHiringDate(Employee employee) throws NotFoundException;
+
+        public boolean isValidEmployeePeriod(Employee employee, LocalDate date);
+
+        public boolean isValidEmployeePeriodDeactivationDate(Employee employee, LocalDate deactivationDate);
+
+        public List<EmployeeHistory> getHistoriesByHistoryDateBetweenAndEmployeeTypeIdAndHistoryTypeIds(
+                        LocalDate startDate,
+                        LocalDate endDate,
+                        String employeeTypeId,
+                        List<String> historyTypeIds);
 }

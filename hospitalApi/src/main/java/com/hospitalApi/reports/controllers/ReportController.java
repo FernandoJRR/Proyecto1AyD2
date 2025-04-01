@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hospitalApi.employees.dtos.EmployeeHistoryResponseDTO;
 import com.hospitalApi.medicines.dtos.MedicineResponseDTO;
 import com.hospitalApi.medicines.mappers.MedicineMapper;
 import com.hospitalApi.medicines.models.Medicine;
+import com.hospitalApi.reports.dtos.request.EmployeeLifecycleFilter;
 import com.hospitalApi.reports.dtos.request.EmployeeProfitFilter;
 import com.hospitalApi.reports.dtos.request.MedicationProfitFilter;
 import com.hospitalApi.reports.dtos.request.MedicationReportFilter;
@@ -30,6 +32,7 @@ public class ReportController {
     private final ReportService<List<Medicine>, MedicationReportFilter> medicationReportPort;
     private final ReportService<MedicationProfitSummary, MedicationProfitFilter> medicationProfitReportPort;
     private final ReportService<EmployeeProfitSummary, EmployeeProfitFilter> employeeProfitReportPort;
+    private final ReportService<List<EmployeeHistoryResponseDTO>, EmployeeLifecycleFilter> employeeLifecycleReportPort;
 
     private final MedicineMapper medicineMapper;
 
@@ -62,4 +65,18 @@ public class ReportController {
                 .generateReport(new EmployeeProfitFilter(employeeName, employeeCui));
         return report;
     }
+
+    @GetMapping("/getEmployeeLifecycleReport")
+    @ResponseStatus(HttpStatus.OK)
+    public List<EmployeeHistoryResponseDTO> getEmployeeLifecycleReport(
+            @RequestParam(required = false) String employeTypeId,
+            @RequestParam(required = false) LocalDate startDate,
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) List<String> historyTypeIds) {
+
+        List<EmployeeHistoryResponseDTO> report = employeeLifecycleReportPort
+                .generateReport(new EmployeeLifecycleFilter(startDate, endDate, employeTypeId, historyTypeIds));
+        return report;
+    }
+
 }
