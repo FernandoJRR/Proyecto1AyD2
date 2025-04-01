@@ -137,6 +137,20 @@ public class EmployeeHistoryService implements ForEmployeeHistoryPort {
     }
 
     @Override
+    public List<EmployeeHistory> getHistoriesByHistoryDateBetweenAndEmployeeTypeIdAndHistoryTypeIds(
+            LocalDate startDate,
+            LocalDate endDate,
+            String employeeTypeId,
+            List<String> historyTypeIds) {
+                
+        // mandamos a traer estas hitorias desde la bd en funcion de el tipo de empleado
+        // que se manden
+        return employeeHistoryRepository.findAllByHistoryDateBetweenAndEmployeeTypeIdAndHistoryTypeId(startDate,
+                endDate, employeeTypeId,
+                historyTypeIds);
+    }
+
+    @Override
     public Optional<EmployeeHistory> getLastEmployeeSalaryUntilDate(Employee employee, LocalDate date)
             throws NotFoundException {
         HistoryType aumentoHistoryType = this.forHistoryTypePort

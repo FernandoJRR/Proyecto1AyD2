@@ -1,15 +1,15 @@
 package com.hospitalApi.employees.dtos;
 
-import java.time.LocalDate;
-
 import lombok.Value;
 
 @Value
 public class EmployeeHistoryResponseDTO {
 
+    EmployeeResponseDTO employee;
+
     HistoryTypeResponseDTO historyType;
 
     String commentary;
 
-    LocalDate historyDate;
+    String historyDate;
 }
