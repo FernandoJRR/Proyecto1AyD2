@@ -1,5 +1,6 @@
 package com.hospitalApi.medicines.ports;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.hospitalApi.medicines.dtos.CreateSaleMedicineConsultRequestDTO;
@@ -31,6 +32,9 @@ public interface ForSaleMedicinePort {
 
         public List<SaleMedicine> getSalesMedicineBetweenDates(String startDate, String endDate);
 
+        public List<SaleMedicine> getSalesMedicineBetweenDatesAndMedicineName(LocalDate startDate, LocalDate endDate,
+                        String medicineName);
+
         public Double totalSalesMedicinesBetweenDates(String startDate, String endDate);
 
         public Double totalSalesMedicinesByConsult(String consultId)
@@ -39,5 +43,7 @@ public interface ForSaleMedicinePort {
         public Double totalSalesMedicinesByMedicine(String medicineId) throws NotFoundException;
 
         public List<SaleMedicine> getAllSalesMedicines();
+
+        public List<SaleMedicine> getSalesMedicineByEmployeeNameAndCui(String employeeName, String employeeCui);
 
 }

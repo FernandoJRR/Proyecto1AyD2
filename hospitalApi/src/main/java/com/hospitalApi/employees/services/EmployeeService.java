@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.core.annotation.MergedAnnotations.Search;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +38,7 @@ public class EmployeeService implements ForEmployeesPort {
     private final ForEmployeeHistoryPort forEmployeeHistoryPort;
     private final ForUsersPort userService;
 
-    @Transactional(rollbackOn = Exception.class)
+    @Override
     public Employee createEmployee(Employee newEmployee, EmployeeType employeeType, User newUser,
             EmployeeHistory employeeHistoryDate)
             throws DuplicatedEntryException, NotFoundException {
@@ -84,7 +83,7 @@ public class EmployeeService implements ForEmployeesPort {
         return employeeRepository.save(currentEmployee);
     }
 
-    @Transactional(rollbackOn = Exception.class)
+    @Override
     public Employee updateEmployeeSalary(String currentId, BigDecimal newSalary, LocalDate salaryDate)
             throws NotFoundException, InvalidPeriodException {
         Employee currentEmployee = findEmployeeById(currentId);
@@ -140,7 +139,7 @@ public class EmployeeService implements ForEmployeesPort {
         return employeeRepository.save(currentEmployee);
     }
 
-    @Transactional(rollbackOn = Exception.class)
+    @Override
     public Employee desactivateEmployee(String currentId, LocalDate deactivationDate, HistoryType historyTypeReason)
             throws NotFoundException, IllegalStateException, InvalidPeriodException {
         // traer el empleado por id
@@ -153,7 +152,7 @@ public class EmployeeService implements ForEmployeesPort {
         }
 
         EmployeeHistory createdEmployeeHistory = forEmployeeHistoryPort
-            .createEmployeeHistoryDeactivation(currentEmployee, deactivationDate, historyTypeReason);
+                .createEmployeeHistoryDeactivation(currentEmployee, deactivationDate, historyTypeReason);
 
         // le cambiamos el estado a su usuario y al empleado
         LocalDate desactivatedDate = deactivationDate;
@@ -168,8 +167,7 @@ public class EmployeeService implements ForEmployeesPort {
         return employeeRepository.save(currentEmployee);
     }
 
-
-    @Transactional(rollbackOn = Exception.class)
+    @Override
     public Employee reactivateEmployee(String currentId, LocalDate reactivationDate)
             throws NotFoundException, IllegalStateException, InvalidPeriodException {
         // traer el empleado por id
@@ -182,7 +180,7 @@ public class EmployeeService implements ForEmployeesPort {
         }
 
         EmployeeHistory reactivatedEmployeeHistory = forEmployeeHistoryPort
-            .createEmployeeHistoryReactivation(currentEmployee, reactivationDate);
+                .createEmployeeHistoryReactivation(currentEmployee, reactivationDate);
 
         // le cambiamos el estado a su usuario y al empleado
         currentEmployee.setDesactivatedAt(null);
@@ -227,6 +225,17 @@ public class EmployeeService implements ForEmployeesPort {
     }
 
     @Override
+    public Employee findEmployeeByUsername(String username) throws NotFoundException {
+        String errorMessage = String.format("El nombre de usuario %s no pertenece a ningun empleado.", username);
+        // manda a traer el employee si el optional esta vacio entonces retorna un
+        // notfound exception
+        Employee employee = employeeRepository.findByUser_Username(username).orElseThrow(
+                () -> new NotFoundException(errorMessage));
+
+        return employee;
+    }
+
+    @Override
     public List<Employee> findEmployees() {
         // manda a traer el employee si el optional esta vacio entonces retorna un
         // notfound exception
@@ -252,6 +261,14 @@ public class EmployeeService implements ForEmployeesPort {
     public List<Employee> getDoctors(String search) throws NotFoundException {
         // Traemos los empleados por el tipo de empleado
         EmployeeType employeeType = forEmployeeTypePort.findEmployeeTypeByName(EmployeeTypeEnum.DOCTOR.name());
+        List<Employee> employees = getEmployeesByType(employeeType.getId(), search);
+        return employees;
+    }
+
+    @Override
+    public List<Employee> getNurses(String search) throws NotFoundException {
+        // Traemos los empleados por el tipo de empleado
+        EmployeeType employeeType = forEmployeeTypePort.findEmployeeTypeByName(EmployeeTypeEnum.ENFERMERO.name());
         List<Employee> employees = getEmployeesByType(employeeType.getId(), search);
         return employees;
     }

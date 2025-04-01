@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -86,6 +87,7 @@ public class PatientController {
 			@ApiResponse(responseCode = "409", description = "Conflicto - DPI duplicado", content = @Content(mediaType = "application/json"))
 	})
 	@PostMapping("/create")
+	@PreAuthorize("hasAuthority('CREATE_PATIENT')")
 	public ResponseEntity<PatientResponseDTO> createPatient(
 			@RequestBody @Valid CreatePatientRequestDTO createPatientRequestDTO)
 			throws DuplicatedEntryException {
@@ -102,6 +104,7 @@ public class PatientController {
 			@ApiResponse(responseCode = "409", description = "Conflicto - DPI duplicado", content = @Content(mediaType = "application/json"))
 	})
 	@PatchMapping("/{id}")
+	@PreAuthorize("hasAuthority('EDIT_PATIENT')")
 	public ResponseEntity<PatientResponseDTO> updatePatient(
 			@PathVariable("id") @NotBlank(message = "El ID del paciente es requerido") String id,
 			@RequestBody @Valid UpdatePatientRequestDTO updatePatientRequestDTO)

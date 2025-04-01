@@ -12,10 +12,12 @@ import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.ports.ForEmployeesPort;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
+@Transactional(rollbackOn = Exception.class)
 public class EmployeeConsultService implements ForEmployeeConsultPort {
 
     private final ForEmployeesPort forEmployeesPort;
@@ -37,6 +39,17 @@ public class EmployeeConsultService implements ForEmployeeConsultPort {
     @Override
     public List<EmployeeConsult> getEmployeeConsultsByEmployeeId(String employeeId) throws NotFoundException {
         return employeeConsultRepository.findByEmployeeId(employeeId);
+    }
+
+    @Override
+    public List<EmployeeConsult> addEmployeeConsultsByConsultIdAndEmployeeId(Consult consult, String employeeId)
+            throws NotFoundException, IllegalStateException {
+        if (employeeConsultRepository.existsByConsultIdAndEmployeeId(consult.getId(), employeeId)) {
+            throw new IllegalStateException(
+                    "El empleado " + employeeId + " ya está asignado a la consulta " + consult.getId());
+        }
+        EmployeeConsult employeeConsult = createEmployeeConsult(consult, employeeId);
+        return getEmployeeConsultsByConsultId(employeeConsult.getConsult().getId());
     }
 
     @Override

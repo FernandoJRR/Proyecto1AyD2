@@ -62,6 +62,12 @@ public class SeedersConfig implements CommandLineRunner {
 		// en este array guardaremos los permisos de doctor
 		List<Permission> doctorPermissions = new ArrayList<>();
 
+		// en este array guardaremos los permisos de enfermero
+		List<Permission> enfermeroPermissions = new ArrayList<>();
+
+		// en este array guardaremos los permisos de farmaceutico
+		List<Permission> farmaceuticoPermissions = new ArrayList<>();
+
 		// cremos los permisos
 		for (SystemPermissionEnum permissionEnum : SystemPermissionEnum.values()) {
 			Permission createdPermission = forPermissionsPort
@@ -69,6 +75,12 @@ public class SeedersConfig implements CommandLineRunner {
 			createdPermissions.add(createdPermission);
 			if (validPermissionDoctor(permissionEnum)) {
 				doctorPermissions.add(createdPermission);
+			}
+			if (validPermissionEnfermero(permissionEnum)) {
+				enfermeroPermissions.add(createdPermission);
+			}
+			if (validPermissionFarmaceutico(permissionEnum)) {
+				farmaceuticoPermissions.add(createdPermission);
 			}
 		}
 
@@ -85,11 +97,21 @@ public class SeedersConfig implements CommandLineRunner {
 		// Creamos el tipo de empleado doctor
 		forEmployeeTypePort.createEmployeeType(
 				EmployeeTypeEnum.DOCTOR.getEmployeeType(),
-				createdPermissions);
+				doctorPermissions);
+
+		// Creamos el tipo de empleado enfermero
+		forEmployeeTypePort.createEmployeeType(
+				EmployeeTypeEnum.ENFERMERO.getEmployeeType(),
+				enfermeroPermissions);
+
+		// Creamos el tipo de empleado farmaceutico
+		forEmployeeTypePort.createEmployeeType(
+				EmployeeTypeEnum.FARMACEUTICO.getEmployeeType(),
+				farmaceuticoPermissions);
 
 		// creamos el nuevo empleado adminstrador
 		// creamos un nuevo empleado
-		Employee newEmployee = new Employee("Luis", "Monterroso", new BigDecimal(2000),
+		Employee newEmployee = new Employee("3349991110901","Luis", "Monterroso", new BigDecimal(2000),
 				new BigDecimal(10), new BigDecimal(10), null,
 				adminEmployeeType, null);
 		// creamos el usuario admin
@@ -126,14 +148,19 @@ public class SeedersConfig implements CommandLineRunner {
 	}
 
 	private boolean validPermissionDoctor(SystemPermissionEnum permissionEnum) {
-		return permissionEnum.name() == SystemPermissionEnum.GET_ALL_PATIENTS.name() ||
-				permissionEnum.name() == SystemPermissionEnum.GET_PATIENT_BY_ID.name() ||
-				permissionEnum.name() == SystemPermissionEnum.GET_PATIENT_BY_DPI.name() ||
-				permissionEnum.name() == SystemPermissionEnum.CREATE_PATIENT.name() ||
-				permissionEnum.name() == SystemPermissionEnum.GET_ALL_MEDICINES.name() ||
-				permissionEnum.name() == SystemPermissionEnum.GET_LOW_STOCK_MEDICINES.name() ||
-				permissionEnum.name() == SystemPermissionEnum.GET_MEDICINE_BY_ID.name() ||
+		return permissionEnum.name() == SystemPermissionEnum.CREATE_PATIENT.name() ||
 				permissionEnum.name() == SystemPermissionEnum.CREATE_SALE_MEDICINE_CONSULT.name();
+	}
+
+	private boolean validPermissionEnfermero(SystemPermissionEnum permissionEnum) {
+		return permissionEnum.name() == SystemPermissionEnum.CREATE_PATIENT.name() ||
+				permissionEnum.name() == SystemPermissionEnum.CREATE_SALE_MEDICINE_CONSULT.name();
+	}
+
+	private boolean validPermissionFarmaceutico(SystemPermissionEnum permissionEnum) {
+		return permissionEnum.name() == SystemPermissionEnum.CREATE_SALE_MEDICINE_FARMACIA.name() ||
+				permissionEnum.name() == SystemPermissionEnum.EDIT_MEDICINE.name() ||
+				permissionEnum.name() == SystemPermissionEnum.CREATE_MEDICINE.name();
 	}
 
 }

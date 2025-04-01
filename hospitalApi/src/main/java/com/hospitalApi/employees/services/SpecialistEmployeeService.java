@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
+@Transactional(rollbackOn = Exception.class)
 public class SpecialistEmployeeService implements ForSpecialistEmployeePort {
 
     private final SpecialistEmployeeRepository specialistEmployeeRepository;
@@ -53,7 +54,6 @@ public class SpecialistEmployeeService implements ForSpecialistEmployeePort {
     }
 
     @Override
-    @Transactional(rollbackOn = Exception.class)
     public SpecialistEmployee updateSpecialistEmployee(
             UpdateSpecialistEmpleoyeeRequestDTO updateSpecialistEmpleoyeeRequestDTO, String specialistEmployeeId)
             throws NotFoundException, DuplicatedEntryException {

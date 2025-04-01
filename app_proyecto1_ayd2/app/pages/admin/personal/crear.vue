@@ -28,6 +28,14 @@
               $form.lastName.error?.message }}</Message>
           </div>
         </div>
+        <div class="w-full mt-8">
+          <FloatLabel>
+            <label>CUI</label>
+            <InputText name="cui" type="text" fluid />
+          </FloatLabel>
+          <Message v-if="$form.lastName?.invalid" severity="error" size="small" variant="simple">{{
+            $form.lastName.error?.message }}</Message>
+        </div>
         <div class="flex flex-row mt-8">
           <div>
             <FloatLabel>
@@ -126,6 +134,7 @@ import { getAllEmployeeTypes } from '~/lib/api/admin/employee-type';
 const initialValues = reactive({
   firstName: '',
   lastName: '',
+  cui: '',
   salary: 0,
   has_porcentaje_iggs: true,
   iggsPercentage: 5,
@@ -146,6 +155,7 @@ const resolver = ref(zodResolver(
   z.object({
     firstName: z.string().min(1, 'Los nombres son obligatorios.'),
     lastName: z.string().min(1, 'Los apellidos son obligatorios.'),
+    cui: z.string().regex(/^\d{13}$/, "El CUI es obligatorio y debe tener 13 digitos"),
     salary: z.number({ message: "El salario es obligatorio." }).min(1, 'El salario debe ser un numero positivo.'),
 
     has_porcentaje_iggs: z.boolean(),
@@ -199,6 +209,7 @@ const onFormSubmit = (e: any) => {
     let payload: EmployeePayload = {
       firstName: e.values.firstName,
       lastName: e.values.lastName,
+      cui: e.values.cui,
       salary: e.values.salary,
       iggsPercentage: e.values.has_porcentaje_iggs ? e.values.iggsPercentage : null,
       irtraPercentage: e.values.has_porcentaje_iggs ? e.values.irtraPercentage : null,
@@ -216,7 +227,7 @@ const { state: userTypes } = useCustomQuery({
   query: () => getAllEmployeeTypes()
 })
 
-const { mutate, asyncStatus } = useMutation({
+const { mutate } = useMutation({
   mutation: (employeeData: EmployeePayload) => createEmployee(employeeData),
   onError(error) {
     console.log(error)
