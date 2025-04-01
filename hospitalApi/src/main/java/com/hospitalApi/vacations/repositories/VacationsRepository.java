@@ -1,0 +1,20 @@
+package com.hospitalApi.vacations.repositories;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+
+import com.hospitalApi.vacations.models.Vacations;
+
+import jakarta.transaction.Transactional;
+
+public interface VacationsRepository extends JpaRepository<Vacations, String>{
+    public List<Vacations> findAllByEmployee_IdAndPeriodYearOrderByBeginDateAsc(String employeeId, Integer periodYear);
+    public List<Vacations> findAllByEmployee_IdOrderByBeginDateAsc(String employeeId);
+    List<Vacations> findAllByEmployee_IdAndPeriodYearAndWasUsedTrue(String employeeId, Integer periodYear);
+
+    @Modifying
+    @Transactional
+    public void deleteByPeriodYear(Integer periodYear);
+}
