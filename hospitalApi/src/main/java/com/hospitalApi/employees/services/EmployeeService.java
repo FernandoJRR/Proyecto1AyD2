@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,7 @@ import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
+import com.hospitalApi.vacations.ports.ForVacationsPort;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +39,8 @@ public class EmployeeService implements ForEmployeesPort {
     private final ForEmployeeTypePort forEmployeeTypePort;
     private final ForEmployeeHistoryPort forEmployeeHistoryPort;
     private final ForUsersPort userService;
+
+    private final @Lazy ForVacationsPort vacationsPort;
 
     @Override
     public Employee createEmployee(Employee newEmployee, EmployeeType employeeType, User newUser,
@@ -59,8 +63,12 @@ public class EmployeeService implements ForEmployeesPort {
         newEmployee.setEmployeeHistories(employeeHistories);
         user.setEmployee(newEmployee);
 
+        Employee createdEmployee = employeeRepository.save(newEmployee);
+
+        vacationsPort.createRandomVacationsForEmployee(createdEmployee.getId());
+
         // guardar el historial del empleado inicial
-        return employeeRepository.save(newEmployee);
+        return createdEmployee;
     }
 
     @Override

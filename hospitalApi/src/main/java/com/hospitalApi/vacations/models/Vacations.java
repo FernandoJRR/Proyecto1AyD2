@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.shared.models.Auditor;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -19,18 +20,26 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Vacations extends Auditor {
     @Column
-    private Integer periodo_anio;
+    private Integer periodYear;
 
     @ManyToOne
     @JoinColumn
     private Employee employee;
 
     @Column
-    private LocalDate fechaInicio;
+    private LocalDate beginDate;
 
     @Column
-    private LocalDate fechaFin;
+    private LocalDate endDate;
 
     @Column
-    private Boolean se_utilizo;
+    private Integer workingDays;
+
+    @Column
+    private Boolean wasUsed;
+
+    public Vacations(LocalDate beginDate, LocalDate endDate) {
+        this.beginDate = beginDate;
+        this.endDate = endDate;
+    }
 }

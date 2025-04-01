@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.shared.models.Auditor;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -32,7 +33,7 @@ public class User extends Auditor {
 
     private LocalDate desactivatedAt;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn
     private Employee employee;
 

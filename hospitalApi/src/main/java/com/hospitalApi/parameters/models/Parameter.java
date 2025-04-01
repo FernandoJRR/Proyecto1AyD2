@@ -7,6 +7,7 @@ import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -15,9 +16,10 @@ import lombok.NoArgsConstructor;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
+@AllArgsConstructor
 public class Parameter extends Auditor {
     @Column(unique = true)
-    private String key;
+    private String parameterKey;
 
     @Column
     private String value;

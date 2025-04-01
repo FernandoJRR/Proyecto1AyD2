@@ -19,6 +19,9 @@ import com.hospitalApi.employees.ports.ForEmployeesPort;
 import com.hospitalApi.employees.repositories.EmployeeRepository;
 import com.hospitalApi.employees.repositories.EmployeeTypeRepository;
 import com.hospitalApi.employees.repositories.HistoryTypeRepository;
+import com.hospitalApi.parameters.enums.ParameterEnum;
+import com.hospitalApi.parameters.models.Parameter;
+import com.hospitalApi.parameters.repositories.ParameterRepository;
 import com.hospitalApi.permissions.enums.SystemPermissionEnum;
 import com.hospitalApi.permissions.models.Permission;
 import com.hospitalApi.permissions.ports.ForPermissionsPort;
@@ -42,6 +45,7 @@ public class SeedersConfig implements CommandLineRunner {
 
 	private final PermissionRepository permissionRepository;
 	private final UserRepository userRepository;
+	private final ParameterRepository parameterRepository;
 	private final EmployeeTypeRepository employeeTypeRepository;
 	private final EmployeeRepository employeeRepository;
 	private final HistoryTypeRepository historyTypeRepository;
@@ -139,6 +143,11 @@ public class SeedersConfig implements CommandLineRunner {
 		historyTypeRepository.save(historyTypeRecontratacion);
 		historyTypeRepository.save(historyTypeAumentoSalarial);
 		historyTypeRepository.save(historyTypeDisminucionSalarial);
+
+        for (ParameterEnum parameterEnum : ParameterEnum.values()) {
+            Parameter currentParameter = new Parameter(parameterEnum.getKey(), parameterEnum.getDefaultValue(), parameterEnum.getName());
+            parameterRepository.save(currentParameter);
+        }
 
 		EmployeeHistory employeeHistoryAdmin = new EmployeeHistory("Creacion");
 		employeeHistoryAdmin.setHistoryDate(LocalDate.now());
