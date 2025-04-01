@@ -1,6 +1,7 @@
         package com.hospitalApi.employees.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,10 @@ import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.mappers.UserMapper;
 import com.hospitalApi.users.models.User;
+import com.hospitalApi.vacations.dtos.VacationsResponseDTO;
+import com.hospitalApi.vacations.mappers.VacationsMapper;
+import com.hospitalApi.vacations.models.Vacations;
+import com.hospitalApi.vacations.ports.ForVacationsPort;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -55,9 +60,11 @@ public class EmployeesController {
 
         private final ForEmployeesPort employeesPort;
         private final ForEmployeeHistoryPort employeeHistoryPort;
+        private final ForVacationsPort vacationsPort;
 
         private final EmployeeTypeMapper employeeTypeMapper;
         private final EmployeeMapper employeeMapper;
+        private final VacationsMapper vacationsMapper;
         private final UserMapper userMapper;
         private final HistoryTypeMapper historyTypeMapper;
         private final EmployeeHistoryMapper employeeHistoryMapper;
@@ -101,7 +108,7 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
 
         })
-        @PreAuthorize("hasAuthority('EDIT_EMPLOYEE')") 
+        @PreAuthorize("hasAuthority('EDIT_EMPLOYEE')")
         @PatchMapping("/{employeeId}")
         public ResponseEntity<EmployeeResponseDTO> updateEmployee(
                         @PathVariable("employeeId") String employeeId,
@@ -202,19 +209,24 @@ public class EmployeesController {
                         @PathVariable("employeeId") String employeeId)
                         throws NotFoundException {
 
-                // mandar a crear el employee al port
+                // mandar a obtener el employee al port
                 Employee result = employeesPort.findEmployeeById(employeeId);
 
                 List<EmployeeHistory> historyEmployee = employeeHistoryPort.getEmployeeHistory(result);
                 List<EmployeeHistoryResponseDTO> employeeHistories = employeeHistoryMapper
                                 .fromEmployeeHistoriesToEmployeeHistoryDtoList(historyEmployee);
 
+                // se obtienen las vacaciones del empleado
+                Map<Integer, List<Vacations>> vacations = vacationsPort.getAllVacationsForEmployee(employeeId);
+                Map<Integer, List<VacationsResponseDTO>> response = vacationsMapper
+                            .fromVacationMapToVacationMapResponse(vacations);
+
                 // convertir el Employee al dto
                 EmployeeResponseDTO employeeResponseDTO = employeeMapper.fromEmployeeToResponse(result);
 
                 return ResponseEntity.status(HttpStatus.OK).body(
                                 new CompoundEmployeeResponseDTO(employeeResponseDTO, result.getUser().getUsername(),
-                                                employeeHistories));
+                                                employeeHistories, response));
         }
 
         @Operation(summary = "Obtener todos los empleados", description = "Este endpoint permite la busqueda de todos los empleados.")

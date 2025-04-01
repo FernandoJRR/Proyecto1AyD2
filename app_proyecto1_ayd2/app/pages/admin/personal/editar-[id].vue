@@ -7,9 +7,9 @@
     <div>
       <div class="flex flex-col gap-1">
         <h1 class="text-2xl font-semibold">Datos del Empleado</h1>
-        <div class="flex flex-col gap-2">
-          <Form v-slot="$employeeForm" :initialValues :employeeResolver @submit="onEmployeeFormSubmit"
-            class="mt-8 flex justify-center">
+        <div v-if="foundUser.data" class="flex flex-col gap-2">
+          <Form :key="foundUser.data.id" v-slot="$employeeForm" :initialValues :employeeResolver
+            @submit="onEmployeeFormSubmit" class="mt-8 flex justify-center">
             <div class="flex flex-col w-full gap-4">
               <div class="flex flex-row gap-4">
                 <div class="w-full">
@@ -150,6 +150,26 @@ const initialValues = reactive({
   hiring_date: new Date()
 });
 
+watch(
+  () => foundUser.value.data,
+  (data) => {
+    if (data) {
+      initialValues.firstName = data.firstName;
+      initialValues.lastName = data.lastName;
+      initialValues.salary = data.salary;
+      // update the rest accordingly…
+      initialValues.has_porcentaje_iggs = data.iggsPercentage != null;
+      initialValues.iggsPercentage = data.iggsPercentage ?? 0;
+      initialValues.has_porcentaje_irtra = data.irtraPercentage != null;
+      initialValues.irtraPercentage = data.irtraPercentage ?? 0;
+      initialValues.type = data.employeeType?.id ?? '';
+      initialValues.username = data.username;
+      // etc.
+    }
+  },
+  { immediate: true }
+);
+
 const selectedType = ref('')
 
 const employeeResolver = ref(zodResolver(
@@ -185,7 +205,7 @@ const benefitsResolver = ref(zodResolver(
     if (data.has_porcentaje_irtra && (data.irtraPercentage === null || data.irtraPercentage === undefined || data.irtraPercentage === 0)) {
       ctx.addIssue({
         path: ["irtraPercentage"],
-        message: "Debe ingresar un porcentaje válido para IRTRA.",
+        message: "Debe ingresar uns porcentaje válido para IRTRA.",
         code: z.ZodIssueCode.custom,
       });
     }
