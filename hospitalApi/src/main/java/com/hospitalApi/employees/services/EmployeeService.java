@@ -73,6 +73,7 @@ public class EmployeeService implements ForEmployeesPort {
         EmployeeType existingEmployeeType = forEmployeeTypePort.findEmployeeTypeById(employeeType.getId());
 
         // editar el empleado existente con la información de newData
+        currentEmployee.setCui(newData.getCui());
         currentEmployee.setFirstName(newData.getFirstName());
         currentEmployee.setLastName(newData.getLastName());
         currentEmployee.setSalary(newData.getSalary());
