@@ -3,39 +3,39 @@ import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 // Mock de la función $api
 const mockApi = vi.fn();
 
-// Mock del módulo plainFetch que exporta $api
 vi.doMock("~/utils/plainFetch", () => ({
   $api: mockApi,
 }));
 
-// Variables para importar las funciones después de preparar los mocks
 let getSurgeriesTypes: any;
+let updateSurgeryType: any;
 let createSurgeryType: any;
 let getSurgeryType: any;
 let getAllSurgeries: any;
 let createSurgery: any;
+let deleteSurgery: any;
+let markAsCompletedSurgery: any;
 let getSurgery: any;
-let addEmployeeSurgery: any;
-let deleteEmployeeSurgery: any;
-let addEmployeeSpecialistSurgery: any;
-let deleteEmployeeSpecialistSurgery: any;
+let addDoctorSurgery: any;
+let deleteDoctorSurgery: any;
 let getAllSugeryEmployees: any;
+let getSurgeriesbyConsultId: any;
 
 beforeAll(async () => {
-  const surgeriesModule = await import("~/lib/api/surgeries/surgeries");
-
-  getSurgeriesTypes = surgeriesModule.getSurgeriesTypes;
-  createSurgeryType = surgeriesModule.createSurgeryType;
-  getSurgeryType = surgeriesModule.getSurgeryType;
-  getAllSurgeries = surgeriesModule.getAllSurgeries;
-  createSurgery = surgeriesModule.createSurgery;
-  getSurgery = surgeriesModule.getSurgery;
-  addEmployeeSurgery = surgeriesModule.addEmployeeSurgery;
-  deleteEmployeeSurgery = surgeriesModule.deleteEmployeeSurgery;
-  addEmployeeSpecialistSurgery = surgeriesModule.addEmployeeSpecialistSurgery;
-  deleteEmployeeSpecialistSurgery =
-    surgeriesModule.deleteEmployeeSpecialistSurgery;
-  getAllSugeryEmployees = surgeriesModule.getAllSugeryEmployees;
+  const module = await import("~/lib/api/surgeries/surgeries");
+  getSurgeriesTypes = module.getSurgeriesTypes;
+  updateSurgeryType = module.updateSurgeryType;
+  createSurgeryType = module.createSurgeryType;
+  getSurgeryType = module.getSurgeryType;
+  getAllSurgeries = module.getAllSurgeries;
+  createSurgery = module.createSurgery;
+  deleteSurgery = module.deleteSurgery;
+  markAsCompletedSurgery = module.markAsCompletedSurgery;
+  getSurgery = module.getSurgery;
+  addDoctorSurgery = module.addDoctorSurgery;
+  deleteDoctorSurgery = module.deleteDoctorSurgery;
+  getAllSugeryEmployees = module.getAllSugeryEmployees;
+  getSurgeriesbyConsultId = module.getSurgeriesbyConsultId;
 });
 
 beforeEach(() => {
@@ -43,185 +43,148 @@ beforeEach(() => {
 });
 
 describe("Surgeries API Utilities", () => {
-  it("getSurgeriesTypes llama a $api con la query vacía", async () => {
-    const mockResponse = [{ id: "1", type: "Cardiac" }];
+  it("getSurgeriesTypes sin query", async () => {
+    const mockResponse = [{ id: "1", type: "Tipo A" }];
     mockApi.mockResolvedValueOnce(mockResponse);
-
     const result = await getSurgeriesTypes(null);
-
     expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/types/all");
     expect(result).toEqual(mockResponse);
   });
 
-  it("getSurgeriesTypes llama a $api con la query especificada", async () => {
-    const mockResponse = [{ id: "1", type: "Cardiac" }];
-    mockApi.mockResolvedValueOnce(mockResponse);
-
-    const result = await getSurgeriesTypes("search");
-
-    expect(mockApi).toHaveBeenCalledWith(
-      "/v1/surgeries/types/all?query=search"
-    );
-    expect(result).toEqual(mockResponse);
+  it("getSurgeriesTypes con query", async () => {
+    const result = await getSurgeriesTypes("cardio");
+    expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/types/all?query=cardio");
   });
 
-  it("createSurgeryType llama a $api con el body correcto", async () => {
-    const payload = {
-      type: "Cardiac",
-      description: "Cirugía de corazón",
-      specialistPayment: 5000,
-      hospitalCost: 7000,
-      surgeryCost: 12000,
-    };
+  it("updateSurgeryType", async () => {
+    const id = "abc";
+    const payload = { type: "Nuevo", description: "desc", specialistPayment: 1, hospitalCost: 2, surgeryCost: 3 };
+    const resultMock = { id, ...payload };
+    mockApi.mockResolvedValueOnce(resultMock);
+    const result = await updateSurgeryType(id, payload);
+    expect(mockApi).toHaveBeenCalledWith(`/v1/surgeries/types/update/${id}`, {
+      method: "PATCH",
+      body: payload
+    });
+    expect(result).toEqual(resultMock);
+  });
 
+  it("createSurgeryType", async () => {
+    const payload = { type: "Cardio", description: "desc", specialistPayment: 10, hospitalCost: 20, surgeryCost: 30 };
     const mockResponse = { id: "1", ...payload };
     mockApi.mockResolvedValueOnce(mockResponse);
-
     const result = await createSurgeryType(payload);
-
     expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/types/create", {
       method: "POST",
-      body: payload,
+      body: payload
     });
-
     expect(result).toEqual(mockResponse);
   });
 
-  it("getSurgeryType llama a $api con el id correcto", async () => {
-    const id = "type123";
-    const mockResponse = { id, type: "Ortopédica" };
+  it("getSurgeryType", async () => {
+    const id = "123";
+    const mockResponse = { id, type: "Neuro" };
     mockApi.mockResolvedValueOnce(mockResponse);
-
     const result = await getSurgeryType(id);
-
     expect(mockApi).toHaveBeenCalledWith(`/v1/surgeries/types/${id}`);
     expect(result).toEqual(mockResponse);
   });
 
-  it("getAllSurgeries llama a $api correctamente", async () => {
-    const mockResponse = [{ id: "1" }, { id: "2" }];
+  it("getAllSurgeries", async () => {
+    const mockResponse = [{ id: "s1" }];
     mockApi.mockResolvedValueOnce(mockResponse);
-
     const result = await getAllSurgeries();
-
     expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/all");
     expect(result).toEqual(mockResponse);
   });
 
-  it("createSurgery llama a $api con el payload correcto", async () => {
+  it("createSurgery", async () => {
     const payload = {
-      consultId: "consult1",
-      surgeryTypeId: "surgeryType1",
+      consultId: "c1",
+      surgeryTypeId: "t1",
+      asignedDoctorId: "d1",
+      isSpecialist: false,
     };
-
-    const mockResponse = { id: "surgery1", ...payload };
+    const mockResponse = { id: "s1", ...payload };
     mockApi.mockResolvedValueOnce(mockResponse);
-
     const result = await createSurgery(payload);
-
     expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/create", {
       method: "POST",
-      body: payload,
+      body: payload
     });
-
     expect(result).toEqual(mockResponse);
   });
 
-  it("getSurgery llama a $api con el id correcto", async () => {
-    const id = "surgery1";
-    const mockResponse = { id, consultId: "consult1" };
+  it("deleteSurgery", async () => {
+    const id = "s1";
+    const mockResponse = { surgeryId: id, success: true, message: "ok" };
     mockApi.mockResolvedValueOnce(mockResponse);
+    const result = await deleteSurgery(id);
+    expect(mockApi).toHaveBeenCalledWith(`/v1/surgeries/${id}`, {
+      method: "DELETE"
+    });
+    expect(result).toEqual(mockResponse);
+  });
 
+  it("markAsCompletedSurgery", async () => {
+    const id = "s1";
+    const mockResponse = { id, performedDate: "2025-04-01" };
+    mockApi.mockResolvedValueOnce(mockResponse);
+    const result = await markAsCompletedSurgery(id);
+    expect(mockApi).toHaveBeenCalledWith(`/v1/surgeries/mark-performed/${id}`, {
+      method: "POST"
+    });
+    expect(result).toEqual(mockResponse);
+  });
+
+  it("getSurgery", async () => {
+    const id = "s1";
+    const mockResponse = { id, consultId: "c1", performedDate: "", surgeryType: {}, surgeryEmployees: [] };
+    mockApi.mockResolvedValueOnce(mockResponse);
     const result = await getSurgery(id);
-
     expect(mockApi).toHaveBeenCalledWith(`/v1/surgeries/${id}`);
     expect(result).toEqual(mockResponse);
   });
 
-  it("addEmployeeSurgery llama a $api con el body correcto", async () => {
-    const payload = { surgeryId: "surgery1", employeeId: "emp1" };
-    const mockResponse = { surgeryId: "surgery1", employeeId: "emp1" };
-
+  it("addDoctorSurgery", async () => {
+    const payload = { surgeryId: "s1", doctorId: "d1", isSpecialist: true };
+    const mockResponse = { surgeryId: "s1", specialistEmployeeId: "d1", specialistPayment: 500, employeeName: null, employeeLastName: null };
     mockApi.mockResolvedValueOnce(mockResponse);
-
-    const result = await addEmployeeSurgery(payload);
-
-    expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/add-employee", {
+    const result = await addDoctorSurgery(payload);
+    expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/add-doctor", {
       method: "POST",
-      body: payload,
+      body: payload
     });
-
     expect(result).toEqual(mockResponse);
   });
 
-  it("deleteEmployeeSurgery llama a $api con el body correcto", async () => {
-    const payload = { surgeryId: "surgery1", employeeId: "emp1" };
-    const mockResponse = { surgeryId: "surgery1", employeeId: "emp1" };
-
+  it("deleteDoctorSurgery", async () => {
+    const payload = { surgeryId: "s1", doctorId: "d1", isSpecialist: true };
+    const mockResponse = { surgeryId: "s1", specialistEmployeeId: "d1", specialistPayment: 0, employeeName: null, employeeLastName: null };
     mockApi.mockResolvedValueOnce(mockResponse);
-
-    const result = await deleteEmployeeSurgery(payload);
-
-    expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/remove-employee", {
+    const result = await deleteDoctorSurgery(payload);
+    expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/remove-doctor", {
       method: "DELETE",
-      body: payload,
+      body: payload
     });
-
     expect(result).toEqual(mockResponse);
   });
 
-  it("addEmployeeSpecialistSurgery llama a $api con el body correcto", async () => {
-    const payload = { surgeryId: "surgery1", employeeId: "spec1" };
-    const mockResponse = {
-      surgeryId: "surgery1",
-      specialistEmployeeId: "spec1",
-    };
-
+  it("getAllSugeryEmployees", async () => {
+    const surgeryId = "s1";
+    const mockResponse = [{ surgeryId, employeeId: "d1" }];
     mockApi.mockResolvedValueOnce(mockResponse);
-
-    const result = await addEmployeeSpecialistSurgery(payload);
-
-    expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/add-specialist", {
-      method: "POST",
-      body: payload,
-    });
-
-    expect(result).toEqual(mockResponse);
-  });
-
-  it("deleteEmployeeSpecialistSurgery llama a $api con el body correcto", async () => {
-    const payload = { surgeryId: "surgery1", employeeId: "spec1" };
-    const mockResponse = {
-      surgeryId: "surgery1",
-      specialistEmployeeId: "spec1",
-    };
-
-    mockApi.mockResolvedValueOnce(mockResponse);
-
-    const result = await deleteEmployeeSpecialistSurgery(payload);
-
-    expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/remove-specialist", {
-      method: "DELETE",
-      body: payload,
-    });
-
-    expect(result).toEqual(mockResponse);
-  });
-
-  it("getAllSugeryEmployees llama a $api con el surgeryId correcto", async () => {
-    const surgeryId = "surgery1";
-    const mockResponse = [
-      { surgeryId, employeeId: "emp1" },
-      { surgeryId, specialistEmployeeId: "spec1" },
-    ];
-
-    mockApi.mockResolvedValueOnce(mockResponse);
-
     const result = await getAllSugeryEmployees(surgeryId);
+    expect(mockApi).toHaveBeenCalledWith(`/v1/surgeries/surgery-employees/${surgeryId}`);
+    expect(result).toEqual(mockResponse);
+  });
 
-    expect(mockApi).toHaveBeenCalledWith(
-      `/v1/surgeries/surgery-employees/${surgeryId}`
-    );
+  it("getSurgeriesbyConsultId", async () => {
+    const consultId = "c1";
+    const mockResponse = [{ id: "s1", consultId }];
+    mockApi.mockResolvedValueOnce(mockResponse);
+    const result = await getSurgeriesbyConsultId(consultId);
+    expect(mockApi).toHaveBeenCalledWith(`/v1/surgeries/consult/${consultId}`);
     expect(result).toEqual(mockResponse);
   });
 });
