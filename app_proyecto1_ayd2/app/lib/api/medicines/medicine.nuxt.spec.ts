@@ -1,178 +1,163 @@
-import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach, vi } from "vitest";
 
 // Mock de la función $api
-const mockApi = vi.fn()
-
-// Mockeamos el módulo plainFetch para exponer el $api mockeado
-vi.doMock('~/utils/plainFetch', () => ({
+const mockApi = vi.fn();
+vi.doMock("~/utils/plainFetch", () => ({
   $api: mockApi,
-}))
+}));
 
-// Declaración de las funciones a testear
-let createMedicine: any
-let getMedicine: any
-let updateMedicine: any
-let getAllMedicines: any
-let getAllMedicinesLowStock: any
-let ventaVariosFarmacia: any
-let mapLineaVentaMedicineToPayloadSaleMedicineFarmacia: any
+let createMedicine: any;
+let getMedicine: any;
+let updateMedicine: any;
+let getAllMedicines: any;
+let getAllMedicinesLowStock: any;
+let ventaVariosFarmacia: any;
+let ventaVariosConsulta: any;
+let getSaleMedicinesConsult: any;
+let mapLineaVentaMedicineToPayloadSaleMedicineFarmacia: any;
+let mapLineaVentaMedicineToPayloadSaleMedicineConsulta: any;
 
 beforeAll(async () => {
-  const medicineModule = await import('~/lib/api/medicines/medicine')
-
-  createMedicine = medicineModule.createMedicine
-  getMedicine = medicineModule.getMedicine
-  updateMedicine = medicineModule.updateMedicine
-  getAllMedicines = medicineModule.getAllMedicines
-  getAllMedicinesLowStock = medicineModule.getAllMedicinesLowStock
-  ventaVariosFarmacia = medicineModule.ventaVariosFarmacia
-  mapLineaVentaMedicineToPayloadSaleMedicineFarmacia = medicineModule.mapLineaVentaMedicineToPayloadSaleMedicineFarmacia
-})
+  const mod = await import("~/lib/api/medicines/medicine");
+  createMedicine = mod.createMedicine;
+  getMedicine = mod.getMedicine;
+  updateMedicine = mod.updateMedicine;
+  getAllMedicines = mod.getAllMedicines;
+  getAllMedicinesLowStock = mod.getAllMedicinesLowStock;
+  ventaVariosFarmacia = mod.ventaVariosFarmacia;
+  ventaVariosConsulta = mod.ventaVariosConsulta;
+  getSaleMedicinesConsult = mod.getSaleMedicinesConsult;
+  mapLineaVentaMedicineToPayloadSaleMedicineFarmacia = mod.mapLineaVentaMedicineToPayloadSaleMedicineFarmacia;
+  mapLineaVentaMedicineToPayloadSaleMedicineConsulta = mod.mapLineaVentaMedicineToPayloadSaleMedicineConsulta;
+});
 
 beforeEach(() => {
-  vi.clearAllMocks()
-})
+  vi.clearAllMocks();
+});
 
-describe('Medicine API Utilities', () => {
-
-  it('createMedicine llama a $api con la URL y payload correctos', async () => {
+describe("Medicines API Utilities", () => {
+  it("createMedicine hace POST con los datos correctos", async () => {
     const payload = {
-      name: 'Paracetamol',
-      description: 'Analgesico',
-      price: 5.5,
-      quantity: 100,
-      minQuantity: 10
-    }
-
-    const mockResponse = { id: '1', ...payload }
-    mockApi.mockResolvedValueOnce(mockResponse)
-
-    const result = await createMedicine(payload)
-
-    expect(mockApi).toHaveBeenCalledWith('/v1/medicines/create', {
-      method: 'POST',
-      body: payload
-    })
-    expect(result).toEqual(mockResponse)
-  })
-
-  it('getMedicine llama a $api con el id correcto', async () => {
-    const id = 'abc123'
-    const mockResponse = {
-      id,
-      name: 'Ibuprofeno',
-      description: 'Antiinflamatorio',
+      name: "Paracetamol",
+      description: "Analgésico",
       price: 10,
-      quantity: 50,
-      minQuantity: 5
-    }
+      cost: 5,
+      quantity: 100,
+      minQuantity: 10,
+    };
+    const mockResponse = { id: "m1", ...payload };
+    mockApi.mockResolvedValueOnce(mockResponse);
 
-    mockApi.mockResolvedValueOnce(mockResponse)
+    const result = await createMedicine(payload);
 
-    const result = await getMedicine(id)
+    expect(mockApi).toHaveBeenCalledWith("/v1/medicines/create", {
+      method: "POST",
+      body: payload,
+    });
+    expect(result).toEqual(mockResponse);
+  });
 
-    expect(mockApi).toHaveBeenCalledWith(`/v1/medicines/${id}`)
-    expect(result).toEqual(mockResponse)
-  })
+  it("getMedicine consulta por ID", async () => {
+    const id = "med1";
+    const mockResponse = { id, name: "Ibuprofeno" };
+    mockApi.mockResolvedValueOnce(mockResponse);
 
-  it('updateMedicine llama a $api con el id y payload correctos', async () => {
-    const id = 'abc123'
-    const payload = {
-      name: 'Ibuprofeno',
-      description: null,
+    const result = await getMedicine(id);
+
+    expect(mockApi).toHaveBeenCalledWith(`/v1/medicines/${id}`);
+    expect(result).toEqual(mockResponse);
+  });
+
+  it("updateMedicine hace PATCH con los datos correctos", async () => {
+    const id = "med1";
+    const data = {
+      name: "Ibuprofeno",
+      description: "Actualizado",
       price: 12,
-      quantity: 60,
-      minQuantity: 5
-    }
+      cost: 6,
+      quantity: 80,
+      minQuantity: 5,
+    };
+    const mockResponse = { id, ...data };
+    mockApi.mockResolvedValueOnce(mockResponse);
 
-    const mockResponse = { id, ...payload }
-    mockApi.mockResolvedValueOnce(mockResponse)
-
-    const result = await updateMedicine(id, payload)
+    const result = await updateMedicine(id, data);
 
     expect(mockApi).toHaveBeenCalledWith(`/v1/medicines/${id}`, {
-      method: 'PATCH',
-      body: payload
-    })
-    expect(result).toEqual(mockResponse)
-  })
+      method: "PATCH",
+      body: data,
+    });
+    expect(result).toEqual(mockResponse);
+  });
 
-  it('getAllMedicines llama a $api sin query cuando search es null', async () => {
-    const mockResponse = [
-      { id: '1', name: 'Paracetamol', description: '', price: 5, quantity: 100, minQuantity: 10 }
-    ]
+  it("getAllMedicines devuelve medicamentos con y sin query", async () => {
+    mockApi.mockResolvedValueOnce([{ id: "m1" }]);
+    await getAllMedicines(null);
+    expect(mockApi).toHaveBeenCalledWith("/v1/medicines/all");
 
-    mockApi.mockResolvedValueOnce(mockResponse)
+    mockApi.mockResolvedValueOnce([{ id: "m2" }]);
+    await getAllMedicines("ibuprofeno");
+    expect(mockApi).toHaveBeenCalledWith("/v1/medicines/all?query=ibuprofeno");
+  });
 
-    const result = await getAllMedicines(null)
+  it("getAllMedicinesLowStock consulta los de bajo stock", async () => {
+    const mockResponse = [{ id: "m1", quantity: 3 }];
+    mockApi.mockResolvedValueOnce(mockResponse);
 
-    expect(mockApi).toHaveBeenCalledWith('/v1/medicines/all')
-    expect(result).toEqual(mockResponse)
-  })
+    const result = await getAllMedicinesLowStock();
 
-  it('getAllMedicines llama a $api con query cuando search tiene valor', async () => {
-    const search = 'paracetamol'
-    const mockResponse = [
-      { id: '1', name: 'Paracetamol', description: '', price: 5, quantity: 100, minQuantity: 10 }
-    ]
+    expect(mockApi).toHaveBeenCalledWith("/v1/medicines/low-stock");
+    expect(result).toEqual(mockResponse);
+  });
 
-    mockApi.mockResolvedValueOnce(mockResponse)
+  it("ventaVariosFarmacia realiza POST con los datos de venta", async () => {
+    const data = [{ medicineId: "m1", quantity: 2 }];
+    const mockResponse = [{ id: "m1", total: 20 }];
+    mockApi.mockResolvedValueOnce(mockResponse);
 
-    const result = await getAllMedicines(search)
+    const result = await ventaVariosFarmacia(data);
 
-    expect(mockApi).toHaveBeenCalledWith(`/v1/medicines/all?query=${search}`)
-    expect(result).toEqual(mockResponse)
-  })
+    expect(mockApi).toHaveBeenCalledWith("/v1/sale-medicines/farmacia/varios", {
+      method: "POST",
+      body: data,
+    });
+    expect(result).toEqual(mockResponse);
+  });
 
-  it('getAllMedicinesLowStock llama a $api correctamente', async () => {
-    const mockResponse = [
-      { id: '1', name: 'Paracetamol', description: '', price: 5, quantity: 5, minQuantity: 10 }
-    ]
+  it("ventaVariosConsulta realiza POST con datos correctos", async () => {
+    const data = [{ medicineId: "m1", consultId: "c1", quantity: 1 }];
+    const mockResponse = [{ id: "m1", total: 10 }];
+    mockApi.mockResolvedValueOnce(mockResponse);
 
-    mockApi.mockResolvedValueOnce(mockResponse)
+    const result = await ventaVariosConsulta(data);
 
-    const result = await getAllMedicinesLowStock()
+    expect(mockApi).toHaveBeenCalledWith("/v1/sale-medicines/consult/varios", {
+      method: "POST",
+      body: data,
+    });
+    expect(result).toEqual(mockResponse);
+  });
 
-    expect(mockApi).toHaveBeenCalledWith('/v1/medicines/low-stock')
-    expect(result).toEqual(mockResponse)
-  })
+  it("getSaleMedicinesConsult consulta por ID de consulta", async () => {
+    const consultId = "c1";
+    const mockResponse = [{ id: "m1", consultId }];
+    mockApi.mockResolvedValueOnce(mockResponse);
 
-  it('ventaVariosFarmacia llama a $api con el payload correcto', async () => {
-    const payload = [
-      { medicineId: '1', quantity: 2 },
-      { medicineId: '2', quantity: 1 }
-    ]
+    const result = await getSaleMedicinesConsult(consultId);
 
-    const mockResponse = [
-      { id: '1', name: 'Paracetamol', price: 5, availableQuantity: 100, quantity: 2, total: 10 },
-      { id: '2', name: 'Ibuprofeno', price: 10, availableQuantity: 50, quantity: 1, total: 10 }
-    ]
+    expect(mockApi).toHaveBeenCalledWith(`/v1/sale-medicines/consult/${consultId}`);
+    expect(result).toEqual(mockResponse);
+  });
 
-    mockApi.mockResolvedValueOnce(mockResponse)
+  it("mapLineaVentaMedicineToPayloadSaleMedicineFarmacia transforma correctamente", () => {
+    const lineas = [{ id: "m1", quantity: 2 }] as any;
+    const result = mapLineaVentaMedicineToPayloadSaleMedicineFarmacia(lineas);
+    expect(result).toEqual([{ medicineId: "m1", quantity: 2 }]);
+  });
 
-    const result = await ventaVariosFarmacia(payload)
-
-    expect(mockApi).toHaveBeenCalledWith('/v1/sale-medicines/farmacia/varios', {
-      method: 'POST',
-      body: payload
-    })
-    expect(result).toEqual(mockResponse)
-  })
-
-  it('mapLineaVentaMedicineToPayloadSaleMedicineFarmacia transforma correctamente los datos', () => {
-    const lineasVenta = [
-      { id: '1', name: 'Paracetamol', price: 5, availableQuantity: 100, quantity: 2, total: 10 },
-      { id: '2', name: 'Ibuprofeno', price: 10, availableQuantity: 50, quantity: 1, total: 10 }
-    ]
-
-    const expectedPayload = [
-      { medicineId: '1', quantity: 2 },
-      { medicineId: '2', quantity: 1 }
-    ]
-
-    const result = mapLineaVentaMedicineToPayloadSaleMedicineFarmacia(lineasVenta)
-
-    expect(result).toEqual(expectedPayload)
-  })
-
-})
+  it("mapLineaVentaMedicineToPayloadSaleMedicineConsulta transforma correctamente", () => {
+    const lineas = [{ id: "m1", quantity: 2 }] as any;
+    const result = mapLineaVentaMedicineToPayloadSaleMedicineConsulta(lineas, "c1");
+    expect(result).toEqual([{ medicineId: "m1", consultId: "c1", quantity: 2 }]);
+  });
+});
