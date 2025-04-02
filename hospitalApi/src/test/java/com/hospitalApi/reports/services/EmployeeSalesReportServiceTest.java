@@ -27,6 +27,7 @@ import com.hospitalApi.reports.dtos.request.EmployeeProfitFilter;
 import com.hospitalApi.reports.dtos.response.employeeSalesReport.EmployeeProfitSummary;
 import com.hospitalApi.reports.dtos.response.employeeSalesReport.SalesPerEmployeeDTO;
 import com.hospitalApi.shared.dtos.FinancialSummaryDTO;
+import com.hospitalApi.shared.enums.EmployeeTypeEnum;
 import com.hospitalApi.shared.utils.FinancialCalculator;
 
 @ExtendWith(MockitoExtension.class)
@@ -75,6 +76,7 @@ public class EmployeeSalesReportServiceTest {
     public void setUp() {
         employee = new Employee(EMPLOYEE_CUI, FIRST_NAME, LAST_NAME, SALARY, IGSS, IRTRA);
         employee.setId(EMPLOYEE_ID);
+        employee.setEmployeeType(EmployeeTypeEnum.DOCTOR.getEmployeeType());
 
         medicine = new Medicine();
     

@@ -42,6 +42,27 @@
             </div>
         </template>
 
+        <template v-if="reportType === 'DOCTORS_REPORT'">
+            <div class="p-4 bg-slate-50 border border-slate-300 rounded-xl shadow-sm mt-2">
+                <h4 class="text-slate-700 font-semibold mb-3 ">Filtra por estado de asignaciones del doctor</h4>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="flex items-center space-x-2">
+                        <Checkbox v-model="onlyAssigneds" :binary="true" id="x" />
+                        <label class="text-sm text-slate-700" for="x">
+                            Solo doctores con consultas
+                        </label>
+                        <Checkbox v-model="onlyNotAssigneds" :binary="true" id="y" />
+                        <label class="text-sm text-slate-700" for="y">
+                            Solo doctores sin consultas
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+
+            </div>
+        </template>
+
         <!-- botones -->
         <div class="flex flex-wrap gap-3 mt-4">
             <Button icon="pi pi-search" label="Filtrar" @click="filtrar" rounded outlined severity="info" />
@@ -96,9 +117,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted, render } from 'vue'
+import { toast } from 'vue-sonner';
+import { boolean } from 'zod';
 import { getAllEmployeeTypes } from '~/lib/api/admin/employee-type';
 import { getAllHistoryTypes } from '~/lib/api/admin/history-type';
-import { getEmployeeLifecycleReport, getEmployeeProfitReport, getMedicationProfitReport, getMedicinesReport } from '~/lib/api/reportes/reporte';
+import { getDoctorAssignmentReport, getEmployeeLifecycleReport, getEmployeeProfitReport, getMedicationProfitReport, getMedicinesReport } from '~/lib/api/reportes/reporte';
 
 
 //esto indica que las rows seran reactivas, se podran modificar, y por lo tanto se puede cambiar el valor y vue lo detectara
@@ -113,6 +136,29 @@ const nameToSearch = ref('');
 const startDate = ref<Date | null>(null)
 const endDate = ref<Date | null>(null)
 const dpiToSearch = ref('')
+const onlyAssigneds = ref<boolean>(false)
+const onlyNotAssigneds = ref<boolean>(false)
+
+watch(
+    () =>
+        onlyAssigneds.value,
+    (data) => {
+        if (data) {
+            onlyNotAssigneds.value = false;
+        }
+    }
+)
+
+watch(
+    () =>
+        onlyNotAssigneds.value,
+    (data) => {
+        if (data) {
+            onlyAssigneds.value = false;
+        }
+    }
+)
+
 
 /**
  * Ref que contiene la data del reporte, es reactivo y se va a modificar dependiendo del tipo de reporte seleccionado.
@@ -133,7 +179,8 @@ const availableReports = [
     { value: 'MEDICAMENTOS', label: 'Reporte de Medicamentos' },
     { value: 'MEDICATION_PROFIT', label: 'Reporte de ganancia por medicamento' },
     { value: 'EMPLOYEES_PROFIT', label: 'Reporte de ventas por empleado' },
-    { value: 'EMPLOYEES_LIFECYCLE', label: 'Reporte de Movimientos de Personal' }
+    { value: 'EMPLOYEES_LIFECYCLE', label: 'Reporte de Movimientos de Personal' },
+    { value: 'DOCTORS_REPORT', label: 'Reporte de doctores' }
 ]
 
 const medicinesReportTableConfig =
@@ -315,18 +362,26 @@ const employeesLifeCicleReportTableConfig =
                 return employee ? employee.cui : 'Sin datos';
             }
         },
+
+        {
+            field: 'employee', header: 'Tipo de empleado',
+            render: (row: any) => {
+                const employee = row.employee;
+                return employee ? employee.employeeType.name : 'Sin datos';
+            }
+        },
         {
             field: 'employee', header: 'Salario',
             render: (row: any) => {
                 const employee = row.employee;
-                return employee ? 'Q '+employee.salary : 'Sin datos';
+                return employee ? 'Q ' + employee.salary : 'Sin datos';
             }
         },
         {
             header: 'Accion realizada',
             field: 'historyType',
             render: (row: any) => {
-                const  historyType = row.historyType;
+                const historyType = row.historyType;
                 return historyType ? historyType.type : 'Sin datos';
             }
         },
@@ -340,6 +395,60 @@ const employeesLifeCicleReportTableConfig =
     subReportKey: '',
     subReportHeader: '',
     showSubList: false
+}
+
+const doctorsReportTableConfig =
+{
+    dataKey: 'cui',
+    reportHeader: 'Reporte de doctores',
+    columns: [
+
+        { field: 'employeeFullName', header: 'Empleado' },
+        { field: 'cui', header: 'CUI' },
+        {
+            field: 'employeeType', header: 'Tipo de empleado',
+        },
+        {
+            field: 'salary', header: 'Salario',
+            render: (row: any) => {
+                return "Q " + row.salary;
+            }
+        }
+    ],
+    subReportColumns: [
+        {
+            field: 'patient', header: 'Paciente',
+            render: (row: any) => {
+                const patient = row.patient;
+                return patient ? patient.firstnames + " " + patient.lastnames : 'Sin datos';
+            }
+        },
+        {
+            field: 'patient', header: 'CUI',
+            render: (row: any) => {
+                const patient = row.patient;
+                return patient ? patient.dpi : 'Sin datos';
+            }
+        },
+        {
+            field: 'isInternado', header: 'Internado',
+            render: (row: any) => {
+                return row.isInternado ? 'Si' : 'No'
+            }
+        }
+        ,
+        {
+            field: 'isPaid', header: 'Pagado',
+            render: (row: any) => row.isPaid ? 'Si' : 'No'
+        },
+        {
+            field: 'createdAtString', header: 'Fecha',
+        }
+
+    ],
+    subReportKey: 'assignedConsults',
+    subReportHeader: 'Consultas asignadas',
+    showSubList: true
 }
 
 /**
@@ -385,46 +494,57 @@ watch(reportType, async () => {
  * y la setea en el objeto reportData
  */
 const cargarReporteActual = async () => {
-    //cargamos el reporte actual dependiendo del tipo de reporte seleccionado
-    switch (reportType.value) {
-        case 'MEDICAMENTOS':
-            tableConfig.value = medicinesReportTableConfig;
-            reportData.value.data = await getMedicinesReport(nameToSearch.value);
-            break;
+    try {
+        //cargamos el reporte actual dependiendo del tipo de reporte seleccionado
+        switch (reportType.value) {
+            case 'MEDICAMENTOS':
+                tableConfig.value = medicinesReportTableConfig;
+                reportData.value.data = await getMedicinesReport(nameToSearch.value);
+                break;
 
-        case 'MEDICATION_PROFIT':
-            tableConfig.value = medicationProfitReportTableConfig;
-            const response = await getMedicationProfitReport(nameToSearch.value,
-                startDate.value,
-                endDate.value
-            );
-            reportData.value.data = response.salePerMedication;
-            break;
+            case 'MEDICATION_PROFIT':
+                tableConfig.value = medicationProfitReportTableConfig;
+                const response = await getMedicationProfitReport(nameToSearch.value,
+                    startDate.value,
+                    endDate.value
+                );
+                reportData.value.data = response.salePerMedication;
+                break;
 
-        case 'EMPLOYEES_PROFIT':
-            tableConfig.value = employeesProfitReportTableConfig;
-            const response2 = await getEmployeeProfitReport(nameToSearch.value,
-                dpiToSearch.value
-            );
-            reportData.value.data = response2.salePerEmployee;
-            break;
+            case 'EMPLOYEES_PROFIT':
+                tableConfig.value = employeesProfitReportTableConfig;
+                const response2 = await getEmployeeProfitReport(nameToSearch.value,
+                    dpiToSearch.value
+                );
+                reportData.value.data = response2.salePerEmployee;
+                break;
 
-        case 'EMPLOYEES_LIFECYCLE':
-            tableConfig.value = employeesLifeCicleReportTableConfig;
-            const response3 = await getEmployeeLifecycleReport(
-                employeeTypeToSearch.value,
-                startDate.value,
-                endDate.value,
-                selectedHistoryTypes.value
-            );
-            console.log(response3)
-            reportData.value.data = response3;
-            break;
+            case 'EMPLOYEES_LIFECYCLE':
+                tableConfig.value = employeesLifeCicleReportTableConfig;
+                const response3 = await getEmployeeLifecycleReport(
+                    employeeTypeToSearch.value,
+                    startDate.value,
+                    endDate.value,
+                    selectedHistoryTypes.value
+                );
+                reportData.value.data = response3;
+                break;
 
-
-        default:
-            reportData.value.data = []
+            case 'DOCTORS_REPORT':
+                tableConfig.value = doctorsReportTableConfig;
+                const response4 = await getDoctorAssignmentReport(
+                    onlyAssigneds.value,
+                    onlyNotAssigneds.value
+                );
+                reportData.value.data = response4;
+                break;
+            default:
+                reportData.value.data = []
+        }
+    } catch (error: any) {
+        toast.error('Error', { description: `${(error.message)}` })
     }
+
 }
 
 const recargarDatos = async () => {
@@ -434,9 +554,12 @@ const recargarDatos = async () => {
     startDate.value = null;
     endDate.value = null;
 
-    // Limpiar filtros específicos
+    // limpiar filtros específicos
     employeeTypeToSearch.value = undefined;
     selectedHistoryTypes.value = [];
+
+    onlyAssigneds.value = false;
+    onlyNotAssigneds.value = false;
 
     // volvemos a cargar el reporte con filtros vacíos
     await cargarReporteActual();
