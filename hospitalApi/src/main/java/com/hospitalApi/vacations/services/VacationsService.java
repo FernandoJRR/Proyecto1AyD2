@@ -57,6 +57,10 @@ public class VacationsService implements ForVacationsPort {
         Employee currentEmployee = employeeRepository.findById(employeeId)
             .orElseThrow(() -> new NotFoundException("No se ha encontrado al empleado ingresado"));
 
+        if (vacationsRepository.existsByEmployee_IdAndPeriodYear(employeeId, period)) {
+            throw new InvalidPeriodException("Ya existen vacaciones en el periodo ingresado");
+        }
+
         if (!areValidVacationPeriods(vacationsPeriods, period)) {
             throw new InvalidPeriodException("Las fechas de las vacaciones no son validas");
         }
@@ -95,6 +99,11 @@ public class VacationsService implements ForVacationsPort {
         if (employeeOptional.isEmpty()) {
             throw new NotFoundException("No se ha encontrado al empleado ingresado");
         }
+
+        if (!vacationsRepository.existsByEmployee_IdAndPeriodYear(employeeId, period)) {
+            throw new InvalidPeriodException("No existen vacaciones previas en el periodo ingresado");
+        }
+
         List<Vacations> usedVacationsOnPeriod = vacationsRepository.findAllByEmployee_IdAndPeriodYearAndWasUsedTrue(employeeId, period);
 
         if (usedVacationsOnPeriod.size() > 0) {

@@ -17,7 +17,9 @@
       <template #end>
         <div class="flex flex-row">
           <div class="flex items-center gap-2">
-            <Button severity="secondary" variant="text"><i class="pi pi-user" />Ver Perfil</Button>
+            <RouterLink to="/perfil">
+              <Button severity="secondary" variant="text"><i class="pi pi-user" />Ver Perfil</Button>
+            </RouterLink>
           </div>
           <div class="flex items-center gap-2">
             <Button variant="text" @click="logout"><i class="pi pi-sign-out" />Cerrar Sesion</Button>
