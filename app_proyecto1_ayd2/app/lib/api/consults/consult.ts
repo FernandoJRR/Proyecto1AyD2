@@ -58,6 +58,12 @@ export interface EmployeeConsultResponseDTO {
   employeeType: string;
 }
 
+export interface ConsultDeletedResponseDTO {
+  message: string;
+  consultId: string;
+  deleted: boolean;
+}
+
 export const getAllConsults = async (filters: ConsultFilterDTO) => {
   const response = await $api<ConsultResponseDTO[]>(
     `${CURRENT_CONSULT_URI}/all${genParams(filters)}`
@@ -92,6 +98,16 @@ export const updateConsult = async (
     {
       method: "PATCH",
       body: data,
+    }
+  );
+  return response;
+};
+
+export const deleteConsult = async (id: string) => {
+  const response = await $api<ConsultDeletedResponseDTO>(
+    `${CURRENT_CONSULT_URI}/${id}`,
+    {
+      method: "DELETE",
     }
   );
   return response;
