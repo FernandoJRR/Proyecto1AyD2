@@ -4,7 +4,7 @@ const CURRENT_REPORTS_URI = "/v1/reports";
 
 export async function getMedicinesReport(medicineName?: string) {
   const params = {
-    name: medicineName,
+    medicationName: medicineName,
   };
   return await $api<Medicine[]>(`${CURRENT_REPORTS_URI}/getMedicationReport`, {
     params,
@@ -17,7 +17,7 @@ export async function getMedicationProfitReport(
   endDate?: Date | null
 ) {
   const params = {
-    name: medicineName,
+    medicationName: medicineName,
     startDate: startDate ? startDate.toISOString().split("T")[0] : null,
     endDate: endDate ? endDate.toISOString().split("T")[0] : null,
   };
@@ -32,7 +32,7 @@ export async function getEmployeeProfitReport(
 ) {
   const params = {
     employeeName: employeeName,
-    employeeCui: employeeCui,
+    employeeCUI: employeeCui,
   };
   return await $api<any>(`${CURRENT_REPORTS_URI}/getEmployeeProfitReport`, {
     params,
@@ -40,19 +40,32 @@ export async function getEmployeeProfitReport(
 }
 
 export async function getEmployeeLifecycleReport(
-   employeTypeId?:string,
-   startDate?: Date | null,
-   endDate?: Date | null,
-   historyTypeIds?:string[]
+  employeTypeId?: string,
+  startDate?: Date | null,
+  endDate?: Date | null,
+  historyTypeIds?: string[]
 ) {
   const params = {
-    employeTypeId:employeTypeId,
+    employeeTypeId: employeTypeId,
     startDate: startDate ? startDate.toISOString().split("T")[0] : null,
     endDate: endDate ? endDate.toISOString().split("T")[0] : null,
-    historyTypeIds:historyTypeIds
+    historyTypeIds: historyTypeIds,
   };
   return await $api<any>(`${CURRENT_REPORTS_URI}/getEmployeeLifecycleReport`, {
     params,
   });
 }
 
+export async function getDoctorAssignmentReport(
+  onlyAssigneds: boolean,
+  onlyNotAssigneds: boolean
+) {
+  const params = {
+    onlyAssigneds: onlyAssigneds,
+    onlyNotAssigneds: onlyNotAssigneds,
+  };
+
+  return await $api<any>(`${CURRENT_REPORTS_URI}/getDoctorAssignmentReport`, {
+    params,
+  });
+}
