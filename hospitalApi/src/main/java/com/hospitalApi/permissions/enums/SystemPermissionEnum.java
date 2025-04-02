@@ -26,6 +26,7 @@ public enum SystemPermissionEnum {
         // PERMISOS PARA CONSULTAS
         CREATE_CONSULT(new Permission("Crear consulta", "CREATE_CONSULT")),
         EDIT_CONSULT(new Permission("Editar consulta", "EDIT_CONSULT")),
+        DELETE_CONSULT(new Permission("Eliminar consulta", "DELETE_CONSULT")),
         PAGO_CONSULT(new Permission("Pagar consulta", "PAGO_CONSULT")),
 
         //PERMISOS PARA CIRUGIAS

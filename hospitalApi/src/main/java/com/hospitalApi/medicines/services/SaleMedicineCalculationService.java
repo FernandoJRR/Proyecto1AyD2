@@ -19,4 +19,9 @@ public class SaleMedicineCalculationService implements ForSaleMedicineCalculatio
         return total == null ? 0.0 : total;
     }
 
+    @Override
+    public Boolean consultHaveMedicines(String consultId) {
+        return saleMedicineRepository.existsByConsultId(consultId);
+    }
+
 }

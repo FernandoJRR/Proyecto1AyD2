@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hospitalApi.consults.dtos.AddDeleteEmployeeConsultRequestDTO;
+import com.hospitalApi.consults.dtos.ConsultDeletedResponseDTO;
 import com.hospitalApi.consults.dtos.ConsultResponseDTO;
 import com.hospitalApi.consults.dtos.ConsutlFilterDTO;
 import com.hospitalApi.consults.dtos.CreateConsultRequestDTO;
@@ -216,5 +217,22 @@ public class ConsultController {
 		Consult consult = consultPort.markConsultInternado(markConsultAsInternadoDTO.getConsultId(),
 				markConsultAsInternadoDTO.getRoomId());
 		return ResponseEntity.ok().body(consultMapper.fromConsultToResponse(consult));
+	}
+
+
+	@Operation(summary = "Eliminar una consulta", description = "Este endpoint permite eliminar una consulta existente.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Consulta eliminada exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Consulta no encontrada"),
+			@ApiResponse(responseCode = "409", description = "La consulta ya fue pagada | tiene cirugías realizadas | tiene medicamentos asignados"),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
+	})
+	@DeleteMapping("/{id}")
+	@PreAuthorize("hasAuthority('DELETE_CONSULT')")
+	public ResponseEntity<ConsultDeletedResponseDTO> deleteConsult(
+			@PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id)
+			throws NotFoundException, IllegalStateException {
+		boolean result = consultPort.deleteConsult(id);
+		return ResponseEntity.ok().body(new ConsultDeletedResponseDTO("Consulta eliminada exitosamente", id, result));
 	}
 }

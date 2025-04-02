@@ -151,4 +151,21 @@ public class ConsultService implements ForConsultPort {
         consult = consultRepository.save(consult);
         return consult;
     }
+
+    @Override
+    public boolean deleteConsult(String id) throws NotFoundException, IllegalStateException {
+        // Se busca la consulta por id y si esta pagada se lanza una excepcion
+        Consult consult = findConsultAndIsNotPaid(id);
+        // Verificamos si la consulta tiene cirugias asociadas realizadas
+        Boolean hasPerformedSurgeries = forSurgeryCalculationService.consultHaveSugeriesPerformed(consult.getId());
+        if (hasPerformedSurgeries) {
+            throw new IllegalStateException("No se puede eliminar la consulta porque tiene cirugías realizadas.");
+        }
+        // Verificamos si la consulta tiene medicamentos asociados
+        Boolean hasMedicines = forSaleMedicineCalculationPort.consultHaveMedicines(consult.getId());
+        if (hasMedicines) {
+            throw new IllegalStateException("No se puede eliminar la consulta porque tiene medicamentos asociados.");
+        }
+        return true;
+    }
 }
