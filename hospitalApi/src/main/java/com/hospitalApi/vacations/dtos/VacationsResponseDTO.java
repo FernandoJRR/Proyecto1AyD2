@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class VacationsResponseDTO {
+    private String id;
     private Integer periodYear;
     private LocalDate beginDate;
     private LocalDate endDate;

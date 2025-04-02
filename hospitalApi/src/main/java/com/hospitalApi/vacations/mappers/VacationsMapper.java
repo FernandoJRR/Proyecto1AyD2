@@ -15,4 +15,5 @@ public interface VacationsMapper {
     List<Vacations> fromVacationPeriodRequestToVacationsList(List<VacationPeriodRequestDTO> periodVacations);
     Vacations fromVacationPeriodRequestToVacations(VacationPeriodRequestDTO vacationPeriodRequestDTO);
     Map<Integer, List<VacationsResponseDTO>> fromVacationMapToVacationMapResponse(Map<Integer, List<Vacations>> vacations);
+    VacationsResponseDTO fromVacationToVacationsResponseDTO(Vacations vacations);
 }

@@ -39,8 +39,7 @@
                 {{ data.endDate.toLocaleDateString() }}
               </template>
             </Column>
-            <Column field="takenDays" header="Dias Laborales Ocupados" style="min-width: 14rem">
-            </Column>
+            <Column field="takenDays" header="Dias Laborales Ocupados" style="min-width: 14rem"/>
           </DataTable>
           <Button label="Guardar Vacaciones" severity="secondary" icon="pi pi-save" @click="saveVacations" />
         </div>

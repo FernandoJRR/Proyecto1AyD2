@@ -122,6 +122,25 @@ public class VacationsController {
         return response;
     }
 
+    @Operation(summary = "Actualiza el estado de vacaciones de un empleado",
+        description = "Actualiza el estado las vacaciones de un empleado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Vacaciones actualizadas exitosamente"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @PatchMapping("/{vacationsId}/state")
+    @ResponseStatus(HttpStatus.OK)
+    public VacationsResponseDTO updateVacationsState(
+            @PathVariable("vacationsId") @NotBlank(message = "El id de las vacaciones es obligatorio") String vacationsId
+            )
+            throws NotFoundException, InvalidPeriodException {
+
+        Vacations updatedVacations = vacationsPort.changeVacationState(vacationsId);
+        VacationsResponseDTO response = vacationsMapper.fromVacationToVacationsResponseDTO(updatedVacations);
+
+        return response;
+    }
+
     @Operation(summary = "Obtener todos las vacaciones de un empleado en un periodo",
         description = "Devuelve la lista de las vacaciones de un empleado en un periodo especifico.")
     @ApiResponses(value = {

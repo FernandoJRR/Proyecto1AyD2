@@ -3,7 +3,9 @@ package com.hospitalApi.vacations.services;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,6 +28,7 @@ import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.parameters.enums.ParameterEnum;
 import com.hospitalApi.parameters.models.Parameter;
 import com.hospitalApi.parameters.repositories.ParameterRepository;
+import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.vacations.models.Vacations;
 import com.hospitalApi.vacations.repositories.VacationsRepository;
@@ -35,6 +38,7 @@ public class VacationsServiceTest {
 
     Employee employee;
     Parameter parameter;
+    Vacations vacations;
 
     @Mock
     private VacationsRepository vacationsRepository;
@@ -53,6 +57,9 @@ public class VacationsServiceTest {
     private static final int CURRENT_YEAR = LocalDate.now().getYear();
     private static final int NEXT_YEAR = LocalDate.now().getYear() + 1;
     private static final int PERIOD_VACATIONS = 2023;
+    private static final String VACATIONS_ID = "dnkf-ndsc-nfdo";
+    private static final Boolean VACATIONS_WAS_USED_FALSE = false;
+    private static final Boolean VACATIONS_WAS_USED_TRUE = true;
 
 
     @BeforeEach
@@ -63,6 +70,11 @@ public class VacationsServiceTest {
         parameter = new Parameter();
         parameter.setParameterKey(PARAM_KEY_DIAS_VACACIONES);
         parameter.setValue(PARAM_VALUE_DIAS_VACACIONES);
+
+        vacations = new Vacations();
+        vacations.setId(VACATIONS_ID);
+        vacations.setWasUsed(VACATIONS_WAS_USED_FALSE);
+        vacations.setEmployee(employee);
     }
 
     @Test
@@ -138,16 +150,16 @@ public class VacationsServiceTest {
             .thenAnswer(invocation -> invocation.getArgument(0));
 
         Vacations vac1 = new Vacations();
-        vac1.setBeginDate(LocalDate.of(CURRENT_YEAR, 1, 6)); // Mismatched year → will cause areValidVacationPeriods to return false
-        vac1.setEndDate(LocalDate.of(CURRENT_YEAR, 1, 10));   // 5 working days
+        vac1.setBeginDate(LocalDate.of(CURRENT_YEAR, 1, 6));
+        vac1.setEndDate(LocalDate.of(CURRENT_YEAR, 1, 10));
 
         Vacations vac2 = new Vacations();
-        vac2.setBeginDate(LocalDate.of(CURRENT_YEAR, 1, 13)); // Valid dates for PERIOD 2025
-        vac2.setEndDate(LocalDate.of(CURRENT_YEAR, 1, 17));   // 5 working days
+        vac2.setBeginDate(LocalDate.of(CURRENT_YEAR, 1, 13));
+        vac2.setEndDate(LocalDate.of(CURRENT_YEAR, 1, 17));
 
         Vacations vac3 = new Vacations();
-        vac3.setBeginDate(LocalDate.of(CURRENT_YEAR, 1, 20)); // Valid dates for PERIOD 2025
-        vac3.setEndDate(LocalDate.of(CURRENT_YEAR, 1, 24));  // 5 working days
+        vac3.setBeginDate(LocalDate.of(CURRENT_YEAR, 1, 20));
+        vac3.setEndDate(LocalDate.of(CURRENT_YEAR, 1, 24));
 
         List<Vacations> inputVacations = Arrays.asList(vac1, vac2, vac3);
 
@@ -188,24 +200,27 @@ public class VacationsServiceTest {
     }
 
     @Test
-    public void shouldUpdateVacationsForEmployeeOnPeriodSuccessfully() throws Exception {
+    public void shouldUpdateVacationsForEmployeeOnPeriodSuccessfully() throws NotFoundException, InvalidPeriodException {
         // ARRANGE
+
         Vacations vac1 = new Vacations();
-        vac1.setBeginDate(LocalDate.of(CURRENT_YEAR, 1, 6)); // Mismatched year → will cause areValidVacationPeriods to return false
-        vac1.setEndDate(LocalDate.of(CURRENT_YEAR, 1, 10));   // 5 working days
+        vac1.setBeginDate(LocalDate.of(CURRENT_YEAR, 7, 7));
+        vac1.setEndDate(LocalDate.of(CURRENT_YEAR, 7, 11));
 
         Vacations vac2 = new Vacations();
-        vac2.setBeginDate(LocalDate.of(CURRENT_YEAR, 1, 13)); // Valid dates for PERIOD 2025
-        vac2.setEndDate(LocalDate.of(CURRENT_YEAR, 1, 17));   // 5 working days
+        vac2.setBeginDate(LocalDate.of(CURRENT_YEAR,7, 14));
+        vac2.setEndDate(LocalDate.of(CURRENT_YEAR, 7, 18));
 
         Vacations vac3 = new Vacations();
-        vac3.setBeginDate(LocalDate.of(CURRENT_YEAR, 1, 20)); // Valid dates for PERIOD 2025
-        vac3.setEndDate(LocalDate.of(CURRENT_YEAR, 1, 24));  // 5 working days
+        vac3.setBeginDate(LocalDate.of(CURRENT_YEAR, 7, 21));
+        vac3.setEndDate(LocalDate.of(CURRENT_YEAR, 7, 25));
+
 
         List<Vacations> inputVacations = Arrays.asList(vac1, vac2, vac3);
 
         when(employeeRepository.findById(EMPLOYEE_ID))
             .thenReturn(Optional.of(employee));
+        when(vacationsRepository.existsByEmployee_IdAndPeriodYear(EMPLOYEE_ID, CURRENT_YEAR)).thenReturn(true);
         when(vacationsRepository.findAllByEmployee_IdAndPeriodYearAndWasUsedTrue(EMPLOYEE_ID, CURRENT_YEAR))
             .thenReturn(Arrays.asList());
         when(parameterRepository.findOneByParameterKey(PARAM_KEY_DIAS_VACACIONES))
@@ -224,27 +239,77 @@ public class VacationsServiceTest {
 
         // ASSERT
         capturedVacations.forEach(vac -> {
-            assertEquals(employee, vac.getEmployee(), "Employee should be set correctly");
-            assertEquals(CURRENT_YEAR, vac.getPeriodYear(), "Period year should be set to input period");
-            assertEquals(false, vac.getWasUsed(), "Vacation should be marked as not used");
+            assertEquals(employee, vac.getEmployee());
+            assertEquals(CURRENT_YEAR, vac.getPeriodYear());
+            assertEquals(false, vac.getWasUsed());
             int expectedWorkingDays = 0;
             for (LocalDate d = vac.getBeginDate(); !d.isAfter(vac.getEndDate()); d = d.plusDays(1)) {
                 if (d.getDayOfWeek() != DayOfWeek.SATURDAY && d.getDayOfWeek() != DayOfWeek.SUNDAY) {
                     expectedWorkingDays++;
                 }
             }
-            assertEquals(expectedWorkingDays, vac.getWorkingDays(), "Working days should be computed correctly");
+            assertEquals(expectedWorkingDays, vac.getWorkingDays());
         });
 
-        assertAll("Returned list assertions",
-            () -> assertNotNull(result, "Result should not be null"),
-            () -> assertEquals(inputVacations.size(), result.size(), "Result list size should match input list size")
+        assertAll(
+            () -> assertNotNull(result),
+            () -> assertEquals(inputVacations.size(), result.size())
         );
 
-        verify(vacationsRepository, times(1)).deleteByPeriodYear(CURRENT_YEAR);
+        verify(vacationsRepository, times(1)).deleteByEmployee_IdAndPeriodYear(EMPLOYEE_ID,CURRENT_YEAR);
         verify(employeeRepository, times(1)).findById(EMPLOYEE_ID);
         verify(parameterRepository, times(1)).findOneByParameterKey(PARAM_KEY_DIAS_VACACIONES);
         verify(vacationsRepository, times(1))
             .findAllByEmployee_IdAndPeriodYearOrderByBeginDateAsc(EMPLOYEE_ID, CURRENT_YEAR);
+    }
+
+    @Test
+    public void shouldChangeVacationStateSuccessfully() throws NotFoundException, InvalidPeriodException {
+        // ARRANGE
+        vacations.setEndDate(LocalDate.now().minusDays(1));
+
+        when(vacationsRepository.findById(VACATIONS_ID)).thenReturn(Optional.of(vacations));
+        when(vacationsRepository.save(any(Vacations.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // ACT
+        Vacations result = vacationsService.changeVacationState(VACATIONS_ID);
+
+        // ASSERT
+        assertNotNull(result);
+        assertEquals(true, result.getWasUsed());
+
+        verify(vacationsRepository, times(1)).findById(VACATIONS_ID);
+        verify(vacationsRepository, times(1)).save(vacations);
+    }
+
+    @Test
+    public void shouldThrowInvalidPeriodExceptionWhenVacationAlreadyUsed() {
+        // ARRANGE
+        vacations.setWasUsed(VACATIONS_WAS_USED_TRUE);
+
+        when(vacationsRepository.findById(VACATIONS_ID)).thenReturn(Optional.of(vacations));
+
+        // ASSERT
+        assertThrows(InvalidPeriodException.class, () -> {
+            vacationsService.changeVacationState(VACATIONS_ID);
+        });
+
+        verify(vacationsRepository, times(1)).findById(VACATIONS_ID);
+        verify(vacationsRepository, never()).save(any(Vacations.class));
+    }
+
+    @Test
+    public void shouldThrowNotFoundExceptionWhenVacationNotFound() {
+        // ARRANGE
+        when(vacationsRepository.findById(VACATIONS_ID)).thenReturn(Optional.empty());
+
+        // ASSERT
+        assertThrows(NotFoundException.class, () -> {
+            vacationsService.changeVacationState(VACATIONS_ID);
+        });
+
+        verify(vacationsRepository, times(1)).findById(VACATIONS_ID);
+        verify(vacationsRepository, never()).save(any(Vacations.class));
     }
 }

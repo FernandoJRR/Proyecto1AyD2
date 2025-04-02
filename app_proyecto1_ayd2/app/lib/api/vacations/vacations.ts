@@ -36,3 +36,10 @@ export const updateVacations = async (data: CreateVacationsPayload, employeeId: 
   });
   return response;
 };
+
+export const updateMarkAsUsed = async (vacationsId: string) => {
+  const response = await $api<VacationEmployee[]>(`${CURRENT_VACATIONS_URI}/${vacationsId}/state`, {
+    method: "PATCH",
+  });
+  return response;
+};
