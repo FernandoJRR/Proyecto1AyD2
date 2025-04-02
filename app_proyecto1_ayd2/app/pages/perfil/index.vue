@@ -1,7 +1,7 @@
 <template>
   <div class="m-6 ml-12">
-    <router-link to="/admin/personal">
-      <Button label="Ver Todos" icon="pi pi-arrow-left" text />
+    <router-link to="/">
+      <Button label="Volver al Inicio" icon="pi pi-arrow-left" text />
     </router-link>
     <div v-if="state.status === 'pending'" class="flex flex-col">
       Cargando...
@@ -36,11 +36,10 @@
         </div>
         <DataTable :value="filteredVacations">
           <template #header>
-            <div class="flex justify-start">
-              <p class="text-3xl font-medium mb-4">Vacaciones</p>
+            <div class="flex justify-start gap-4 max-h-10 mb-4">
+              <p class="text-3xl font-medium">Vacaciones</p>
               <div class="mb-4">
-                <Select v-model="selectedYear" :options="availableYears"
-                  placeholder="Elige un periodo" class="ml-4">
+                <Select v-model="selectedYear" :options="availableYears" placeholder="Elige un periodo" class="ml-4">
                   <template #option="slotProps">
                     <div class="flex items-center gap-2">
                       <span>{{ slotProps.option }}</span>
@@ -48,6 +47,9 @@
                   </template>
                 </Select>
               </div>
+              <RouterLink to="/perfil/agregar-periodo">
+                <Button label="Agregar vacaciones" icon="pi pi-plus"></Button>
+              </RouterLink>
             </div>
           </template>
           <template #loading>
@@ -116,9 +118,11 @@
 import { Select } from 'primevue';
 import { getEmployeeById } from '~/lib/api/admin/employee';
 
+const { employee } = storeToRefs(useAuthStore())
+
 const { state } = useCustomQuery({
   key: ['usuario', useRoute().params.id as string],
-  query: () => getEmployeeById(useRoute().params.id as string).then((res) => {
+  query: () => getEmployeeById(employee.value?.id ?? '').then((res) => {
     return {
       employee: res.employeeResponseDTO,
       histories: res.employeeHistories,
@@ -130,8 +134,8 @@ const { state } = useCustomQuery({
 const selectedYear = ref<number | null>(null);
 
 const availableYears = computed(() => {
-  return state.value.data?.vacations 
-    ? Object.keys(state.value.data.vacations).map((key) => Number(key)) 
+  return state.value.data?.vacations
+    ? Object.keys(state.value.data.vacations).map((key) => Number(key))
     : [];
 });
 
