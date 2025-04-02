@@ -30,4 +30,9 @@ public class SurgeryCalculationService implements ForSurgeryCalculationPort {
         return surgeryRepository.allSurgeriesPerformedByConsultId(consultId);
     }
 
+    @Override
+    public Boolean consultHaveSugeriesPerformed(String consultId) {
+        return surgeryRepository.existsByConsultIdAndPerformedDateIsNotNull(consultId);
+    }
+
 }

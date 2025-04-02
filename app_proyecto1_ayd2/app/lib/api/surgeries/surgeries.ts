@@ -151,7 +151,7 @@ export const getSurgery = async (id: string) => {
 
 export const addDoctorSurgery = async (data: AddDeleteEmployeeSurgeryDTO) => {
   const response = await $api<SurgeryEmployeeResponseDTO>(
-    `${CURRENT_SURGERY_URI}/add-doctor`,
+    `${CURRENT_SURGERY_URI}/add-employee`,
     {
       method: "POST",
       body: data,
@@ -164,7 +164,7 @@ export const deleteDoctorSurgery = async (
   data: AddDeleteEmployeeSurgeryDTO
 ) => {
   const response = await $api<SurgeryEmployeeResponseDTO>(
-    `${CURRENT_SURGERY_URI}/remove-doctor`,
+    `${CURRENT_SURGERY_URI}/remove-employee`,
     {
       method: "DELETE",
       body: data,
