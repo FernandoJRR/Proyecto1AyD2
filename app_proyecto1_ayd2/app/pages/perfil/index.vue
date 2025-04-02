@@ -36,7 +36,7 @@
         </div>
         <DataTable :value="filteredVacations">
           <template #header>
-            <div class="flex justify-start gap-4 max-h-10 mb-4">
+            <div class="flex justify-start gap-2 max-h-10 mb-6">
               <p class="text-3xl font-medium">Vacaciones</p>
               <div class="mb-4">
                 <Select v-model="selectedYear" :options="availableYears" placeholder="Elige un periodo" class="ml-4">
@@ -47,6 +47,9 @@
                   </template>
                 </Select>
               </div>
+              <RouterLink :to="`/perfil/editar-periodo-${selectedYear}`">
+                <Button severity="info" label="Editar periodo" icon="pi pi-pencil"></Button>
+              </RouterLink>
               <RouterLink to="/perfil/agregar-periodo">
                 <Button label="Agregar vacaciones" icon="pi pi-plus"></Button>
               </RouterLink>

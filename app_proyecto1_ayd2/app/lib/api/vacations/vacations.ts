@@ -28,3 +28,11 @@ export const createVacations = async (data: CreateVacationsPayload, employeeId: 
   });
   return response;
 };
+
+export const updateVacations = async (data: CreateVacationsPayload, employeeId: string, periodYear: number) => {
+  const response = await $api<VacationEmployee[]>(`${CURRENT_VACATIONS_URI}/${employeeId}/${periodYear}`, {
+    method: "PATCH",
+    body: data.periods,
+  });
+  return response;
+};
