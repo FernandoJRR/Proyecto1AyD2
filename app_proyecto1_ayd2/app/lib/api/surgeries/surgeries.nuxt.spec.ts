@@ -151,7 +151,7 @@ describe("Surgeries API Utilities", () => {
     const mockResponse = { surgeryId: "s1", specialistEmployeeId: "d1", specialistPayment: 500, employeeName: null, employeeLastName: null };
     mockApi.mockResolvedValueOnce(mockResponse);
     const result = await addDoctorSurgery(payload);
-    expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/add-doctor", {
+    expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/add-employee", {
       method: "POST",
       body: payload
     });
@@ -163,7 +163,7 @@ describe("Surgeries API Utilities", () => {
     const mockResponse = { surgeryId: "s1", specialistEmployeeId: "d1", specialistPayment: 0, employeeName: null, employeeLastName: null };
     mockApi.mockResolvedValueOnce(mockResponse);
     const result = await deleteDoctorSurgery(payload);
-    expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/remove-doctor", {
+    expect(mockApi).toHaveBeenCalledWith("/v1/surgeries/remove-employee", {
       method: "DELETE",
       body: payload
     });

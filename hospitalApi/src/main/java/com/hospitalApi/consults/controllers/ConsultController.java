@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -82,6 +83,7 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("/create")
+	@PreAuthorize("hasAuthority('CREATE_CONSULT')")
 	public ResponseEntity<ConsultResponseDTO> createConsult(
 			@RequestBody @Valid CreateConsultRequestDTO createConsultRequestDTO)
 			throws NotFoundException {
@@ -100,6 +102,7 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PatchMapping("/{id}")
+	@PreAuthorize("hasAuthority('EDIT_CONSULT')")
 	public ResponseEntity<ConsultResponseDTO> updateConsult(
 			@PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id,
 			@RequestBody @Valid UpdateConsultRequestDTO updateConsultRequestDTO)
@@ -116,6 +119,7 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("/pay/{id}")
+	@PreAuthorize("hasAuthority('PAGO_CONSULT')")
 	public ResponseEntity<ConsultResponseDTO> payConsult(
 			@PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id)
 			throws NotFoundException, IllegalStateException {
@@ -131,6 +135,7 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@GetMapping("/total/{id}")
+	@PreAuthorize("hasAuthority('PAGO_CONSULT')")
 	public ResponseEntity<TotalConsultResponseDTO> getTotalConsult(
 			@PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id)
 			throws NotFoundException {
@@ -162,6 +167,7 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("add-employee")
+	@PreAuthorize("hasAuthority('EDIT_CONSULT')")
 	public ResponseEntity<List<EmployeeConsultResponseDTO>> addEmployeeToConsult(
 			@RequestBody @Valid AddDeleteEmployeeConsultRequestDTO addEmployeeConsultRequestDTO)
 			throws NotFoundException, IllegalStateException {
@@ -182,6 +188,7 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@DeleteMapping("delete-employee")
+	@PreAuthorize("hasAuthority('EDIT_CONSULT')")
 	public ResponseEntity<List<EmployeeConsultResponseDTO>> deleteEmployeeFromConsult(
 			@RequestBody @Valid AddDeleteEmployeeConsultRequestDTO addEmployeeConsultRequestDTO)
 			throws NotFoundException, IllegalStateException {
@@ -202,6 +209,7 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("/mark-internado")
+	@PreAuthorize("hasAuthority('EDIT_CONSULT')")
 	public ResponseEntity<ConsultResponseDTO> markConsultAsInternado(
 			@RequestBody @Valid MarkConsultAsInternadoDTO markConsultAsInternadoDTO)
 			throws NotFoundException, IllegalStateException, DuplicatedEntryException {
