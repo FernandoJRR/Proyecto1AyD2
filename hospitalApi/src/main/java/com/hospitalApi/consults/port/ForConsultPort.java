@@ -30,4 +30,6 @@ public interface ForConsultPort {
 	public List<Consult> getAllConsults();
 
 	public List<Consult> getConsults(ConsutlFilterDTO consutlFilterDTO);
+
+	public boolean deleteConsult(String id) throws NotFoundException, IllegalStateException;
 }

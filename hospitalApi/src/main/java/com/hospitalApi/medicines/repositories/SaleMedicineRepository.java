@@ -71,4 +71,6 @@ public interface SaleMedicineRepository extends JpaRepository<SaleMedicine, Stri
                         @Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate);
 
+    public boolean existsByConsultId(String consultId);
+
 }

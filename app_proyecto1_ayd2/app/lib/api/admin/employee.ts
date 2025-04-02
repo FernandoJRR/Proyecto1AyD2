@@ -24,10 +24,18 @@ export interface Employee extends Entity {
   desactivatedAt: Date | null;
 }
 
+export interface VacationEmployee {
+  periodYear: number,
+  beginDate: Date,
+  endDate: Date,
+  wasUsed: boolean
+}
+
 export interface EmployeeResponse {
   employeeResponseDTO: Employee;
   username: string;
   employeeHistories: Array<EmployeeHistory>;
+  vacations: Record<number, VacationEmployee[]>
 }
 
 export interface UserPayload {

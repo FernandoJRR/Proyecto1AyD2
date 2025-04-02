@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,19 +17,19 @@ import com.hospitalApi.parameters.models.Parameter;
 import com.hospitalApi.parameters.ports.ForParameterPort;
 import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
-import com.hospitalApi.vacations.dtos.CreateVacationsRequestDTO;
 import com.hospitalApi.vacations.dtos.VacationDaysResponseDTO;
+import com.hospitalApi.vacations.dtos.VacationPeriodRequestDTO;
 import com.hospitalApi.vacations.dtos.VacationsResponseDTO;
 import com.hospitalApi.vacations.mappers.VacationsMapper;
 import com.hospitalApi.vacations.models.Vacations;
 import com.hospitalApi.vacations.ports.ForVacationsPort;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 
@@ -86,12 +87,12 @@ public class VacationsController {
     @ResponseStatus(HttpStatus.OK)
     public List<VacationsResponseDTO> createVacationsForEmployeeOnPeriod(
             @PathVariable("employeeId") @NotBlank(message = "El id del empleado es obligatorio") String employeeId,
-            @PathVariable("periodYear") @NotBlank(message = "El periodo de las vacaciones es obligatorio") @Positive(message = "El periodo de las vacaciones debe ser un numero entero") Integer periodYear,
-            @RequestBody @Valid List<CreateVacationsRequestDTO> createVacationsRequestDTO
+            @PathVariable("periodYear") @NotNull(message = "El periodo de las vacaciones es obligatorio") @Positive(message = "El periodo de las vacaciones debe ser un numero entero") Integer periodYear,
+            @RequestBody @Valid List<VacationPeriodRequestDTO> createVacationsRequestDTO
             )
             throws NotFoundException, InvalidPeriodException {
 
-        List<Vacations> vacations = vacationsMapper.fromVacationsRequestToVacationsList(createVacationsRequestDTO);
+        List<Vacations> vacations = vacationsMapper.fromVacationPeriodRequestToVacationsList(createVacationsRequestDTO);
         List<Vacations> createdVacations = vacationsPort.createVacationsForEmployeeOnPeriod(employeeId, periodYear, vacations);
         List<VacationsResponseDTO> response = vacationsMapper
                 .fromVacationsListToVacationsResponseDTOs(createdVacations);

@@ -12,7 +12,8 @@ import jakarta.transaction.Transactional;
 public interface VacationsRepository extends JpaRepository<Vacations, String>{
     public List<Vacations> findAllByEmployee_IdAndPeriodYearOrderByBeginDateAsc(String employeeId, Integer periodYear);
     public List<Vacations> findAllByEmployee_IdOrderByBeginDateAsc(String employeeId);
-    List<Vacations> findAllByEmployee_IdAndPeriodYearAndWasUsedTrue(String employeeId, Integer periodYear);
+    public List<Vacations> findAllByEmployee_IdAndPeriodYearAndWasUsedTrue(String employeeId, Integer periodYear);
+    public boolean existsByEmployee_IdAndPeriodYear(String employeeId, Integer periodYear);
 
     @Modifying
     @Transactional

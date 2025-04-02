@@ -13,4 +13,5 @@ public class VacationsResponseDTO {
     private Integer periodYear;
     private LocalDate beginDate;
     private LocalDate endDate;
+    private Boolean wasUsed;
 }

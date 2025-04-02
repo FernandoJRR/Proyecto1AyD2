@@ -199,7 +199,12 @@
             severity="danger"
             rounded
             text
-            @click="eliminarConsulta(slotProps.data.id)"
+            @click="
+              () => {
+                consultaEliminar.value = slotProps.data.id;
+                showDeleteDialog.value = true;
+              }
+            "
           />
         </template>
       </Column>
@@ -208,27 +213,43 @@
         Hay en total {{ consultState.data?.length ?? 0 }} consultas.
       </template>
     </DataTable>
+
+    <!-- Dialogo Confirmar Eliminación -->
+    <Dialog v-model:visible="showDeleteDialog" modal header="Eliminar Consulta">
+      <p>¿Esta seguro de eliminar esta consulta?</p>
+      <template #footer>
+        <Button label="Cancelar" text @click="showDeleteDialog = false" />
+        <Button
+          label="Eliminar"
+          severity="danger"
+          @click="confirmarEliminarConsulta"
+        />
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref } from "vue";
+import { toast } from "vue-sonner";
 import { RouterLink } from "vue-router";
 import {
   getAllConsults,
+  deleteConsult,
   type ConsultFilterDTO,
 } from "~/lib/api/consults/consult";
-import { InputText, Button, Checkbox } from "primevue";
+import { InputText, Button, Checkbox, Dialog } from "primevue";
 
 const searchTerm = ref("");
 const idConsulta = ref("");
 const isPaid = ref(false);
 const isInternado = ref(null);
+const showDeleteDialog = ref(false);
+const consultaEliminar = ref<string | null>(null);
 
 const { employee } = storeToRefs(useAuthStore());
 
 const isAdmin = computed(() => employee.value?.employeeType?.name === "Admin");
-
 
 const {
   state: consultState,
@@ -252,6 +273,19 @@ const {
     } as ConsultFilterDTO),
 });
 
+const { mutate: deleteConsultMutate, asyncStatus: asyncDeleteConsultStatus } =
+  useMutation({
+    mutation: (id: string) => deleteConsult(id),
+    onError: (error) => {
+      toast.error("Ocurrió un error al eliminar el empleado", {
+        description: error.message,
+      });
+    },
+    onSuccess: () => {
+      refetchConsults();
+    },
+  });
+
 const buscarConsultas = () => {
   refetchConsults();
 };
@@ -260,9 +294,17 @@ const recargarDatos = () => {
   refetchConsults();
 };
 
-const eliminarConsulta = (id: string) => {
-  // Aquí puedes implementar la lógica de eliminación con confirmación y toast
-  console.log("Eliminar consulta con ID:", id);
+const confirmarEliminarConsulta = () => {
+  if (consultaEliminar.value) {
+    deleteConsultMutate(consultaEliminar.value);
+    showDeleteDialog.value = false;
+    consultaEliminar.value = null;
+    refetchConsults();
+  } else {
+    toast.error("No se ha seleccionado ninguna consulta para eliminar", {
+      description: "Por favor, selecciona una consulta.",
+    });
+  }
 };
 </script>
 
