@@ -48,8 +48,8 @@ public class MedicineServiceTest {
     private static final String MEDICINE_DESCRIPTION = "Medicina para el dolor de cabeza";
     private static final Integer MEDICINE_QUANTITY = 10;
     private static final Integer MEDICINE_MIN_QUANTITY = 5;
-    private static final BigDecimal MEDICINE_PRICE = new BigDecimal(5.00);
-    private static final BigDecimal MEDICINE_COST = new BigDecimal(4.00);
+    private static final BigDecimal MEDICINE_PRICE = new BigDecimal(5);
+    private static final BigDecimal MEDICINE_COST = new BigDecimal(4);
 
     private static final String MEDICINE_ID_2 = "23434-23434-23434-23434";
     private static final String MEDICINE_NAME_2 = "Amoxicilina";
@@ -57,7 +57,7 @@ public class MedicineServiceTest {
     private static final Integer MEDICINE_QUANTITY_2 = 3;
     private static final Integer MEDICINE_MIN_QUANTITY_2 = 5;
     private static final BigDecimal MEDICINE_PRICE_2 = new BigDecimal(8.50);
-    private static final BigDecimal MEDICINE_COST_2 = new BigDecimal(7.00);
+    private static final BigDecimal MEDICINE_COST_2 = new BigDecimal(7);
 
     private static final String MEDICINE_NAME_UPDATED = "Ibuprofeno";
 

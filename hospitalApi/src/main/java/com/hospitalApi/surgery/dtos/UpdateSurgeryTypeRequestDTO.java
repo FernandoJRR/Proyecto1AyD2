@@ -1,5 +1,7 @@
 package com.hospitalApi.surgery.dtos;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -12,11 +14,11 @@ public class UpdateSurgeryTypeRequestDTO {
     private String description;
 
     @DecimalMin(value = "0.01", message = "El pago al especialista debe ser mayor a 0")
-    private Double specialistPayment;
+    private BigDecimal specialistPayment;
 
     @DecimalMin(value = "0.01", message = "El costo del hospital debe ser mayor a 0")
-    private Double hospitalCost;
+    private BigDecimal hospitalCost;
 
     @DecimalMin(value = "0.01", message = "El costo de la cirugía debe ser mayor a 0")
-    private Double surgeryCost;
+    private BigDecimal surgeryCost;
 }

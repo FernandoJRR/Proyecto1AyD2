@@ -1,5 +1,6 @@
 package com.hospitalApi.consults.controllers;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -140,7 +141,7 @@ public class ConsultController {
 	public ResponseEntity<TotalConsultResponseDTO> getTotalConsult(
 			@PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id)
 			throws NotFoundException {
-		Double total = consultPort.obtenerTotalConsulta(id);
+		BigDecimal total = consultPort.obtenerTotalConsulta(id);
 		return ResponseEntity.ok().body(new TotalConsultResponseDTO(id, total));
 	}
 

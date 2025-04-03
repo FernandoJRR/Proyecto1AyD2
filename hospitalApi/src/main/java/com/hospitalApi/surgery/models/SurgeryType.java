@@ -1,5 +1,7 @@
 package com.hospitalApi.surgery.models;
 
+import java.math.BigDecimal;
+
 import com.hospitalApi.shared.models.Auditor;
 import com.hospitalApi.surgery.dtos.CreateSurgeryTypeRequest;
 import com.hospitalApi.surgery.dtos.UpdateSurgeryTypeRequestDTO;
@@ -25,13 +27,13 @@ public class SurgeryType extends Auditor {
     private String description;
 
     @Column(nullable = false)
-    private Double specialistPayment;
+    private BigDecimal specialistPayment;
 
     @Column(nullable = false)
-    private Double hospitalCost;
+    private BigDecimal hospitalCost;
 
     @Column(nullable = false)
-    private Double surgeryCost;
+    private BigDecimal surgeryCost;
 
     public SurgeryType updateFromDTO(UpdateSurgeryTypeRequestDTO updateSurgeryTypeRequestDTO) {
         if (updateSurgeryTypeRequestDTO == null) {

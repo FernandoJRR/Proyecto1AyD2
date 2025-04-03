@@ -59,7 +59,7 @@ class MedicineSalesCalculatorTest {
         BigDecimal expectedProfit = sale1.getProfit().add(sale2.getProfit());
 
         // act
-        FinancialSummaryDTO result = calculator.calculateFinancialTotals(sales);
+        FinancialSummaryDTO result = calculator.calculateFinancialTotalsOfList(sales);
 
         // asseert
         assertAll(

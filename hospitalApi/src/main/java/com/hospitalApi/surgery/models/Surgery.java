@@ -1,5 +1,6 @@
 package com.hospitalApi.surgery.models;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -33,10 +34,10 @@ public class Surgery extends Auditor {
     private SurgeryType surgeryType;
 
     @Column(nullable = false)
-    private Double hospitalCost;
+    private BigDecimal hospitalCost;
 
     @Column(nullable = false)
-    private Double surgeryCost;
+    private BigDecimal surgeryCost;
 
     @Column(nullable = true)
     private LocalDate performedDate;
@@ -44,7 +45,7 @@ public class Surgery extends Auditor {
     @OneToMany(mappedBy = "surgery", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SurgeryEmployee> surgeryEmployees;
 
-    public Surgery(Consult consult, SurgeryType surgeryType, Double hospitalCost, Double surgeryCost) {
+    public Surgery(Consult consult, SurgeryType surgeryType, BigDecimal hospitalCost, BigDecimal surgeryCost) {
         this.consult = consult;
         this.surgeryType = surgeryType;
         this.hospitalCost = hospitalCost;
