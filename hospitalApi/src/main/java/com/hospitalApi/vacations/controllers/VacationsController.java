@@ -18,6 +18,7 @@ import com.hospitalApi.parameters.models.Parameter;
 import com.hospitalApi.parameters.ports.ForParameterPort;
 import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
+import com.hospitalApi.vacations.dtos.ChangeVacationDaysRequestDTO;
 import com.hospitalApi.vacations.dtos.VacationDaysResponseDTO;
 import com.hospitalApi.vacations.dtos.VacationPeriodRequestDTO;
 import com.hospitalApi.vacations.dtos.VacationsResponseDTO;
@@ -56,6 +57,25 @@ public class VacationsController {
 
         Parameter vacationDays = parameterPort.findParameterByKey(ParameterEnum.DIAS_VACACIONES.getKey());
         VacationDaysResponseDTO response = new VacationDaysResponseDTO(Integer.parseInt(vacationDays.getValue()));
+        return response;
+    }
+
+    @Operation(summary = "Cambia los dias de vacaciones configurados",
+        description = "Cambia dentro del sistema los dias de vacaciones que se tienen configurados para nuevos empleados")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dias de vacaciones cambiados correctamente"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @PatchMapping("/vacation-days")
+    @ResponseStatus(HttpStatus.OK)
+    public VacationDaysResponseDTO changeVacationDays(
+        @RequestBody @Valid ChangeVacationDaysRequestDTO ChangeVacationDaysRequestDTO)
+            throws NotFoundException {
+
+        Integer updatedDays = vacationsPort.updateVacationDays(ChangeVacationDaysRequestDTO.getNewVacationDays());
+
+        VacationDaysResponseDTO response = new VacationDaysResponseDTO(updatedDays);
+
         return response;
     }
 

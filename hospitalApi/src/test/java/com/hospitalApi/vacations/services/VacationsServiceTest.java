@@ -30,6 +30,7 @@ import com.hospitalApi.parameters.models.Parameter;
 import com.hospitalApi.parameters.repositories.ParameterRepository;
 import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
+import com.hospitalApi.vacations.dtos.ChangeVacationDaysRequestDTO;
 import com.hospitalApi.vacations.models.Vacations;
 import com.hospitalApi.vacations.repositories.VacationsRepository;
 
@@ -60,6 +61,8 @@ public class VacationsServiceTest {
     private static final String VACATIONS_ID = "dnkf-ndsc-nfdo";
     private static final Boolean VACATIONS_WAS_USED_FALSE = false;
     private static final Boolean VACATIONS_WAS_USED_TRUE = true;
+    private static final Integer VACATION_DAYS = 15;
+    private static final Integer NEW_VACATION_DAYS = 15;
 
 
     @BeforeEach
@@ -311,5 +314,45 @@ public class VacationsServiceTest {
 
         verify(vacationsRepository, times(1)).findById(VACATIONS_ID);
         verify(vacationsRepository, never()).save(any(Vacations.class));
+    }
+
+    @Test
+    public void shouldUpdateVacationDaysSuccessfully() throws NotFoundException {
+        // ARRANGE
+        Parameter parameter = new Parameter();
+        parameter.setParameterKey(ParameterEnum.DIAS_VACACIONES.getKey());
+        parameter.setValue(VACATION_DAYS.toString());
+
+        when(parameterRepository.findOneByParameterKey(ParameterEnum.DIAS_VACACIONES.getKey()))
+            .thenReturn(Optional.of(parameter));
+        when(parameterRepository.save(any(Parameter.class)))
+            .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // ACT
+        Integer updatedVacationDays = vacationsService.updateVacationDays(NEW_VACATION_DAYS);
+
+        // ASSERT
+        ArgumentCaptor<Parameter> parameterCaptor = ArgumentCaptor.forClass(Parameter.class);
+        verify(parameterRepository, times(1)).save(parameterCaptor.capture());
+        Parameter savedParameter = parameterCaptor.getValue();
+
+        assertAll(
+            () -> assertEquals(NEW_VACATION_DAYS, updatedVacationDays),
+            () -> assertEquals(NEW_VACATION_DAYS.toString(), savedParameter.getValue())
+        );
+    }
+
+    @Test
+    public void shouldThrowNotFoundExceptionWhenParameterNotFound() {
+        // ARRANGE
+        when(parameterRepository.findOneByParameterKey(ParameterEnum.DIAS_VACACIONES.getKey()))
+            .thenReturn(Optional.empty());
+
+        // ASSERT
+        assertThrows(NotFoundException.class, () -> {
+            vacationsService.updateVacationDays(VACATION_DAYS);
+        });
+        verify(parameterRepository, times(1)).findOneByParameterKey(ParameterEnum.DIAS_VACACIONES.getKey());
+        verify(parameterRepository, never()).save(any(Parameter.class));
     }
 }
