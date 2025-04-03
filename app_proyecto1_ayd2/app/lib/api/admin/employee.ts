@@ -170,3 +170,7 @@ export const getEnfermeros = async (search: string | null) => {
   });
   return response;
 }
+
+export async function getEmployeeInvoiceForPeriod(period: number) {
+  return await $api<Employee[]>(`${CURRENT_EMPLOYEE_URI}/${period}/vacationsInvoice`);
+}

@@ -18,6 +18,7 @@
     "@primeuix/themes": "^1.0.0",
     "@primevue/forms": "^4.3.2",
     "@tailwindcss/vite": "^4.0.13",
+    "jspdf": "^3.0.1",
     "nuxt": "^3.16.0",
     "nuxt-app": "file:",
     "pinia": "^3.0.1",
