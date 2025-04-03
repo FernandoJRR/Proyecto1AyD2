@@ -17,5 +17,6 @@ public interface VacationsRepository extends JpaRepository<Vacations, String>{
 
     @Modifying
     @Transactional
-    public void deleteByPeriodYear(Integer periodYear);
+    public void deleteByEmployee_IdAndPeriodYear(String employeeId, Integer periodYear);
+
 }

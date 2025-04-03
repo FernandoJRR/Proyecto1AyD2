@@ -9,7 +9,7 @@
     <div v-else-if="state.status === 'error'">
       Ocurrio un error inesperado
     </div>
-    <div v-else class="grid grid-cols-2 mt-4">
+    <div v-else class="grid grid-cols-2 mt-4 gap-4">
       <div class="flex flex-col gap-4">
         <div class="flex flex-row gap-4">
           <h1 class="text-3xl font-semibold">{{ `${state.data.employee.firstName} ${state.data.employee.lastName}` }}
@@ -36,7 +36,7 @@
         </div>
         <DataTable :value="filteredVacations">
           <template #header>
-            <div class="flex justify-start gap-4 max-h-10 mb-4">
+            <div class="flex justify-start gap-2 max-h-10 mb-6">
               <p class="text-3xl font-medium">Vacaciones</p>
               <div class="mb-4">
                 <Select v-model="selectedYear" :options="availableYears" placeholder="Elige un periodo" class="ml-4">
@@ -47,6 +47,9 @@
                   </template>
                 </Select>
               </div>
+              <RouterLink :to="`/perfil/editar-periodo-${selectedYear}`">
+                <Button severity="info" label="Editar periodo" icon="pi pi-pencil"></Button>
+              </RouterLink>
               <RouterLink to="/perfil/agregar-periodo">
                 <Button label="Agregar vacaciones" icon="pi pi-plus"></Button>
               </RouterLink>
@@ -55,11 +58,11 @@
           <template #loading>
             Cargando vacaciones del empleado.
           </template>
-          <Column field="beginDate" header="Fecha Inicio" style="min-width: 12rem">
+          <Column field="beginDate" header="Fecha Inicio">
           </Column>
-          <Column field="endDate" header="Fecha Fin" style="min-width: 12rem">
+          <Column field="endDate" header="Fecha Fin">
           </Column>
-          <Column field="wasUsed" header="Se Uso" style="min-width: 12rem">
+          <Column field="wasUsed" header="Se Uso">
             <template #body="{ data }">
               <div class="flex items-center gap-2">
                 <Tag v-if="data.wasUsed" rounded>
@@ -71,6 +74,21 @@
               </div>
             </template>
           </Column>
+          <Column header="Acciones">
+            <template #body="{ data }">
+              <Button v-if="!data.wasUsed" size="small" severity="help" icon="pi pi-check" label="Marcar como Usada"
+                @click="markVacationAsUsed(data.id)" />
+            </template>
+          </Column>
+          <template #footer v-if="filteredVacations.every(vacation => vacation.wasUsed)">
+            <div class="flex flex-row gap-4 items-center" >
+              <p class="font-semibold">
+                Todas las Vacaciones Usadas
+              </p>
+              <Button label="Imprimir Finiquito" size="small" variant="outlined" 
+                icon="pi pi-print" severity="warn" @click="printInvoice" />
+            </div>
+          </template>
         </DataTable>
       </div>
       <div>
@@ -116,11 +134,13 @@
 </template>
 <script setup lang="ts">
 import { Select } from 'primevue';
+import { toast } from 'vue-sonner';
 import { getEmployeeById } from '~/lib/api/admin/employee';
+import { updateMarkAsUsed } from '~/lib/api/vacations/vacations';
 
 const { employee } = storeToRefs(useAuthStore())
 
-const { state } = useCustomQuery({
+const { state, refetch } = useCustomQuery({
   key: ['usuario', useRoute().params.id as string],
   query: () => getEmployeeById(employee.value?.id ?? '').then((res) => {
     return {
@@ -146,6 +166,20 @@ const filteredVacations = computed(() => {
   return [];
 });
 
+const { mutate: markVacationAsUsed } = useMutation({
+  mutation: (vacationsId: string) => updateMarkAsUsed(vacationsId),
+  onError(error) {
+    console.error(error);
+    toast.error('Ocurrió un error al actualizar las vacaciones', {
+      description: error.message,
+    });
+  },
+  onSuccess() {
+    toast.success('Vacaciones actualizadas correctamente');
+    refetch()
+  },
+});
+
 watch(
   availableYears,
   (newYears) => {
@@ -155,4 +189,8 @@ watch(
   },
   { immediate: true }
 );
+
+function printInvoice() {
+  alert("por implementar")
+}
 </script>

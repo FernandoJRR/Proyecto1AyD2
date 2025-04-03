@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -96,6 +97,47 @@ public class VacationsController {
         List<Vacations> createdVacations = vacationsPort.createVacationsForEmployeeOnPeriod(employeeId, periodYear, vacations);
         List<VacationsResponseDTO> response = vacationsMapper
                 .fromVacationsListToVacationsResponseDTOs(createdVacations);
+        return response;
+    }
+
+    @Operation(summary = "Actualiza las vacaciones de un empleado",
+        description = "Actualiza las vacaciones de un empleado a partir de un periodo y varias fechas")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Vacaciones actualizadas exitosamente"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @PatchMapping("/{employeeId}/{periodYear}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<VacationsResponseDTO> updateVacationsForEmployeeOnPeriod(
+            @PathVariable("employeeId") @NotBlank(message = "El id del empleado es obligatorio") String employeeId,
+            @PathVariable("periodYear") @NotNull(message = "El periodo de las vacaciones es obligatorio") @Positive(message = "El periodo de las vacaciones debe ser un numero entero") Integer periodYear,
+            @RequestBody @Valid List<VacationPeriodRequestDTO> createVacationsRequestDTO
+            )
+            throws NotFoundException, InvalidPeriodException {
+
+        List<Vacations> vacations = vacationsMapper.fromVacationPeriodRequestToVacationsList(createVacationsRequestDTO);
+        List<Vacations> createdVacations = vacationsPort.updateVacationsForEmployeeOnPeriod(employeeId, periodYear, vacations);
+        List<VacationsResponseDTO> response = vacationsMapper
+                .fromVacationsListToVacationsResponseDTOs(createdVacations);
+        return response;
+    }
+
+    @Operation(summary = "Actualiza el estado de vacaciones de un empleado",
+        description = "Actualiza el estado las vacaciones de un empleado")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Vacaciones actualizadas exitosamente"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    @PatchMapping("/{vacationsId}/state")
+    @ResponseStatus(HttpStatus.OK)
+    public VacationsResponseDTO updateVacationsState(
+            @PathVariable("vacationsId") @NotBlank(message = "El id de las vacaciones es obligatorio") String vacationsId
+            )
+            throws NotFoundException, InvalidPeriodException {
+
+        Vacations updatedVacations = vacationsPort.changeVacationState(vacationsId);
+        VacationsResponseDTO response = vacationsMapper.fromVacationToVacationsResponseDTO(updatedVacations);
+
         return response;
     }
 

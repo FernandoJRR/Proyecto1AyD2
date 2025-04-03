@@ -5,12 +5,12 @@
     </router-link>
     <Form>
       <div>
-        <h1 class="font-semibold text-3xl mb-2">Agregar Vacaciones</h1>
-        <p class="font-semibold text-lg mb-8">Ingresa un periodo y fechas de vacaciones para programarlas</p>
+        <h1 class="font-semibold text-3xl mb-2">Editar Vacaciones</h1>
+        <p class="font-semibold text-lg mb-8">Ingresa nuevas fechas de vacaciones para editar el periodo</p>
         <div class="mb-6 flex flex-col gap-4">
           <FloatLabel>
-            <DatePicker v-model="currentPeriodYear" view="year" dateFormat="yy" :maxDate="new Date()" />
-            <label>Elige un año</label>
+            <DatePicker v-model="currentPeriodYear" view="year" dateFormat="yy" :maxDate="new Date()" disabled/>
+            <label>Año</label>
           </FloatLabel>
           <div class="flex flex-row items-center gap-4">
             <p class="font-medium">Dias de Vacaciones Disponibles</p>
@@ -39,8 +39,7 @@
                 {{ data.endDate.toLocaleDateString() }}
               </template>
             </Column>
-            <Column field="takenDays" header="Dias Laborales Ocupados" style="min-width: 14rem">
-            </Column>
+            <Column field="takenDays" header="Dias Laborales Ocupados" style="min-width: 14rem"/>
           </DataTable>
           <Button label="Guardar Vacaciones" severity="secondary" icon="pi pi-save" @click="saveVacations" />
         </div>
@@ -51,12 +50,12 @@
 <script setup lang="ts">
 import { ButtonGroup, DatePicker, FloatLabel, Tag } from 'primevue';
 import { toast } from 'vue-sonner';
-import { createVacations, getVacationDays, type CreateVacationsPayload } from '~/lib/api/vacations/vacations';
+import { createVacations, getVacationDays, updateVacations, type CreateVacationsPayload } from '~/lib/api/vacations/vacations';
 
 const { employee } = storeToRefs(useAuthStore())
 
 const { state: vacationDays } = useCustomQuery({
-  key: ["vacation-days"],
+  key: ["vacation-days-edit", useRoute().params.year],
   query: () => getVacationDays(),
 });
 
@@ -67,12 +66,13 @@ watch(vacationDays, (newVal) => {
 
 const vacationPeriods = ref<{beginDate: Date, endDate: Date, takenDays: number}[]>([])
 
-const currentPeriodYear = ref<Date>(new Date())
+const currentPeriodYear = ref<Date>(new Date(
+  Number.parseInt(useRoute().params.year as string), 0, 1))
 
-const tomorrowDate = new Date();
-tomorrowDate.setDate(new Date().getDate() + 1);
+const tomorrowDate = currentPeriodYear.value;
+tomorrowDate.setDate(currentPeriodYear.value.getDate() + 1);
 
-const currentVacationPeriods = ref<Date[]>([new Date(), tomorrowDate])
+const currentVacationPeriods = ref<Date[]>([currentPeriodYear.value, tomorrowDate])
 
 const minPeriodDate = computed(() => new Date(currentPeriodYear.value.getFullYear(), 0, 1));
 const maxPeriodDate = computed(() => new Date(currentPeriodYear.value.getFullYear(), 11, 31));
@@ -139,15 +139,16 @@ function saveVacations() {
 }
 
 const { mutate: createVacationsMutation } = useMutation({
-  mutation: (vacationsData: CreateVacationsPayload) => createVacations(vacationsData, employee.value?.id ?? '', currentPeriodYear.value.getFullYear()),
+  mutation: (vacationsData: CreateVacationsPayload) => updateVacations(vacationsData, employee.value?.id ?? '', 
+      currentPeriodYear.value.getFullYear()),
   onError(error) {
     console.error(error);
-    toast.error('Ocurrió un error al crear las vacaciones', {
+    toast.error('Ocurrió un error al actualizar las vacaciones', {
       description: error.message,
     });
   },
   onSuccess() {
-    toast.success('Vacaciones creadas correctamente');
+    toast.success('Vacaciones actualizadas correctamente');
     navigateTo('/perfil');
   },
 });
