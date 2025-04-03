@@ -15,6 +15,11 @@ const menus = [
     route: '/admin/personal',
   },
   {
+    title: 'Vacaciones',
+    description: 'Administracion de Vacaciones',
+    route: '/admin/personal/vacaciones',
+  },
+  {
     title: 'Medicos Especialistas',
     description: 'Administracion de Medicos Especialistas',
     route: '/admin/medicos-especialistas',
