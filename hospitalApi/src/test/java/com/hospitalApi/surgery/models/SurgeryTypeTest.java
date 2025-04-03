@@ -17,6 +17,12 @@ public class SurgeryTypeTest {
     private static final BigDecimal HOSPITAL_COST = new BigDecimal(3000);
     private static final BigDecimal SURGERY_COST = new BigDecimal(4500);
 
+    private static final String UPDATED_TYPE = "Cirugía Menor";
+    private static final String UPDATED_DESCRIPTION = "Procedimientos simples";
+    private static final BigDecimal UPDATED_SPECIALIST_PAYMENT = new BigDecimal(500);
+    private static final BigDecimal UPDATED_HOSPITAL_COST = new BigDecimal(1000);
+    private static final BigDecimal UPDATED_SURGERY_COST = new BigDecimal(2000);
+
     private SurgeryType surgeryType;
 
     @BeforeEach
@@ -51,21 +57,22 @@ public class SurgeryTypeTest {
      */
     @Test
     void shouldUpdateSurgeryTypeFromDTO() {
+        // arrange
         UpdateSurgeryTypeRequestDTO updateDTO = new UpdateSurgeryTypeRequestDTO();
-        updateDTO.setType("Cirugía Menor");
-        updateDTO.setDescription("Procedimientos simples");
-        updateDTO.setSpecialistPayment(new BigDecimal(500));
-        updateDTO.setHospitalCost(new BigDecimal(1000));
-        updateDTO.setSurgeryCost(new BigDecimal(2000.0));
-
+        updateDTO.setType(UPDATED_TYPE);
+        updateDTO.setDescription(UPDATED_DESCRIPTION);
+        updateDTO.setSpecialistPayment(UPDATED_SPECIALIST_PAYMENT);
+        updateDTO.setHospitalCost(UPDATED_HOSPITAL_COST);
+        updateDTO.setSurgeryCost(UPDATED_SURGERY_COST);
+        // axct
         surgeryType.updateFromDTO(updateDTO);
-
+        // assert
         assertAll(
-                () -> assertEquals("Cirugía Menor", surgeryType.getType()),
-                () -> assertEquals("Procedimientos simples", surgeryType.getDescription()),
-                () -> assertEquals(500.0, surgeryType.getSpecialistPayment()),
-                () -> assertEquals(1000.0, surgeryType.getHospitalCost()),
-                () -> assertEquals(2000.0, surgeryType.getSurgeryCost()));
+                () -> assertEquals(UPDATED_TYPE, surgeryType.getType()),
+                () -> assertEquals(UPDATED_DESCRIPTION, surgeryType.getDescription()),
+                () -> assertEquals(UPDATED_SPECIALIST_PAYMENT, surgeryType.getSpecialistPayment()),
+                () -> assertEquals(UPDATED_HOSPITAL_COST, surgeryType.getHospitalCost()),
+                () -> assertEquals(UPDATED_SURGERY_COST, surgeryType.getSurgeryCost()));
     }
 
     /**
