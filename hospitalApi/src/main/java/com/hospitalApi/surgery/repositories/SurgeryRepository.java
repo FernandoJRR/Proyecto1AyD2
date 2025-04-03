@@ -19,4 +19,7 @@ public interface SurgeryRepository extends JpaRepository<Surgery, String> {
 
     @Query("SELECT COUNT(s) = (SELECT COUNT(s2) FROM Surgery s2 WHERE s2.consult.id = :consultId) FROM Surgery s WHERE s.consult.id = :consultId AND s.performedDate IS NOT NULL")
     boolean allSurgeriesPerformedByConsultId(@Param("consultId") String consultId);
+
+    boolean existsByConsultIdAndPerformedDateIsNotNull(String consultId);
+
 }

@@ -82,6 +82,8 @@ public class EmployeeSalesReportService implements ReportService<EmployeeProfitS
             SalesPerEmployeeDTO dto = new SalesPerEmployeeDTO(
                     employee.getFullName(),
                     employee.getCui(),
+                    employee.getSalary(),
+                    employee.getEmployeeType().getName(),
                     financialSummary,
                     salesDTO);
 

@@ -1,6 +1,7 @@
         package com.hospitalApi.employees.controllers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +38,10 @@ import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.mappers.UserMapper;
 import com.hospitalApi.users.models.User;
+import com.hospitalApi.vacations.dtos.VacationsResponseDTO;
+import com.hospitalApi.vacations.mappers.VacationsMapper;
+import com.hospitalApi.vacations.models.Vacations;
+import com.hospitalApi.vacations.ports.ForVacationsPort;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -55,9 +60,11 @@ public class EmployeesController {
 
         private final ForEmployeesPort employeesPort;
         private final ForEmployeeHistoryPort employeeHistoryPort;
+        private final ForVacationsPort vacationsPort;
 
         private final EmployeeTypeMapper employeeTypeMapper;
         private final EmployeeMapper employeeMapper;
+        private final VacationsMapper vacationsMapper;
         private final UserMapper userMapper;
         private final HistoryTypeMapper historyTypeMapper;
         private final EmployeeHistoryMapper employeeHistoryMapper;
@@ -101,7 +108,7 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
 
         })
-        @PreAuthorize("hasAuthority('EDIT_EMPLOYEE')") 
+        @PreAuthorize("hasAuthority('EDIT_EMPLOYEE')")
         @PatchMapping("/{employeeId}")
         public ResponseEntity<EmployeeResponseDTO> updateEmployee(
                         @PathVariable("employeeId") String employeeId,
@@ -202,19 +209,24 @@ public class EmployeesController {
                         @PathVariable("employeeId") String employeeId)
                         throws NotFoundException {
 
-                // mandar a crear el employee al port
+                // mandar a obtener el employee al port
                 Employee result = employeesPort.findEmployeeById(employeeId);
 
                 List<EmployeeHistory> historyEmployee = employeeHistoryPort.getEmployeeHistory(result);
                 List<EmployeeHistoryResponseDTO> employeeHistories = employeeHistoryMapper
                                 .fromEmployeeHistoriesToEmployeeHistoryDtoList(historyEmployee);
 
+                // se obtienen las vacaciones del empleado
+                Map<Integer, List<Vacations>> vacations = vacationsPort.getAllVacationsForEmployee(employeeId);
+                Map<Integer, List<VacationsResponseDTO>> response = vacationsMapper
+                            .fromVacationMapToVacationMapResponse(vacations);
+
                 // convertir el Employee al dto
                 EmployeeResponseDTO employeeResponseDTO = employeeMapper.fromEmployeeToResponse(result);
 
                 return ResponseEntity.status(HttpStatus.OK).body(
                                 new CompoundEmployeeResponseDTO(employeeResponseDTO, result.getUser().getUsername(),
-                                                employeeHistories));
+                                                employeeHistories, response));
         }
 
         @Operation(summary = "Obtener todos los empleados", description = "Este endpoint permite la busqueda de todos los empleados.")
@@ -227,6 +239,26 @@ public class EmployeesController {
         public ResponseEntity<List<EmployeeResponseDTO>> findEmployees() {
                 // mandar a crear el employee al port
                 List<Employee> result = employeesPort.findEmployees();
+
+                // convertir el Employee al dto
+                List<EmployeeResponseDTO> response = employeeMapper.fromEmployeesToResponse(result);
+
+                return ResponseEntity.status(HttpStatus.OK).body(response);
+        }
+
+        @Operation(summary = "Obtener todos los empleados para generar finiquito por periodo",
+            description = "Se obtienen todos los empleados a los que se puede generar su finiquito en un periodo dado")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Empleados encontrados exitosamente", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EmployeeResponseDTO.class))),
+                        @ApiResponse(responseCode = "400", description = "Solicitud inválida, usualmente por error en la validacion de parametros.", content = @Content(mediaType = "application/json")),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        })
+        @GetMapping("/{periodYear}/vacationsInvoice")
+        public ResponseEntity<List<EmployeeResponseDTO>> findVacationInvoiceEmployeesForPeriod(
+                        @PathVariable("periodYear") Integer periodYear)
+        {
+                // mandar a crear el employee al port
+                List<Employee> result = employeesPort.findEmployeesInvoiceForPeriod(periodYear);
 
                 // convertir el Employee al dto
                 List<EmployeeResponseDTO> response = employeeMapper.fromEmployeesToResponse(result);

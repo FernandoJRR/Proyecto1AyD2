@@ -17,6 +17,7 @@ import com.hospitalApi.medicines.models.SaleMedicine;
 import com.hospitalApi.shared.models.Auditor;
 import com.hospitalApi.surgery.models.SurgeryEmployee;
 import com.hospitalApi.users.models.User;
+import com.hospitalApi.vacations.models.Vacations;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -71,6 +72,9 @@ public class Employee extends Auditor {
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EmployeeConsult> employeeConsults;
+
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Vacations> vacations;
 
     /**
      * Para la creacion de nuevos empleados

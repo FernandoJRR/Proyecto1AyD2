@@ -45,4 +45,23 @@ public class HistoryTypeController {
 
                 return response;
         }
+
+        @Operation(summary = "Obtener todos los tipos de historial", description = "Devuelve una lista de todos los tipos de historial de empleados disponibles en el sistema.")
+        @ApiResponses(value = {
+                        @ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente"),
+                        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        })
+        @GetMapping("/all")
+        @ResponseStatus(HttpStatus.OK)
+        public List<HistoryTypeResponseDTO> getAllHistoryTypes() {
+
+                // se obtienen los todos tipos de historial
+                List<HistoryType> result = historyTypePort.findAll();
+
+                // convertir el Employee al dto
+                List<HistoryTypeResponseDTO> response = historyTypeMapper
+                                .fromHistoryTypesToHistoryTypeResponseDTOs(result);
+
+                return response;
+        }
 }

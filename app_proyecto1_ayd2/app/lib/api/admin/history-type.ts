@@ -12,3 +12,9 @@ export async function getDeactivationHistoryTypes(params?: {}) {
     params,
   });
 }
+
+export async function getAllHistoryTypes(params?: {}) {
+  return await $api<HistoryType[]>(`${CURRENT_HISTORY_TYPE_URI}/all`, {
+    params,
+  });
+}

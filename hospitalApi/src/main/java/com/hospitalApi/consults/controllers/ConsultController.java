@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hospitalApi.consults.dtos.AddDeleteEmployeeConsultRequestDTO;
+import com.hospitalApi.consults.dtos.ConsultDeletedResponseDTO;
 import com.hospitalApi.consults.dtos.ConsultResponseDTO;
 import com.hospitalApi.consults.dtos.ConsutlFilterDTO;
 import com.hospitalApi.consults.dtos.CreateConsultRequestDTO;
@@ -82,6 +84,7 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("/create")
+	@PreAuthorize("hasAuthority('CREATE_CONSULT')")
 	public ResponseEntity<ConsultResponseDTO> createConsult(
 			@RequestBody @Valid CreateConsultRequestDTO createConsultRequestDTO)
 			throws NotFoundException {
@@ -100,6 +103,7 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PatchMapping("/{id}")
+	@PreAuthorize("hasAuthority('EDIT_CONSULT')")
 	public ResponseEntity<ConsultResponseDTO> updateConsult(
 			@PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id,
 			@RequestBody @Valid UpdateConsultRequestDTO updateConsultRequestDTO)
@@ -116,6 +120,7 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("/pay/{id}")
+	@PreAuthorize("hasAuthority('PAGO_CONSULT')")
 	public ResponseEntity<ConsultResponseDTO> payConsult(
 			@PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id)
 			throws NotFoundException, IllegalStateException {
@@ -131,6 +136,7 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@GetMapping("/total/{id}")
+	@PreAuthorize("hasAuthority('PAGO_CONSULT')")
 	public ResponseEntity<TotalConsultResponseDTO> getTotalConsult(
 			@PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id)
 			throws NotFoundException {
@@ -162,6 +168,7 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("add-employee")
+	@PreAuthorize("hasAuthority('EDIT_CONSULT')")
 	public ResponseEntity<List<EmployeeConsultResponseDTO>> addEmployeeToConsult(
 			@RequestBody @Valid AddDeleteEmployeeConsultRequestDTO addEmployeeConsultRequestDTO)
 			throws NotFoundException, IllegalStateException {
@@ -182,6 +189,7 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@DeleteMapping("delete-employee")
+	@PreAuthorize("hasAuthority('EDIT_CONSULT')")
 	public ResponseEntity<List<EmployeeConsultResponseDTO>> deleteEmployeeFromConsult(
 			@RequestBody @Valid AddDeleteEmployeeConsultRequestDTO addEmployeeConsultRequestDTO)
 			throws NotFoundException, IllegalStateException {
@@ -202,11 +210,29 @@ public class ConsultController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@PostMapping("/mark-internado")
+	@PreAuthorize("hasAuthority('EDIT_CONSULT')")
 	public ResponseEntity<ConsultResponseDTO> markConsultAsInternado(
 			@RequestBody @Valid MarkConsultAsInternadoDTO markConsultAsInternadoDTO)
 			throws NotFoundException, IllegalStateException, DuplicatedEntryException {
 		Consult consult = consultPort.markConsultInternado(markConsultAsInternadoDTO.getConsultId(),
 				markConsultAsInternadoDTO.getRoomId());
 		return ResponseEntity.ok().body(consultMapper.fromConsultToResponse(consult));
+	}
+
+
+	@Operation(summary = "Eliminar una consulta", description = "Este endpoint permite eliminar una consulta existente.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Consulta eliminada exitosamente"),
+			@ApiResponse(responseCode = "404", description = "Consulta no encontrada"),
+			@ApiResponse(responseCode = "409", description = "La consulta ya fue pagada | tiene cirugías realizadas | tiene medicamentos asignados"),
+			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
+	})
+	@DeleteMapping("/{id}")
+	@PreAuthorize("hasAuthority('DELETE_CONSULT')")
+	public ResponseEntity<ConsultDeletedResponseDTO> deleteConsult(
+			@PathVariable @NotNull(message = "El id de la consulta no puede ser nulo") String id)
+			throws NotFoundException, IllegalStateException {
+		boolean result = consultPort.deleteConsult(id);
+		return ResponseEntity.ok().body(new ConsultDeletedResponseDTO("Consulta eliminada exitosamente", id, result));
 	}
 }

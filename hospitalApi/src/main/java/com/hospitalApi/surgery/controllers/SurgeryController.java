@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -78,6 +79,7 @@ public class SurgeryController {
 	})
 	@PostMapping("/types/create")
 	@ResponseStatus(HttpStatus.CREATED)
+	@PreAuthorize("hasAuthority('CREATE_TYPE_SURGERY')")
 	public SurgeryTypeResponseDTO createSurgeryType(
 			@Valid @RequestBody CreateSurgeryTypeRequest createSurgeryTypeRequestDTO)
 			throws DuplicatedEntryException {
@@ -96,6 +98,7 @@ public class SurgeryController {
 	})
 	@PatchMapping("/types/update/{surgeryTypeId}")
 	@ResponseStatus(HttpStatus.OK)
+	@PreAuthorize("hasAuthority('EDIT_TYPE_SURGERY')")
 	public SurgeryTypeResponseDTO updateSurgeryType(
 			@PathVariable("surgeryTypeId") @NotBlank(message = "El id del tipo de cirugía es requerido") String surgeryTypeId,
 			@Valid @RequestBody UpdateSurgeryTypeRequestDTO updateSurgeryTypeRequestDTO)
@@ -140,6 +143,7 @@ public class SurgeryController {
 	})
 	@PostMapping("/create")
 	@ResponseStatus(HttpStatus.CREATED)
+	@PreAuthorize("hasAuthority('CREATE_SURGERY')")
 	public SurgeryResponseDTO createSurgery(
 			@Valid @RequestBody CreateSugeryRequestDTO createSurgeryRequestDTO)
 			throws NotFoundException, IllegalStateException, DuplicatedEntryException {
@@ -172,6 +176,7 @@ public class SurgeryController {
 	})
 	@PostMapping("add-employee")
 	@ResponseStatus(HttpStatus.OK)
+	@PreAuthorize("hasAuthority('EDIT_SURGERY')")
 	public List<SurgeryEmpleoyeeResponseDTO> addEmployeeToSurgery(
 			@RequestBody @Valid AddDeleteEmployeeSurgeryDTO addEmployeeSurgeryDTO)
 			throws IllegalStateException, NotFoundException, DuplicatedEntryException {
@@ -192,6 +197,7 @@ public class SurgeryController {
 	})
 	@DeleteMapping("remove-employee")
 	@ResponseStatus(HttpStatus.OK)
+	@PreAuthorize("hasAuthority('EDIT_SURGERY')")
 	public List<SurgeryEmpleoyeeResponseDTO> removeEmployeeFromSurgery(
 			@RequestBody @Valid AddDeleteEmployeeSurgeryDTO removeEmployeeSurgeryDTO)
 			throws NotFoundException, IllegalStateException {
@@ -245,6 +251,7 @@ public class SurgeryController {
 	})
 	@PostMapping("/mark-performed/{surgeryId}")
 	@ResponseStatus(HttpStatus.OK)
+	@PreAuthorize("hasAuthority('EDIT_SURGERY')")
 	public SurgeryResponseDTO markSurgeryAsPerformed(
 			@PathVariable("surgeryId") @NotBlank(message = "El id de la cirugía es requerido") String surgeryId)
 			throws NotFoundException, IllegalStateException {
@@ -261,6 +268,7 @@ public class SurgeryController {
 			@ApiResponse(responseCode = "500", description = "Error interno del servidor")
 	})
 	@DeleteMapping("{surgeryId}")
+	@PreAuthorize("hasAuthority('DELETE_SURGERY')")
 	public ResponseEntity<DeleteSurgeryResponseDTO> deleteSurgeryById(
 			@PathVariable("surgeryId") @NotBlank(message = "El id de la cirugía es requerido") String surgeryId)
 			throws NotFoundException, IllegalStateException {

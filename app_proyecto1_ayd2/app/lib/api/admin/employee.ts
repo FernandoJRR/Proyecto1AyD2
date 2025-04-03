@@ -16,6 +16,7 @@ export interface EmployeeHistory {
 export interface Employee extends Entity {
   firstName: string;
   lastName: string;
+  cui:string,
   salary: number;
   iggsPercentage: number;
   irtraPercentage: number;
@@ -23,10 +24,18 @@ export interface Employee extends Entity {
   desactivatedAt: Date | null;
 }
 
+export interface VacationEmployee {
+  periodYear: number,
+  beginDate: Date,
+  endDate: Date,
+  wasUsed: boolean
+}
+
 export interface EmployeeResponse {
   employeeResponseDTO: Employee;
   username: string;
   employeeHistories: Array<EmployeeHistory>;
+  vacations: Record<number, VacationEmployee[]>
 }
 
 export interface UserPayload {
@@ -53,6 +62,7 @@ export interface EmployeePayload {
 export interface EmployeeUpdatePayload {
   firstName: string;
   lastName: string;
+  cui:string,
   salary: number;
   iggsPercentage: number | null;
   irtraPercentage: number | null;

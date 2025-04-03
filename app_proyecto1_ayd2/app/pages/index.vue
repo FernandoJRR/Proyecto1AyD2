@@ -44,6 +44,11 @@ const menus = [
     description: "Administracion de Consultas",
     route: "/consultas",
   },
+  {
+    title: "Reportes",
+    description: "Generación de Repotes",
+    route: "/reportes",
+  },
 ];
 
 defineExpose({ menus });

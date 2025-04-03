@@ -53,7 +53,7 @@ public class Consult extends Auditor {
     @OneToMany(mappedBy = "consult", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EmployeeConsult> employeeConsults;
 
-    @OneToOne(mappedBy = "consult", cascade = CascadeType.ALL, optional = true)
+    @OneToOne(mappedBy = "consult", cascade = CascadeType.ALL, optional = true, orphanRemoval = true)
     @JoinColumn(nullable = true)
     private RoomUsage roomUsage;
 
