@@ -15,10 +15,21 @@ export interface CreateVacationsPayload {
   periods: PeriodPayload[]
 }
 
+export interface UpdateVacationsPayload {
+  newVacationDays: number
+}
+
 export async function getVacationDays() {
   return await $api<VacationDaysResponse>(
     `${CURRENT_VACATIONS_URI}/vacation-days`
   );
+}
+
+export async function updateVacationDays(data: UpdateVacationsPayload) {
+  return await $api<VacationDaysResponse>(`${CURRENT_VACATIONS_URI}/vacation-days`, {
+    method: "PATCH",
+    body: data
+  });
 }
 
 export const createVacations = async (data: CreateVacationsPayload, employeeId: string, periodYear: number) => {

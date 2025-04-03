@@ -1,8 +1,9 @@
-import { jsPDF } from 'jspdf'
 import type { Employee } from '~/lib/api/admin/employee';
 
-export const generatePeriodVacationInvoicePDF = (employees: Employee[], periodYear: number) => {
+export const generatePeriodVacationInvoicePDF = async (employees: Employee[], periodYear: number) => {
+  const { jsPDF } = await import('jspdf'); // Dynamically import on client-side
   const doc = new jsPDF();
+
   const pageWidth = doc.internal.pageSize.getWidth();
 
   employees.forEach((employee, index) => {
@@ -33,7 +34,8 @@ export const generatePeriodVacationInvoicePDF = (employees: Employee[], periodYe
   doc.save(`vacaciones-${periodYear}.pdf`);
 };
 
-export const generateEmployeePeriodInvoicePDF = (employee: Employee, periodYear: number) => {
+export const generateEmployeePeriodInvoicePDF = async (employee: Employee, periodYear: number) => {
+  const { jsPDF } = await import('jspdf'); // Dynamically import on client-side
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
 

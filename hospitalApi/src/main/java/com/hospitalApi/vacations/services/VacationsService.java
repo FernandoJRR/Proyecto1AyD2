@@ -19,6 +19,7 @@ import com.hospitalApi.parameters.models.Parameter;
 import com.hospitalApi.parameters.repositories.ParameterRepository;
 import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
+import com.hospitalApi.vacations.dtos.ChangeVacationDaysRequestDTO;
 import com.hospitalApi.vacations.models.Vacations;
 import com.hospitalApi.vacations.ports.ForVacationsPort;
 import com.hospitalApi.vacations.repositories.VacationsRepository;
@@ -320,4 +321,17 @@ public class VacationsService implements ForVacationsPort {
         DayOfWeek day = date.getDayOfWeek();
         return day != DayOfWeek.SATURDAY && day != DayOfWeek.SUNDAY;
     }
+
+    public Integer updateVacationDays(Integer newVacationDays)
+        throws NotFoundException {
+
+            Parameter parameterVacationDays = parameterRepository.findOneByParameterKey(ParameterEnum.DIAS_VACACIONES.getKey())
+                .orElseThrow(() -> new NotFoundException("Ocurrio un error al cambiar los dias de vacaciones"));
+
+            parameterVacationDays.setValue(newVacationDays.toString());
+
+            Parameter resultParameter = parameterRepository.save(parameterVacationDays);
+
+            return Integer.parseInt(resultParameter.getValue());
+        }
 }
