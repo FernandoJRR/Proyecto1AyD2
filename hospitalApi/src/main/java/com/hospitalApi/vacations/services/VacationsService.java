@@ -129,8 +129,14 @@ public class VacationsService implements ForVacationsPort {
             throw new InvalidPeriodException("La cantidad de dias de vacaciones ingresados no son validos");
         }
 
+        for (Vacations vac : vacationsPeriods) {
+            if (vac.getBeginDate().isBefore(LocalDate.now().plusDays(7))) {
+                throw new InvalidPeriodException("No se pueden modificar vacaciones si comienzan en menos de una semana");
+            }
+        }
+
         // si las validaciones se cumplen entonces se eliminan las viejas vacaciones y se guardan las nuevas
-        vacationsRepository.deleteByPeriodYear(period);
+        vacationsRepository.deleteByEmployee_IdAndPeriodYear(employeeId, period);
 
         for (Vacations vacations : vacationsPeriods) {
             vacations.setWorkingDays(countWorkingDays(vacations.getBeginDate(), vacations.getEndDate()));
@@ -141,6 +147,27 @@ public class VacationsService implements ForVacationsPort {
         }
 
         return vacationsRepository.findAllByEmployee_IdAndPeriodYearOrderByBeginDateAsc(employeeId, period);
+    }
+
+    public Vacations changeVacationState(String vacationsId)
+        throws NotFoundException, InvalidPeriodException {
+
+        Vacations vacations = vacationsRepository.findById(vacationsId)
+            .orElseThrow(() -> new NotFoundException("No se encontraron las vacaciones solicitadas"));
+
+        if (vacations.getWasUsed()) {
+            throw new InvalidPeriodException("Las vacaciones ya fueron marcadas como usadas");
+        }
+
+        if (vacations.getEndDate().isAfter(LocalDate.now())) {
+            throw new InvalidPeriodException("La fecha de finalizacion del periodo de vacaciones aun no llega");
+        }
+
+        vacations.setWasUsed(true);
+
+        Vacations updatedVacations = vacationsRepository.save(vacations);
+
+        return updatedVacations;
     }
 
     public List<Vacations> createRandomVacationsForEmployee(String employeeId) throws NotFoundException {
