@@ -244,7 +244,6 @@ const availableFinancialAreas = [
     { value: 'CONSULTS', label: 'Consultas' },
     { value: 'ROOMS', label: 'Habitaciones' },
     { value: 'SURGERIES', label: 'Cirugías' },
-    { value: 'EMPLOYEES', label: 'Empleados (solo para gastos)' },
     { value: 'ALL', label: 'Todas las áreas' }
 ];
 
