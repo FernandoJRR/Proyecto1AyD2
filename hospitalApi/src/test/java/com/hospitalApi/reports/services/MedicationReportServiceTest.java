@@ -51,7 +51,7 @@ public class MedicationReportServiceTest {
         medicine1.setName(MEDICINE_NAME);
         medicine2 = new Medicine();
         medicine2.setName(MEDICINE_NAME_2);
-        medicationFilter = new MedicationReportFilter(MEDICINE_NAME);
+        medicationFilter = new MedicationReportFilter(null, null, MEDICINE_NAME);
 
         medicineResponseDTO1 = new MedicineResponseDTO(null, MEDICINE_NAME, null, null, null, null, null);
         medicineResponseDTO2 = new MedicineResponseDTO(null, MEDICINE_NAME_2, null, null, null, null, null);

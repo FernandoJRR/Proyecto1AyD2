@@ -1,14 +1,20 @@
 package com.hospitalApi.reports.dtos.request;
 
+import java.time.LocalDate;
+
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  * Esta es una clase que representa los filtros aplicables a los reportes.
  */
 @Getter
-@RequiredArgsConstructor
-public class MedicationReportFilter {
+public class MedicationReportFilter extends PeriodFilter {
 
     private final String medicationName;
+
+    public MedicationReportFilter(LocalDate startDate, LocalDate endDate, String medicationName) {
+        super(startDate, endDate);
+        this.medicationName = medicationName;
+    }
+
 }

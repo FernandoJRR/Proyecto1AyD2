@@ -2,6 +2,8 @@ package com.hospitalApi.surgery.models;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.math.BigDecimal;
+
 import com.hospitalApi.surgery.dtos.CreateSurgeryTypeRequest;
 import com.hospitalApi.surgery.dtos.UpdateSurgeryTypeRequestDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,9 +13,15 @@ public class SurgeryTypeTest {
 
     private static final String TYPE = "Cirugía Mayor";
     private static final String DESCRIPTION = "Procedimientos invasivos complejos";
-    private static final Double SPECIALIST_PAYMENT = 1500.0;
-    private static final Double HOSPITAL_COST = 3000.0;
-    private static final Double SURGERY_COST = 4500.0;
+    private static final BigDecimal SPECIALIST_PAYMENT = new BigDecimal(1500);
+    private static final BigDecimal HOSPITAL_COST = new BigDecimal(3000);
+    private static final BigDecimal SURGERY_COST = new BigDecimal(4500);
+
+    private static final String UPDATED_TYPE = "Cirugía Menor";
+    private static final String UPDATED_DESCRIPTION = "Procedimientos simples";
+    private static final BigDecimal UPDATED_SPECIALIST_PAYMENT = new BigDecimal(500);
+    private static final BigDecimal UPDATED_HOSPITAL_COST = new BigDecimal(1000);
+    private static final BigDecimal UPDATED_SURGERY_COST = new BigDecimal(2000);
 
     private SurgeryType surgeryType;
 
@@ -29,7 +37,8 @@ public class SurgeryTypeTest {
      */
     @Test
     void shouldCreateSurgeryTypeFromCreateRequest() {
-        CreateSurgeryTypeRequest request = new CreateSurgeryTypeRequest(TYPE, DESCRIPTION, SPECIALIST_PAYMENT, HOSPITAL_COST, SURGERY_COST);
+        CreateSurgeryTypeRequest request = new CreateSurgeryTypeRequest(TYPE, DESCRIPTION, SPECIALIST_PAYMENT,
+                HOSPITAL_COST, SURGERY_COST);
 
         SurgeryType result = new SurgeryType(request);
 
@@ -38,8 +47,7 @@ public class SurgeryTypeTest {
                 () -> assertEquals(DESCRIPTION, result.getDescription()),
                 () -> assertEquals(SPECIALIST_PAYMENT, result.getSpecialistPayment()),
                 () -> assertEquals(HOSPITAL_COST, result.getHospitalCost()),
-                () -> assertEquals(SURGERY_COST, result.getSurgeryCost())
-        );
+                () -> assertEquals(SURGERY_COST, result.getSurgeryCost()));
     }
 
     /**
@@ -49,22 +57,22 @@ public class SurgeryTypeTest {
      */
     @Test
     void shouldUpdateSurgeryTypeFromDTO() {
+        // arrange
         UpdateSurgeryTypeRequestDTO updateDTO = new UpdateSurgeryTypeRequestDTO();
-        updateDTO.setType("Cirugía Menor");
-        updateDTO.setDescription("Procedimientos simples");
-        updateDTO.setSpecialistPayment(500.0);
-        updateDTO.setHospitalCost(1000.0);
-        updateDTO.setSurgeryCost(2000.0);
-
+        updateDTO.setType(UPDATED_TYPE);
+        updateDTO.setDescription(UPDATED_DESCRIPTION);
+        updateDTO.setSpecialistPayment(UPDATED_SPECIALIST_PAYMENT);
+        updateDTO.setHospitalCost(UPDATED_HOSPITAL_COST);
+        updateDTO.setSurgeryCost(UPDATED_SURGERY_COST);
+        // axct
         surgeryType.updateFromDTO(updateDTO);
-
+        // assert
         assertAll(
-                () -> assertEquals("Cirugía Menor", surgeryType.getType()),
-                () -> assertEquals("Procedimientos simples", surgeryType.getDescription()),
-                () -> assertEquals(500.0, surgeryType.getSpecialistPayment()),
-                () -> assertEquals(1000.0, surgeryType.getHospitalCost()),
-                () -> assertEquals(2000.0, surgeryType.getSurgeryCost())
-        );
+                () -> assertEquals(UPDATED_TYPE, surgeryType.getType()),
+                () -> assertEquals(UPDATED_DESCRIPTION, surgeryType.getDescription()),
+                () -> assertEquals(UPDATED_SPECIALIST_PAYMENT, surgeryType.getSpecialistPayment()),
+                () -> assertEquals(UPDATED_HOSPITAL_COST, surgeryType.getHospitalCost()),
+                () -> assertEquals(UPDATED_SURGERY_COST, surgeryType.getSurgeryCost()));
     }
 
     /**
@@ -82,8 +90,7 @@ public class SurgeryTypeTest {
                 () -> assertEquals(original.getDescription(), surgeryType.getDescription()),
                 () -> assertEquals(original.getSpecialistPayment(), surgeryType.getSpecialistPayment()),
                 () -> assertEquals(original.getHospitalCost(), surgeryType.getHospitalCost()),
-                () -> assertEquals(original.getSurgeryCost(), surgeryType.getSurgeryCost())
-        );
+                () -> assertEquals(original.getSurgeryCost(), surgeryType.getSurgeryCost()));
     }
 
     /**
@@ -102,7 +109,6 @@ public class SurgeryTypeTest {
                 () -> assertEquals(DESCRIPTION, surgeryType.getDescription()),
                 () -> assertEquals(SPECIALIST_PAYMENT, surgeryType.getSpecialistPayment()),
                 () -> assertEquals(HOSPITAL_COST, surgeryType.getHospitalCost()),
-                () -> assertEquals(SURGERY_COST, surgeryType.getSurgeryCost())
-        );
+                () -> assertEquals(SURGERY_COST, surgeryType.getSurgeryCost()));
     }
 }

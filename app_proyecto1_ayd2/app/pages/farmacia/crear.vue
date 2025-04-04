@@ -155,7 +155,7 @@ const { mutate, asyncStatus } = useMutation({
   onError(error) {
     console.log(error);
     toast.error('Ocurrió un error al crear el medicamento', {
-      description: error,
+      description: error.message,
     });
   },
   onSuccess() {

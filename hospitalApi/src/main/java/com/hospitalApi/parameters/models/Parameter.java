@@ -1,8 +1,5 @@
 package com.hospitalApi.parameters.models;
 
-import java.time.LocalDate;
-
-import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.shared.models.Auditor;
 
 import jakarta.persistence.Column;

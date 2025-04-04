@@ -1,16 +1,12 @@
 package com.hospitalApi.surgery.services;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
-import com.hospitalApi.shared.exceptions.NotFoundException;
-import com.hospitalApi.surgery.dtos.CreateSugeryRequestDTO;
-import com.hospitalApi.surgery.models.Surgery;
-import com.hospitalApi.surgery.ports.ForSurgeryEmployeePort;
-import com.hospitalApi.surgery.ports.ForSurgeryPort;
-
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +14,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
+import com.hospitalApi.shared.exceptions.NotFoundException;
+import com.hospitalApi.surgery.dtos.CreateSugeryRequestDTO;
+import com.hospitalApi.surgery.models.Surgery;
+import com.hospitalApi.surgery.ports.ForSurgeryEmployeePort;
+import com.hospitalApi.surgery.ports.ForSurgeryPort;
 
 @ExtendWith(MockitoExtension.class)
 public class SurgeryCreateServiceTest {

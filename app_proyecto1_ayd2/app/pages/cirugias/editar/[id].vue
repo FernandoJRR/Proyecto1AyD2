@@ -398,7 +398,7 @@ const { mutate: addEmployeeMutate, asyncStatus: addEmployeeStatus } =
       addDoctorSurgery(payload),
     onError(error) {
       toast.error("Ocurrió un error al agregar el empleado", {
-        description: error,
+        description: error.message,
       });
     },
     onSuccess() {

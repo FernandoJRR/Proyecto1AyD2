@@ -10,7 +10,7 @@ import com.hospitalApi.shared.dtos.FinancialSummaryDTO;
 import com.hospitalApi.shared.utils.FinancialCalculator;
 
 @Component
-public class MedicineSalesCalculator implements FinancialCalculator<FinancialSummaryDTO, List<SaleMedicine>> {
+public class MedicineSalesCalculator implements FinancialCalculator<FinancialSummaryDTO, SaleMedicine> {
 
     /**
      * Recorre cada uno de los elementos de la lista,
@@ -21,16 +21,25 @@ public class MedicineSalesCalculator implements FinancialCalculator<FinancialSum
      * @return resumen financiero con totales sumados
      */
     @Override
-    public FinancialSummaryDTO calculateFinancialTotals(List<SaleMedicine> sales) {
+    public FinancialSummaryDTO calculateFinancialTotalsOfList(List<SaleMedicine> sales) {
         BigDecimal totalSales = BigDecimal.ZERO;
         BigDecimal totalCost = BigDecimal.ZERO;
         BigDecimal totalProfit = BigDecimal.ZERO;
 
         for (SaleMedicine sale : sales) {
-            totalSales = totalSales.add(sale.getTotal());
-            totalCost = totalCost.add(sale.getMedicineCost().multiply(BigDecimal.valueOf(sale.getQuantity())));
-            totalProfit = totalProfit.add(sale.getProfit());
+            FinancialSummaryDTO summary = calculateFinancialTotals(sale);
+            totalSales = totalSales.add(summary.getTotalSales());
+            totalCost = totalCost.add(summary.getTotalCost());
+            totalProfit = totalProfit.add(summary.getTotalProfit());
         }
+        return new FinancialSummaryDTO(totalSales, totalCost, totalProfit);
+    }
+
+    @Override
+    public FinancialSummaryDTO calculateFinancialTotals(SaleMedicine sale) {
+        BigDecimal totalSales = sale.getTotal();
+        BigDecimal totalCost = sale.getMedicineCost().multiply(BigDecimal.valueOf(sale.getQuantity()));
+        BigDecimal totalProfit = sale.getProfit();
         return new FinancialSummaryDTO(totalSales, totalCost, totalProfit);
     }
 }

@@ -4,12 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -67,8 +67,8 @@ public class SurgeryEmployeeServiceTest {
     public void setUp() {
         surgery = new Surgery();
         surgery.setId(SURGERY_ID);
-        surgery.setHospitalCost(500.0);
-        surgery.setSurgeryCost(1500.0);
+        surgery.setHospitalCost(new BigDecimal(500));
+        surgery.setSurgeryCost(new BigDecimal(1500));
 
         employee = new Employee();
         employee.setId(EMPLOYEE_ID);
@@ -78,14 +78,14 @@ public class SurgeryEmployeeServiceTest {
 
         surgeryType = new SurgeryType();
         surgeryType.setId("TYPE-001");
-        surgeryType.setSpecialistPayment(1000.0);
+        surgeryType.setSpecialistPayment(new BigDecimal(1000));
 
         surgery.setSurgeryType(surgeryType);
 
         surgeryEmployee = new SurgeryEmployee();
         surgeryEmployee.setSurgery(surgery);
         surgeryEmployee.setEmployee(employee);
-        surgeryEmployee.setSpecialistPayment(0.0);
+        surgeryEmployee.setSpecialistPayment(BigDecimal.ZERO);
     }
 
     @Test

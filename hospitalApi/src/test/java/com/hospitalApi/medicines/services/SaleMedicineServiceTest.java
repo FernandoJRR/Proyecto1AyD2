@@ -86,7 +86,8 @@ public class SaleMedicineServiceTest {
         saleMedicine.setId(SALE_MEDICINE_ID);
 
         Patient patient = new Patient("Jose Jose", "Sosa Ortiz", "123456789");
-        consult = new Consult(CONSULT_ID, patient, false, 200.00, 200.00);
+        consult = new Consult(CONSULT_ID, patient, false, BigDecimal.valueOf(200.00),
+                BigDecimal.valueOf(200.00));
     }
 
     @Test
@@ -547,20 +548,22 @@ public class SaleMedicineServiceTest {
     @Test
     public void shouldReturnSalesByEmployeeNameAndCuiSuccessfully() {
         /*
-        // Arrange
-        List<SaleMedicine> expectedSales = List.of(saleMedicine);
-        when(saleMedicineRepository.findAllByEmployee_FirstnameLikeAndemployee_CuiLike(anyString(), anyString()))
-                .thenReturn(expectedSales);
-
-        // Act
-        List<SaleMedicine> result = saleMedicineService.getSalesMedicineByEmployeeNameAndCui("", "");
-
-        // Assert
-        assertAll(
-                () -> assertNotNull(result),
-                () -> assertEquals(1, result.size()),
-                () -> assertEquals(saleMedicine, result.get(0)));
-        */
+         * // Arrange
+         * List<SaleMedicine> expectedSales = List.of(saleMedicine);
+         * when(saleMedicineRepository.
+         * findAllByEmployee_FirstnameLikeAndemployee_CuiLike(anyString(), anyString()))
+         * .thenReturn(expectedSales);
+         * 
+         * // Act
+         * List<SaleMedicine> result =
+         * saleMedicineService.getSalesMedicineByEmployeeNameAndCui("", "");
+         * 
+         * // Assert
+         * assertAll(
+         * () -> assertNotNull(result),
+         * () -> assertEquals(1, result.size()),
+         * () -> assertEquals(saleMedicine, result.get(0)));
+         */
     }
 
 }

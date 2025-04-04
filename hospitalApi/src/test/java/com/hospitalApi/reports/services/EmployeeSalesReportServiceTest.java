@@ -50,20 +50,20 @@ public class EmployeeSalesReportServiceTest {
     private static final String FIRST_NAME = "Luis";
     private static final String LAST_NAME = "Monterroso";
     private static final BigDecimal SALARY = new BigDecimal("5000.00");
-    private static final BigDecimal IGSS = new BigDecimal("4.83");
-    private static final BigDecimal IRTRA = new BigDecimal("1.25");
+    private static final BigDecimal IGSS = new BigDecimal(4);
+    private static final BigDecimal IRTRA = new BigDecimal(1);
 
     private static final String SALE_ID = "SALE-EMP-001";
     private static final int SALE_QUANTITY = 1;
 
-    private static final BigDecimal EXPECTED_TOTAL_SALES = new BigDecimal("100.00");
-    private static final BigDecimal EXPECTED_TOTAL_COST = new BigDecimal("60.00");
-    private static final BigDecimal EXPECTED_TOTAL_PROFIT = new BigDecimal("40.00");
+    private static final BigDecimal EXPECTED_TOTAL_SALES = new BigDecimal(100);
+    private static final BigDecimal EXPECTED_TOTAL_COST = new BigDecimal(60);
+    private static final BigDecimal EXPECTED_TOTAL_PROFIT = new BigDecimal(40);
 
-    private static final BigDecimal SALE_PRICE = new BigDecimal("10.00");
-    private static final BigDecimal SALE_TOTAL = new BigDecimal("10.00");
-    private static final BigDecimal SALE_COST = new BigDecimal("6.00");
-    private static final BigDecimal SALE_PROFIT = new BigDecimal("4.00");
+    private static final BigDecimal SALE_PRICE = new BigDecimal(10);
+    private static final BigDecimal SALE_TOTAL = new BigDecimal(10);
+    private static final BigDecimal SALE_COST = new BigDecimal(6);
+    private static final BigDecimal SALE_PROFIT = new BigDecimal(4);
 
     private Employee employee;
     private Medicine medicine;
@@ -79,7 +79,6 @@ public class EmployeeSalesReportServiceTest {
         employee.setEmployeeType(EmployeeTypeEnum.DOCTOR.getEmployeeType());
 
         medicine = new Medicine();
-    
 
         saleMedicine = new SaleMedicine();
         saleMedicine.setId(SALE_ID);
@@ -109,7 +108,7 @@ public class EmployeeSalesReportServiceTest {
         List<SaleMedicine> salesList = List.of(saleMedicine);
 
         when(forSaleMedicinePort.getSalesMedicineByEmployeeNameAndCui(anyString(), anyString())).thenReturn(salesList);
-        when(financialCalculator.calculateFinancialTotals(any())).thenReturn(expectedGlobalSummary);
+        when(financialCalculator.calculateFinancialTotalsOfList(any())).thenReturn(expectedGlobalSummary);
         when(saleMedicineMapper.fromSaleMedicineListToSaleMedicineDTOList(any())).thenReturn(expectedSaleDtoList);
 
         // Act

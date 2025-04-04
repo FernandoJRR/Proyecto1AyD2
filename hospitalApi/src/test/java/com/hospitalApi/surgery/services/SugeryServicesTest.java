@@ -12,6 +12,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -53,15 +54,15 @@ public class SugeryServicesTest {
 
     private static final String CONSULT_ID = "CONSULT-5678";
     private static final boolean IS_INTERNADO = false;
-    private static final double COSTO_CONSULTA = 500.0;
-    private static final double COSTO_TOTAL = 500.0;
+    private static final BigDecimal COSTO_CONSULTA = new BigDecimal(500);
+    private static final BigDecimal COSTO_TOTAL = new BigDecimal(500);
 
     private static final String SURGERY_TYPE_ID = "TYPE-9999";
     private static final String SURGERY_TYPE_NAME = "Cirugía Mayor";
     private static final String SURGERY_TYPE_DESCRIPTION = "Cirugía mayor en hospital";
-    private static final double SPECIALIST_PAYMENT = 1000.0;
-    private static final double HOSPITAL_COST = 3000.0;
-    private static final double SURGERY_COST = 4000.0;
+    private static final BigDecimal SPECIALIST_PAYMENT = new BigDecimal(1000);
+    private static final BigDecimal HOSPITAL_COST = new BigDecimal(3000);
+    private static final BigDecimal SURGERY_COST = new BigDecimal(4000);
 
     private Consult consult;
     private SurgeryType surgeryType;

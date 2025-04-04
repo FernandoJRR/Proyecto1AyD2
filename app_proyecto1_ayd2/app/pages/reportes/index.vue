@@ -20,8 +20,16 @@
                 optionLabel="name" optionValue="id" :options="employeeTypes" class="w-full"
                 placeholder="Selecciona un tipo de usuario" />
 
+            <template v-if="reportType === 'FINANCIAL_REPORT'">
+                <Dropdown v-model="financialReportType" :options="availableFinancialReports" optionLabel="label"
+                    optionValue="value" placeholder="Tipo reporte" class="w-full" />
+
+                <Dropdown v-model="financialArea" :options="availableFinancialAreas" optionLabel="label"
+                    optionValue="value" placeholder="Area" class="w-full" />
+            </template>
             <!-- fechas para ganancia por medicamento -->
-            <template v-if="reportType === 'MEDICATION_PROFIT' || reportType === 'EMPLOYEES_LIFECYCLE'">
+            <template
+                v-if="reportType === 'MEDICATION_PROFIT' || reportType === 'EMPLOYEES_LIFECYCLE' || reportType === 'FINANCIAL_REPORT'">
                 <DatePicker v-model="startDate" placeholder="Fecha de inicio" dateFormat="dd/mm/yy" class="w-full" />
                 <DatePicker v-model="endDate" placeholder="Fecha de fin" dateFormat="dd/mm/yy" class="w-full" />
             </template>
@@ -70,6 +78,30 @@
                 severity="help" />
         </div>
     </div>
+
+    <template v-if="(reportType === 'FINANCIAL_REPORT' || reportType=='MEDICATION_PROFIT' || reportType=='EMPLOYEES_PROFIT')  && globalFinancialSummary">
+        <div class="p-4 mb-4 rounded-xl border border-slate-300 bg-slate-50 shadow-sm">
+            <h3 class="text-slate-800 text-lg font-semibold mb-3">Resumen financiero global</h3>
+            <div class="grid grid-cols-3 gap-4 text-sm text-slate-700">
+                <div class="p-3 rounded-lg bg-white border border-slate-200 shadow-sm">
+                    <span class="font-medium">Total de ingresos:</span>
+                    <div class="text-green-700 font-semibold"> {{
+                        globalFinancialSummary.totalSales ? "Q " + globalFinancialSummary.totalSales : "-" }}</div>
+                </div>
+                <div class="p-3 rounded-lg bg-white border border-slate-200 shadow-sm">
+                    <span class="font-medium">Total de gastos:</span>
+                    <div class="text-red-700 font-semibold"> {{
+                        globalFinancialSummary.totalCost ? "Q " + globalFinancialSummary.totalCost : "-" }}</div>
+                </div>
+                <div class="p-3 rounded-lg bg-white border border-slate-200 shadow-sm">
+                    <span class="font-medium">Total de ganancias:</span>
+                    <div class="text-blue-700 font-semibold"> {{ globalFinancialSummary.totalProfit ?
+                        "Q " + globalFinancialSummary.totalProfit : "-" }}</div>
+                </div>
+            </div>
+        </div>
+    </template>
+
 
     <!-- tabla de resultados -->
     <DataTable :value="reportData.data" v-model:expandedRows="expandedRows" rowExpansionMode="single"
@@ -121,13 +153,15 @@ import { toast } from 'vue-sonner';
 import { boolean } from 'zod';
 import { getAllEmployeeTypes } from '~/lib/api/admin/employee-type';
 import { getAllHistoryTypes } from '~/lib/api/admin/history-type';
-import { getDoctorAssignmentReport, getEmployeeLifecycleReport, getEmployeeProfitReport, getMedicationProfitReport, getMedicinesReport } from '~/lib/api/reportes/reporte';
+import { getDoctorAssignmentReport, getEmployeeLifecycleReport, getEmployeeProfitReport, getFinancialReport, getMedicationProfitReport, getMedicinesReport } from '~/lib/api/reportes/reporte';
 
 
 //esto indica que las rows seran reactivas, se podran modificar, y por lo tanto se puede cambiar el valor y vue lo detectara
 const expandedRows = ref({});
 //esto indica que el tipo de reporte sera reactivo, y por lo tanto se puede cambiar el valor y vue lo detectara
 const reportType = ref('MEDICAMENTOS');
+const financialReportType = ref('INCOME');
+const financialArea = ref('ALL');
 
 //inputs que siven para el filtrado de los reportes
 const selectedHistoryTypes = ref<string[]>([]);
@@ -138,6 +172,17 @@ const endDate = ref<Date | null>(null)
 const dpiToSearch = ref('')
 const onlyAssigneds = ref<boolean>(false)
 const onlyNotAssigneds = ref<boolean>(false)
+//este es un ref auxiliar que ayudara a detectar cuando el boton de filtrar ha sido presesionado
+//capturara llo que el dropdown tenga en ese momento
+const appliedFinancialReportType = ref(financialReportType.value);
+//este ref va a guardar los datos finanicieros totales de todos los reportes que lo poseean
+//va a reaccionar con lo que mande el back entonces los nombres deben coincidir
+const globalFinancialSummary = ref<{
+    totalSales: number,
+    totalProfit: number,
+    totalCost: number
+} | null>(null);
+
 
 watch(
     () =>
@@ -180,8 +225,71 @@ const availableReports = [
     { value: 'MEDICATION_PROFIT', label: 'Reporte de ganancia por medicamento' },
     { value: 'EMPLOYEES_PROFIT', label: 'Reporte de ventas por empleado' },
     { value: 'EMPLOYEES_LIFECYCLE', label: 'Reporte de Movimientos de Personal' },
-    { value: 'DOCTORS_REPORT', label: 'Reporte de doctores' }
+    { value: 'DOCTORS_REPORT', label: 'Reporte de doctores' },
+    { value: 'FINANCIAL_REPORT', label: 'Reporte financiero' }
 ]
+
+/**
+ * Array de objetos que contiene el tipo de reporte financiero disponible en el sistema
+ */
+const availableFinancialReports = [
+    { value: 'INCOME', label: 'Ingresos monetarios' },
+    { value: 'EXPENSE', label: 'Gastos monetarios' },
+    { value: 'PROFIT', label: 'Ganancias monetarias' }
+]
+
+
+const availableFinancialAreas = [
+    { value: 'PHARMACY', label: 'Farmacia' },
+    { value: 'CONSULTS', label: 'Consultas' },
+    { value: 'ROOMS', label: 'Habitaciones' },
+    { value: 'SURGERIES', label: 'Cirugías' },
+    { value: 'EMPLOYEES', label: 'Empleados (solo para gastos)' },
+    { value: 'ALL', label: 'Todas las áreas' }
+];
+
+
+
+const financialReportTableConfig =
+{
+    dataKey: 'area',
+    reportHeader: 'Reporte financiero',
+    columns: [
+        { field: 'area', header: 'Area' },
+        {
+            header: 'Sub total',
+            field: 'financialSummary',
+            render: (row: any) => {
+                const summary = row.financialSummary;
+                if (summary) {
+                    if (appliedFinancialReportType.value === 'INCOME') {
+                        return "Q " + summary.totalSales + " (Ingresos)";
+                    } else if (appliedFinancialReportType.value === 'EXPENSE') {
+                        return "Q " + summary.totalCost + " (Gastos)";
+                    } else if (appliedFinancialReportType.value === 'PROFIT') {
+                        return "Q " + summary.totalProfit + " (Ganancias)";
+                    }
+                }
+                return 'Sin datos';
+            }
+        }
+    ],
+    subReportColumns: [
+        {
+            field: 'amount', header: 'Monto',
+            render: (row: any) => "Q " + row.amount
+        },
+        {
+            field: 'description', header: 'Descripción',
+        },
+        {
+            field: 'date', header: 'Fecha'
+        }
+    ],
+    subReportKey: 'entries',
+    subReportHeader: 'Movimientos financieros del area',
+    showSubList: true
+}
 
 const medicinesReportTableConfig =
 {
@@ -504,39 +612,53 @@ const cargarReporteActual = async () => {
 
             case 'MEDICATION_PROFIT':
                 tableConfig.value = medicationProfitReportTableConfig;
-                const response = await getMedicationProfitReport(nameToSearch.value,
+                const medicationReport = await getMedicationProfitReport(nameToSearch.value,
                     startDate.value,
                     endDate.value
                 );
-                reportData.value.data = response.salePerMedication;
+                reportData.value.data = medicationReport.salePerMedication;
+                globalFinancialSummary.value = medicationReport.financialSummary;
                 break;
 
             case 'EMPLOYEES_PROFIT':
                 tableConfig.value = employeesProfitReportTableConfig;
-                const response2 = await getEmployeeProfitReport(nameToSearch.value,
+                const employeeProfitReport = await getEmployeeProfitReport(nameToSearch.value,
                     dpiToSearch.value
                 );
-                reportData.value.data = response2.salePerEmployee;
+                reportData.value.data = employeeProfitReport.salePerEmployee;
+                globalFinancialSummary.value = employeeProfitReport.financialSummary;
                 break;
 
             case 'EMPLOYEES_LIFECYCLE':
                 tableConfig.value = employeesLifeCicleReportTableConfig;
-                const response3 = await getEmployeeLifecycleReport(
+                const lifeycleReport = await getEmployeeLifecycleReport(
                     employeeTypeToSearch.value,
                     startDate.value,
                     endDate.value,
                     selectedHistoryTypes.value
                 );
-                reportData.value.data = response3;
+                reportData.value.data = lifeycleReport;
                 break;
 
             case 'DOCTORS_REPORT':
                 tableConfig.value = doctorsReportTableConfig;
-                const response4 = await getDoctorAssignmentReport(
+                const doctorsReport = await getDoctorAssignmentReport(
                     onlyAssigneds.value,
                     onlyNotAssigneds.value
                 );
-                reportData.value.data = response4;
+                reportData.value.data = doctorsReport;
+                break;
+
+            case 'FINANCIAL_REPORT':
+                tableConfig.value = financialReportTableConfig;
+                const financialReport = await getFinancialReport(
+                    financialReportType.value,
+                    financialArea.value,
+                    startDate.value,
+                    endDate.value,
+                );
+                reportData.value.data = financialReport.financialReportPerArea;
+                globalFinancialSummary.value = financialReport.globalFinancialSummary;
                 break;
             default:
                 reportData.value.data = []
@@ -570,6 +692,9 @@ const recargarDatos = async () => {
  * Manda a recargar el reporte para que tome en cuenta los filtros
  */
 const filtrar = async () => {
+    //aqui debemos captar que se preciono el boton de fultrar y capturar el tipo de deporte financiero seleccionado
+    //esto solo sirve para que la tabla de reporte financiero no se actualice hasta que se precione el boton
+    appliedFinancialReportType.value = financialReportType.value;
     await cargarReporteActual();
 };
 

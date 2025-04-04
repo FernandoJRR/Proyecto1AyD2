@@ -1,5 +1,6 @@
 package com.hospitalApi.surgery.services;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -49,7 +50,7 @@ public class SurgeryEmployeeService implements ForSurgeryEmployeePort {
         if (sugeryEmployeeRepository.existsBySurgeryIdAndEmployeeId(surgery.getId(), employeeId)) {
             throw new DuplicatedEntryException("El empleado con id " + employeeId + " ya está asignado a la cirugía");
         }
-        SurgeryEmployee surgeryEmployee = new SurgeryEmployee(surgery, employee, null, 0.00);
+        SurgeryEmployee surgeryEmployee = new SurgeryEmployee(surgery, employee, null, BigDecimal.ZERO);
         sugeryEmployeeRepository.save(surgeryEmployee);
         return sugeryEmployeeRepository.findBySurgeryId(surgery.getId());
     }
