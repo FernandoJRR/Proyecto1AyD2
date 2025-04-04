@@ -14,6 +14,7 @@ public enum SystemPermissionEnum {
         EDIT_EMPLOYEE(new Permission("Editar empleado", "EDIT_EMPLOYEE")),
         DESACTIVATE_EMPLOYEE(new Permission("Desactivar empleado", "DESACTIVATE_EMPLOYEE")),
         RESACTIVATE_EMPLOYEE(new Permission("Reactivar empleado", "RESACTIVATE_EMPLOYEE")),
+        UPDATE_EMPLOYEE_SALARY(new Permission("Actualiza el sueldo de un empleado", "UPDATE_EMPLOYEE_SALARY")),
 
         // PERMISOS DE PACIENTE
         CREATE_PATIENT(new Permission("Crear paciente", "CREATE_PATIENT")),
@@ -67,7 +68,13 @@ public enum SystemPermissionEnum {
                         new Permission("Ver reporte de movimientos de empleados", "GET_EMPLOYEE_LIFECYCLE_REPORT")),
         GET_DOCTOR_ASSIGNMENT_REPORT(
                         new Permission("Ver reporte de asignación de doctores", "GET_DOCTOR_ASSIGNMENT_REPORT")),
-        GET_FINANCIAL_REPORT(new Permission("Ver reporte financiero", "GET_FINANCIAL_REPORT"));
+        GET_FINANCIAL_REPORT(new Permission("Ver reporte financiero", "GET_FINANCIAL_REPORT")),
+
+        // para las vacaciones
+        CHANGE_VACATION_DAYS(new Permission("Cambiar dias de vacaciones", "CHANGE_VACATION_DAYS")),
+        GET_ALL_INVOICES(
+                        new Permission("Obtener a todos los empleados que pueden sacar finiquito", "GET_ALL_INVOICES"));
+        ;
 
         private final Permission permission;
 }

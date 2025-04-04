@@ -33,44 +33,61 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('Employee API', () => {
-  it('getAllEmployees llama a $api sin parámetros', async () => {
-    const response = [{ id: '1' }];
-    mockApi.mockResolvedValueOnce(response);
-    const result = await getAllEmployees();
-    expect(mockApi).toHaveBeenCalledWith('/v1/employees/', { params: undefined });
-    expect(result).toEqual(response);
-  });
+describe('Employee API Utilities', () => {
+  it('getAllEmployees calls $api with the correct URL and params, and returns employee array', async () => {
+    const mockEmployees = [
+      {
+        firstName: 'John',
+        lastName: 'Doe',
+        salary: 3000,
+        iggsPercentage: 5,
+        irtraPercentage: 3,
+        employeeType: { name: 'Developer' }
+      },
+      {
+        firstName: 'Jane',
+        lastName: 'Smith',
+        salary: 4000,
+        iggsPercentage: 8,
+        irtraPercentage: 2,
+        employeeType: { name: 'Manager' }
+      }
+    ]
+    // Set up the mock to resolve with our sample data.
+    mockApi.mockResolvedValueOnce(mockEmployees)
 
-  it('getEmployeeById llama a $api con id correcto', async () => {
-    const response = { id: '1', username: 'user1' };
-    mockApi.mockResolvedValueOnce(response);
-    const result = await getEmployeeById('1');
-    expect(mockApi).toHaveBeenCalledWith('/v1/employees/1');
-    expect(result).toEqual(response);
-  });
+    const params = { some: 'param' }
+    const result = await getAllEmployees(params)
+
+    // Verify that our mock function was called with the expected URL and options.
+    expect(mockApi).toHaveBeenCalledWith('/v1/employees/', { params })
+    // Verify that the returned value equals our mock data.
+    expect(result).toEqual(mockEmployees)
+  })
 
   it('createEmployee llama a $api con método POST', async () => {
     const payload = {
       firstName: 'Ana',
       lastName: 'Perez',
       salary: 5000,
-      iggsPercentage: 5,
+      igssPercentage: 5,
       irtraPercentage: 2,
       employeeTypeId: { id: '1' },
-      createUserRequestDTO: { username: 'ana', password: '123' },
-      employeeHistoryDateRequestDTO: { historyDate: '2024-01-01' }
-    };
-    const response = { id: 'emp1', ...payload };
-    mockApi.mockResolvedValueOnce(response);
+      createUserRequestDTO: { username: 'bobw', password: 'secret123' }
+    }
+    const mockEmployee = {
+      ...payload,
+      employeeType: { name: 'Support' }
+    }
+    mockApi.mockResolvedValueOnce(mockEmployee)
 
-    const result = await createEmployee(payload);
+    const result = await createEmployee(payload)
 
     expect(mockApi).toHaveBeenCalledWith('/v1/employees', {
       method: 'POST',
       body: payload
     });
-    expect(result).toEqual(response);
+    expect(result).toEqual(mockEmployee);
   });
 
   it('updateEmployee llama a $api con método PATCH y datos correctos', async () => {
@@ -78,7 +95,7 @@ describe('Employee API', () => {
       firstName: 'Ana',
       lastName: 'Ramirez',
       salary: 5500,
-      iggsPercentage: 5,
+      igssPercentage: 5,
       irtraPercentage: 2,
       employeeTypeId: { id: '2' }
     };

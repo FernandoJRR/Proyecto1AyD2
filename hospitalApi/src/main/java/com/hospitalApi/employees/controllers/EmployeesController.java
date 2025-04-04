@@ -137,6 +137,7 @@ public class EmployeesController {
 
         })
         @PatchMapping("/{employeeId}/salary")
+        @PreAuthorize("hasAuthority('UPDATE_EMPLOYEE_SALARY')")
         public ResponseEntity<EmployeeResponseDTO> updateEmployeeSalary(
                         @RequestBody @Valid EmployeeSalaryRequestDTO request,
                         @PathVariable("employeeId") @NotBlank(message = "El id del empleado no puede estar vacio") String employeeId)
@@ -254,6 +255,7 @@ public class EmployeesController {
                         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
         @GetMapping("/{periodYear}/vacationsInvoice")
+        @PreAuthorize("hasAuthority('GET_ALL_INVOICES')")
         public ResponseEntity<List<EmployeeResponseDTO>> findVacationInvoiceEmployeesForPeriod(
                         @PathVariable("periodYear") Integer periodYear)
         {

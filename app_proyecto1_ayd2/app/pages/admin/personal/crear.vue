@@ -48,15 +48,15 @@
           </div>
           <div>
             <div class="flex flex-row items-center gap-4 ml-4">
-              <ToggleSwitch name="has_porcentaje_iggs" class="min-w-10" />
+              <ToggleSwitch name="has_porcentaje_igss" class="min-w-10" />
               <FloatLabel>
-                <label>Porcentaje IGGS</label>
-                <InputNumber name="iggsPercentage" :min="1" :max="100" suffix="%" placeholder="Porcentaje IGGS" fluid
-                  :disabled="!$form.has_porcentaje_iggs?.value" />
+                <label>Porcentaje IGSS</label>
+                <InputNumber name="igssPercentage" :min="1" :max="100" suffix="%" placeholder="Porcentaje IGSS" fluid
+                  :disabled="!$form.has_porcentaje_igss?.value" />
               </FloatLabel>
             </div>
-            <Message v-if="$form.iggsPercentage?.invalid" severity="error" size="small" variant="simple">{{
-              $form.iggsPercentage.error?.message }}</Message>
+            <Message v-if="$form.igssPercentage?.invalid" severity="error" size="small" variant="simple">{{
+              $form.igssPercentage.error?.message }}</Message>
           </div>
           <div>
             <div class="flex flex-row items-center gap-4 ml-4">
@@ -136,8 +136,8 @@ const initialValues = reactive({
   lastName: '',
   cui: '',
   salary: 0,
-  has_porcentaje_iggs: true,
-  iggsPercentage: 5,
+  has_porcentaje_igss: true,
+  igssPercentage: 5,
   has_porcentaje_irtra: true,
   irtraPercentage: 5,
   type: '',
@@ -158,8 +158,8 @@ const resolver = ref(zodResolver(
     cui: z.string().regex(/^\d{13}$/, "El CUI es obligatorio y debe tener 13 digitos"),
     salary: z.number({ message: "El salario es obligatorio." }).min(1, 'El salario debe ser un numero positivo.'),
 
-    has_porcentaje_iggs: z.boolean(),
-    iggsPercentage: z.union([
+    has_porcentaje_igss: z.boolean(),
+    igssPercentage: z.union([
       z.number().min(1, "El porcentaje debe ser mayor a 0.").max(100, "El porcentaje no puede ser mayor a 100"),
       z.literal(null)
     ]).optional(),
@@ -178,10 +178,10 @@ const resolver = ref(zodResolver(
 
     hiring_date: z.date()
   }).superRefine((data, ctx) => {
-    if (data.has_porcentaje_iggs && (data.iggsPercentage === null || data.iggsPercentage === undefined || data.iggsPercentage === 0)) {
+    if (data.has_porcentaje_igss && (data.igssPercentage === null || data.igssPercentage === undefined || data.igssPercentage === 0)) {
       ctx.addIssue({
-        path: ["iggsPercentage"],
-        message: "Debe ingresar un porcentaje válido para IGGS.",
+        path: ["igssPercentage"],
+        message: "Debe ingresar un porcentaje válido para IGSS.",
         code: z.ZodIssueCode.custom,
       });
     }
@@ -211,8 +211,8 @@ const onFormSubmit = (e: any) => {
       lastName: e.values.lastName,
       cui: e.values.cui,
       salary: e.values.salary,
-      iggsPercentage: e.values.has_porcentaje_iggs ? e.values.iggsPercentage : null,
-      irtraPercentage: e.values.has_porcentaje_iggs ? e.values.irtraPercentage : null,
+      igssPercentage: e.values.has_porcentaje_igss ? e.values.igssPercentage : null,
+      irtraPercentage: e.values.has_porcentaje_igss ? e.values.irtraPercentage : null,
       employeeTypeId: { id: e.values.type },
       createUserRequestDTO: { username: e.values.username, password: e.values.password },
       employeeHistoryDateRequestDTO: { historyDate: e.values.hiring_date }

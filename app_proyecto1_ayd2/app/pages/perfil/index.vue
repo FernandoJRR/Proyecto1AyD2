@@ -23,9 +23,9 @@
         <h1 class="text-xl font-semibold">Descuentos</h1>
         <div class="flex flex-row gap-6">
           <div class="flex flex-row h-6 gap-4">
-            <p class="font-medium">IGGS</p>
-            <Tag :severity="state.data.employee.iggsPercentage ? 'success' : 'danger'">
-              {{ state.data.employee.iggsPercentage ? `${state.data.employee.iggsPercentage}%` : 'No Aplica' }}</Tag>
+            <p class="font-medium">IGSS</p>
+            <Tag :severity="state.data.employee.igssPercentage ? 'success' : 'danger'">
+              {{ state.data.employee.igssPercentage ? `${state.data.employee.igssPercentage}%` : 'No Aplica' }}</Tag>
           </div>
           <div class="flex flex-row h-6 gap-4">
             <p class="font-medium">IRTRA</p>
@@ -47,7 +47,7 @@
                   </template>
                 </Select>
               </div>
-              <RouterLink :to="`/perfil/editar-periodo-${selectedYear}`">
+              <RouterLink :to="`/perfil/editar-periodo-${selectedYear}`" v-if="!filteredVacations.every(vacation => vacation.wasUsed)">
                 <Button severity="info" label="Editar periodo" icon="pi pi-pencil"></Button>
               </RouterLink>
               <RouterLink to="/perfil/agregar-periodo">
@@ -85,7 +85,7 @@
               <p class="font-semibold">
                 Todas las Vacaciones Usadas
               </p>
-              <Button label="Imprimir Finiquito" size="small" variant="outlined" 
+              <Button label="Imprimir Finiquito" size="small" variant="outlined"
                 icon="pi pi-print" severity="warn" @click="printInvoice" />
             </div>
           </template>
@@ -191,6 +191,14 @@ watch(
 );
 
 function printInvoice() {
-  alert("por implementar")
+  if (!employee.value) {
+    toast.error("Ha ocurrido un error al generar el finiquito")
+    return
+  }
+  if (!selectedYear.value) {
+    toast.error("Ha ocurrido un error al generar el finiquito")
+    return
+  }
+  generateEmployeePeriodInvoicePDF(employee.value, selectedYear.value)
 }
 </script>
