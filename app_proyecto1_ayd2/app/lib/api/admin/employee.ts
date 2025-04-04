@@ -17,7 +17,7 @@ export interface Employee extends Entity {
   firstName: string;
   lastName: string;
   salary: number;
-  iggsPercentage: number;
+  igssPercentage: number;
   irtraPercentage: number;
   employeeType: EmployeeType;
   desactivatedAt: Date | null;
@@ -43,7 +43,7 @@ export interface EmployeePayload {
   lastName: string;
   cui: number;
   salary: number;
-  iggsPercentage: number | null;
+  igssPercentage: number | null;
   irtraPercentage: number | null;
   employeeTypeId: { id: string };
   createUserRequestDTO: UserPayload;
@@ -54,7 +54,7 @@ export interface EmployeeUpdatePayload {
   firstName: string;
   lastName: string;
   salary: number;
-  iggsPercentage: number | null;
+  igssPercentage: number | null;
   irtraPercentage: number | null;
   employeeTypeId: { id: string };
 }

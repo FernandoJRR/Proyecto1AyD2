@@ -66,21 +66,28 @@ describe('EmployeeDetail [id].vue', () => {
     expect(wrapper.text()).toContain('Ocurrio un error inesperado')
   })
 
-  it('displays employee details when data is successfully fetched', () => {
-    // Sample employee data.
-    const employeeData = {
-      firstName: 'Alice',
-      lastName: 'Smith',
-      salary: 5000,
-      iggsPercentage: 10,
-      // A falsy value (0) for IRTRA triggers the "No Aplica" display.
-      irtraPercentage: 0,
-      employeeType: { name: 'Manager' }
-    }
+  it('muestra detalles del empleado cuando status es "success"', () => {
     mockUseQueryReturn.state = ref({
       status: 'success',
-      data: employeeData
+      data: {
+        employee: {
+          firstName: 'Alice',
+          lastName: 'Smith',
+          salary: 5000,
+          igssPercentage: 10,
+          irtraPercentage: 0,
+          employeeType: { name: 'Manager' }
+        },
+        histories: [
+          {
+            historyType: { type: 'Ingreso' },
+            commentary: 'Inicio de contrato',
+            historyDate: '2024-01-01'
+          }
+        ]
+      }
     })
+
     const wrapper = mount(EmployeeDetail, {
       global: {
         stubs: {

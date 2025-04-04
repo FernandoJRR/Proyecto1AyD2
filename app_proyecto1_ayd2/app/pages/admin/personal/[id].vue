@@ -19,18 +19,19 @@
           <p class="font-medium">Salario Actual:</p>
           <p class="font-semibold">Q.{{ state.data.employee.salary }}</p>
         </div>
-        <h1 class="text-xl font-medium">Descuentos</h1>
-        <div class="flex ">
-          <p>IGGS
-            <Tag :severity="state.data.employee.iggsPercentage ? 'success' : 'danger'">
-              {{ state.data.employee.iggsPercentage ? `${state.data.employee.iggsPercentage}%` : 'No Aplica' }}</Tag>
-          </p>
-        </div>
-        <div>
-          <p>IRTRA
+        <h1 class="text-xl font-semibold">Descuentos</h1>
+        <div class="flex flex-row gap-6">
+          <div class="flex flex-row h-6 gap-4">
+            <p class="font-medium">IGSS</p>
+            <Tag :severity="state.data.employee.igssPercentage ? 'success' : 'danger'">
+              {{ state.data.employee.igssPercentage ? `${state.data.employee.igssPercentage}%` : 'No Aplica' }}</Tag>
+          </div>
+          <div class="flex flex-row h-6 gap-4">
+            <p class="font-medium">IRTRA</p>
             <Tag :severity="state.data.employee.irtraPercentage ? 'success' : 'danger'">
-              {{ state.data.employee.irtraPercentage ? `${state.data.employee.irtraPercentage}%` : 'No Aplica' }}</Tag>
-          </p>
+              {{ state.data.employee.irtraPercentage ? `${state.data.employee.irtraPercentage}%` : 'No Aplica' }}
+            </Tag>
+          </div>
         </div>
       </div>
       <div>
