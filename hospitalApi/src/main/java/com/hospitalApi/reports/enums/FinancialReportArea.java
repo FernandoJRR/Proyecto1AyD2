@@ -6,5 +6,6 @@ public enum FinancialReportArea {
     CONSULTS,
     ROOMS,
     SURGERIES,
+    EMPLOYEES,
     ALL
 }

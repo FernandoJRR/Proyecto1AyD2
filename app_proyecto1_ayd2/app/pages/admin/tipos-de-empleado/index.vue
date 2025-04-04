@@ -86,11 +86,11 @@ const confirmDelete = (id: string, name: string) => {
 
 const { mutate } = useMutation({
   mutation: (id: string) => deleteEmployeeType(id),
-  onError(error: any) {
+  onError(error) {
     console.log(error)
     console.log(error.cause)
     toast.error('Ocurrió un error al eliminar el tipo de empleado', {
-      description: `${(error.response._data)}`
+      description: `${(error.message)}`
     })
   },
   onSuccess() {

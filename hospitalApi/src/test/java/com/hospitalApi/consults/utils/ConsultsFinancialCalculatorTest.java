@@ -16,8 +16,8 @@ public class ConsultsFinancialCalculatorTest {
 
     private ConsultFinancialCalculator calculator;
 
-    private static final BigDecimal CONSULT_COST_1 = new BigDecimal("250.00");
-    private static final BigDecimal CONSULT_COST_2 = new BigDecimal("350.00");
+    private static final BigDecimal CONSULT_COST_1 = new BigDecimal(250);
+    private static final BigDecimal CONSULT_COST_2 = new BigDecimal(350);
 
     private Consult consult1;
     private Consult consult2;
@@ -47,12 +47,13 @@ public class ConsultsFinancialCalculatorTest {
         // act
         FinancialSummaryDTO result = calculator.calculateFinancialTotalsOfList(consults);
         // el metodo deberia sumar esto
-        BigDecimal expectedTotalSales = new BigDecimal("600.00");
-        BigDecimal expectedProfit = new BigDecimal("600.00");
+        BigDecimal expectedTotalSales = new BigDecimal(600);
+        BigDecimal expectedProfit = new BigDecimal(600);
+        BigDecimal expectedCost = BigDecimal.ZERO;
         // assert
         assertAll(
                 () -> assertEquals(expectedTotalSales, result.getTotalSales()),
-                () -> assertEquals(BigDecimal.ZERO, result.getTotalCost()),
+                () -> assertEquals(expectedCost, result.getTotalCost()),
                 () -> assertEquals(expectedProfit, result.getTotalProfit()));
     }
 }

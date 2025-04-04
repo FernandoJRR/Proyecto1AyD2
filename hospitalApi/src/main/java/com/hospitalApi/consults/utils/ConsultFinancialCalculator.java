@@ -29,12 +29,11 @@ public class ConsultFinancialCalculator implements FinancialCalculator<Financial
         // para cada una de las consultas vamos sumando su total en ventas que es el
         // costo o procio de la consulta
         for (Consult consultSale : financialMoves) {
-            totalSales = totalSales.add(consultSale.getCostoConsulta());
-
+            FinancialSummaryDTO summaryDTO = calculateFinancialTotals(consultSale);
+            totalSales = totalSales.add(summaryDTO.getTotalSales());
+            totalCost = totalCost.add(summaryDTO.getTotalCost());
+            totalProfit = totalProfit.add(summaryDTO.getTotalProfit());
         }
-        // la ganancia siempre sera el total de ventas porque bajo nuesta logica
-        // laconsulta no tiene costos asociados
-        totalProfit = totalSales;
         return new FinancialSummaryDTO(totalSales, totalCost, totalProfit);
     }
 

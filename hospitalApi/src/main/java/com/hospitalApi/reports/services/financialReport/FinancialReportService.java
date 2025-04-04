@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class FinancialReportService implements ReportService<Object, FinancialFilter> {
+public class FinancialReportService implements ReportService<FinancialReportDTO, FinancialFilter> {
 
     private final ForSaleMedicinePort forSaleMedicinePort;
     private final ForConsultPort forConsultPort;
@@ -36,10 +36,35 @@ public class FinancialReportService implements ReportService<Object, FinancialFi
     private final FinancialCalculator<FinancialSummaryDTO, Consult> consultsFinancialCalculator;
     private final FinancialCalculator<FinancialSummaryDTO, RoomUsage> roomFinancialCalculator;
     private final FinancialCalculator<FinancialSummaryDTO, Surgery> surgeryFinancialCalculator;
+
     private final EntryBuilder entryBuilder;
 
+    private BigDecimal totalGlobalSales;
+    private BigDecimal totalGlobalCost;
+    private BigDecimal totalGlobalProfit;
+    private FinancialReportType type;
+
+    /**
+     * Genera un reporte financiero completo con base en los filtros definidos por
+     * el usuario.
+     * Este incluye un resumen global (suma total) y un desglose por cada área
+     * seleccionada.
+     * Las áreas consideradas son: Farmacia, Consultas, Habitaciones y Cirugías.
+     * 
+     * @param filter Filtros aplicados al reporte, incluyendo fecha de inicio, fecha
+     *               de fin,
+     *               tipo de reporte (ingresos, egresos o ganancias) y área de
+     *               interés.
+     * @return Objeto que contiene el resumen financiero global
+     *         y el detalle por área.
+     */
     @Override
     public FinancialReportDTO generateReport(FinancialFilter filter) {
+        // inicializmaos los totales siempre a 0 cada que se genra el reporte
+        totalGlobalSales = BigDecimal.ZERO;
+        totalGlobalCost = BigDecimal.ZERO;
+        totalGlobalProfit = BigDecimal.ZERO;
+        type = filter.getReportType();
 
         List<FinancialReportPerAreaDTO> financialReportPerAreas = new ArrayList<>();
 
@@ -49,6 +74,8 @@ public class FinancialReportService implements ReportService<Object, FinancialFi
                     filter.getStartDate(), filter.getEndDate(), null);
             FinancialSummaryDTO summary = financialCalculator.calculateFinancialTotalsOfList(sales);
             List<FinancialReportEntryDTO> entries = entryBuilder.buildResponseFromSales(sales, filter.getReportType());
+            // mandmamos a sumar los totales del area a los globales
+            addToGlobalTotals(summary);
             financialReportPerAreas.add(new FinancialReportPerAreaDTO(
                     summary, "Farmacia", entries));
         }
@@ -59,61 +86,107 @@ public class FinancialReportService implements ReportService<Object, FinancialFi
         if (filter.getArea() != FinancialReportArea.PHARMACY) {
             List<Consult> consults = forConsultPort.findPaidConsultsBetweenDates(
                     filter.getStartDate(), filter.getEndDate());
-            // si se quiere ver la info de las consultas
             if (filter.getArea() == FinancialReportArea.CONSULTS || filter.getArea() == FinancialReportArea.ALL) {
 
-                // mandamos a
+                // mandamos a traer los totales financieros de las consultas
                 FinancialSummaryDTO summary = consultsFinancialCalculator.calculateFinancialTotalsOfList(consults);
+
+                // mandamos a construir la lista de entradas del reporte
                 List<FinancialReportEntryDTO> entries = entryBuilder.buildResponseFromConsults(consults,
                         filter.getReportType());
+                // mandmamos a sumar los totales del area a los globales
+                addToGlobalTotals(summary);
+
+                // agregamos el reporte por area a la lista de reportes por area
                 financialReportPerAreas.add(new FinancialReportPerAreaDTO(
                         summary, "Consultas", entries));
             }
 
             if (filter.getArea() == FinancialReportArea.ROOMS || filter.getArea() == FinancialReportArea.ALL) {
+
+                // mandmaos a traer las habitaciones pagadas en funcion de las consultas pagadas
                 List<RoomUsage> rooms = getPaidRooms(consults);
+
+                // mandamos a traer los totales financieros de las habitaciones
                 FinancialSummaryDTO summary = roomFinancialCalculator.calculateFinancialTotalsOfList(rooms);
+
+                // mandamos a construir la lista de entradas del reporte
                 List<FinancialReportEntryDTO> entries = entryBuilder.buildResponseFromRooms(rooms,
                         filter.getReportType());
+                // mandmamos a sumar los totales del area a los globales
+                addToGlobalTotals(summary);
                 financialReportPerAreas.add(new FinancialReportPerAreaDTO(
                         summary, "Habitaciones", entries));
             }
 
             if (filter.getArea() == FinancialReportArea.SURGERIES || filter.getArea() == FinancialReportArea.ALL) {
+
+                // mandamos a traer las cirugias pagadas en funcion de las consultas pagadas
                 List<Surgery> surgeries = getPaidSurgieries(consults);
+
+                // mandamos a traer los totales financieros de las cirugias
                 FinancialSummaryDTO summary = surgeryFinancialCalculator.calculateFinancialTotalsOfList(surgeries);
+
+                // mandamos a construir la lista de entradas del reporte
                 List<FinancialReportEntryDTO> entries = entryBuilder.buildResponseFromSurgeries(surgeries,
                         filter.getReportType());
+
+                // mandmamos a sumar los totales del area a los globales
+                addToGlobalTotals(summary);
                 financialReportPerAreas.add(new FinancialReportPerAreaDTO(
                         summary, "Cirugías", entries));
             }
         }
-
-        BigDecimal globalTotal = financialReportPerAreas.stream()
-                .map(area -> extractValue(area.getFinancialSummary(), filter.getReportType()))
-                .reduce(BigDecimal.ZERO, (acummulated, toAdd) -> acummulated.add(toAdd));
-
-        FinancialSummaryDTO globalFinancialSummaryDTO = buildGlobalSummary(globalTotal, filter.getReportType());
+        // mandamos a constrir nuestro resumen global
+        FinancialSummaryDTO globalFinancialSummaryDTO = buildGlobalSummary();
 
         return new FinancialReportDTO(globalFinancialSummaryDTO, financialReportPerAreas);
     }
 
-    private BigDecimal extractValue(FinancialSummaryDTO summary, FinancialReportType type) {
+    /**
+     * Agrega los valores de un resumen financiero específico al total global
+     * acumulado
+     * 
+     * @param summary el resumen financiero individual que contiene los valores a
+     *                sumar.
+     *                No debe ser null y sus atributos deben estar
+     *                correctamente inicializados.
+     */
+    private void addToGlobalTotals(FinancialSummaryDTO summary) {
+        totalGlobalSales = totalGlobalSales.add(summary.getTotalSales());
+        totalGlobalCost = totalGlobalCost.add(summary.getTotalCost());
+        totalGlobalProfit = totalGlobalProfit.add(summary.getTotalProfit());
+    }
+
+    /**
+     * Construye un resumen financiero global, estableciendo el valor total en el
+     * campo correspondiente
+     * al tipo de reporte (ingresos, egresos o ganancias). Los demás campos se
+     * establecen como \0.
+     *
+     * @param total Valor total a asignar en el resumen global.
+     * @param type  Tipo de reporte (ingresos, egresos o ganancias).
+     * @return FinancialSummaryDTO representando el resumen
+     *         financiero global.
+     */
+    private FinancialSummaryDTO buildGlobalSummary() {
         return switch (type) {
-            case INCOME -> summary.getTotalSales();
-            case EXPENSE -> summary.getTotalCost();
-            default -> summary.getTotalProfit();
+            case INCOME -> new FinancialSummaryDTO(totalGlobalSales, null, null);
+            case EXPENSE -> new FinancialSummaryDTO(null, totalGlobalCost, null);
+            default -> new FinancialSummaryDTO(totalGlobalSales, totalGlobalCost, totalGlobalProfit);
         };
     }
 
-    private FinancialSummaryDTO buildGlobalSummary(BigDecimal total, FinancialReportType type) {
-        return switch (type) {
-            case INCOME -> new FinancialSummaryDTO(total, null, null);
-            case EXPENSE -> new FinancialSummaryDTO(null, total, null);
-            default -> new FinancialSummaryDTO(null, null, total);
-        };
-    }
-
+    /**
+     * Obtiene todas las habitaciones utilizadas (RoomUsage) asociadas a consultas
+     * que ya han sido pagadas.
+     * Este método es utilizado cuando el reporte incluye la sección de
+     * habitaciones.
+     *
+     * @param paidConsults Lista de consultas médicas marcadas como pagadas.
+     * @return Lista de objetos correspondientes a habitaciones
+     *         ocupadas durante esas consultas.
+     */
     private List<RoomUsage> getPaidRooms(List<Consult> paidConsults) {
         List<RoomUsage> paidRooms = new ArrayList<>();
         // dentor de cada consulta esta la asignacion que tuvo a una habitacion y como
@@ -127,6 +200,15 @@ public class FinancialReportService implements ReportService<Object, FinancialFi
         return paidRooms;
     }
 
+    /**
+     * Obtiene todas las cirugías realizadas que están asociadas a consultas médicas
+     * pagadas.
+     * Este método se utiliza cuando se requiere incluir información de cirugías en
+     * el reporte financiero.
+     *
+     * @param paidConsults Lista de consultas que han sido pagadas.
+     * @return Lista de objetos Surgery relacionados con las consultas pagadas.
+     */
     private List<Surgery> getPaidSurgieries(List<Consult> paidConsults) {
         List<Surgery> paidRooms = new ArrayList<>();
         // dentor de cada consulta esta la asignacion que tuvo a una habitacion y como

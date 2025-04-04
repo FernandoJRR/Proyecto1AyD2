@@ -29,7 +29,7 @@ public enum SystemPermissionEnum {
         DELETE_CONSULT(new Permission("Eliminar consulta", "DELETE_CONSULT")),
         PAGO_CONSULT(new Permission("Pagar consulta", "PAGO_CONSULT")),
 
-        //PERMISOS PARA CIRUGIAS
+        // PERMISOS PARA CIRUGIAS
         CREATE_TYPE_SURGERY(new Permission("Crear tipo de cirugia", "CREATE_TYPE_SURGERY")),
         EDIT_TYPE_SURGERY(new Permission("Editar tipo de cirugia", "EDIT_TYPE_SURGERY")),
         CREATE_SURGERY(new Permission("Crear cirugia", "CREATE_SURGERY")),
@@ -38,8 +38,8 @@ public enum SystemPermissionEnum {
 
         // PERMISOS PARA SALAS
         CREATE_SALE_MEDICINE_FARMACIA(
-                        new Permission("Registrar venta de medicamento en farmacia", 
-                        "CREATE_SALE_MEDICINE_FARMACIA")),
+                        new Permission("Registrar venta de medicamento en farmacia",
+                                        "CREATE_SALE_MEDICINE_FARMACIA")),
         CREATE_SALE_MEDICINE_CONSULT(
                         new Permission("Registrar venta de medicamento en consultorio",
                                         "CREATE_SALE_MEDICINE_CONSULT")),
@@ -54,7 +54,20 @@ public enum SystemPermissionEnum {
         CREATE_ROOM(new Permission("Crear habitacion", "CREATE_ROOM")),
         EDIT_ROOM(new Permission("Editar habitacion", "EDIT_ROOM")),
         TOGGLE_ROOM_AVAILABILITY(
-                        new Permission("Alternar disponibilidad de la habitación", "TOGGLE_ROOM_AVAILABILITY"));
+                        new Permission("Alternar disponibilidad de la habitación", "TOGGLE_ROOM_AVAILABILITY")),
+
+        // para reportes
+
+        GET_MEDICATION_REPORT(new Permission("Ver reporte de medicamentos", "GET_MEDICATION_REPORT")),
+        GET_MEDICATION_PROFIT_REPORT(
+                        new Permission("Ver reporte de ganancias por medicamento", "GET_MEDICATION_PROFIT_REPORT")),
+        GET_EMPLOYEE_PROFIT_REPORT(
+                        new Permission("Ver reporte de ganancias por empleado", "GET_EMPLOYEE_PROFIT_REPORT")),
+        GET_EMPLOYEE_LIFECYCLE_REPORT(
+                        new Permission("Ver reporte de movimientos de empleados", "GET_EMPLOYEE_LIFECYCLE_REPORT")),
+        GET_DOCTOR_ASSIGNMENT_REPORT(
+                        new Permission("Ver reporte de asignación de doctores", "GET_DOCTOR_ASSIGNMENT_REPORT")),
+        GET_FINANCIAL_REPORT(new Permission("Ver reporte financiero", "GET_FINANCIAL_REPORT"));
 
         private final Permission permission;
 }

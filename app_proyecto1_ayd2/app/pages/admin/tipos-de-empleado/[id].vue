@@ -149,9 +149,9 @@ function onFormSubmit(e: any) {
 
 const { mutate } = useMutation({
   mutation: (employeeData: EmployeeTypePayLoad) => editEmployeeType(employeeTypeId, employeeData),
-  onError(error:any) {
+  onError(error) {
     toast.error('Ocurrió un error al editar el tipo de empleado', {
-      description: `${(error.response._data)}`
+      description: `${(error.message)}`
     })
   },
   onSuccess() {
