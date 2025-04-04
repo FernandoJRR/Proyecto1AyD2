@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class MedicationProfitReportService implements ReportService<MedicationProfitSummary, MedicationProfitFilter> {
 
     private final ForSaleMedicinePort forSaleMedicinePort;
-    private final FinancialCalculator<FinancialSummaryDTO, List<SaleMedicine>> financialCalculator;
+    private final FinancialCalculator<FinancialSummaryDTO, SaleMedicine> financialCalculator;
     private final SaleMedicineMapper saleMedicineMapper;
 
     /**
@@ -52,7 +52,7 @@ public class MedicationProfitReportService implements ReportService<MedicationPr
         List<SalePerMedicationDTO> salesPerMedication = buildSalesPerMedicationReport(groupedSalesByMedicineName);
 
         // mandamos a traer los totales de todas las ventas
-        FinancialSummaryDTO globalFinancialSummary = financialCalculator.calculateFinancialTotals(salesMedicines);
+        FinancialSummaryDTO globalFinancialSummary = financialCalculator.calculateFinancialTotalsOfList(salesMedicines);
         // construimos nuestra respuesta final
 
         return new MedicationProfitSummary(globalFinancialSummary, salesPerMedication);
@@ -81,7 +81,7 @@ public class MedicationProfitReportService implements ReportService<MedicationPr
 
             // ahora lo que vamos a hacer es mandar a calcular el sumary de todas las ventas
             // de este
-            FinancialSummaryDTO financialSummary = financialCalculator.calculateFinancialTotals(sales);
+            FinancialSummaryDTO financialSummary = financialCalculator.calculateFinancialTotalsOfList(sales);
 
             // convertimos las ventas del medicamento en
             List<SaleMedicineResponseDTO> salesDTO = saleMedicineMapper

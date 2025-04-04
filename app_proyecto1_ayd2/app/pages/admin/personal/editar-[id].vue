@@ -301,7 +301,7 @@ const { mutate: updateSalary } = useMutation({
   mutation: (updateData: EmployeeSalaryUpdatePayload) => updateEmployeeSalary(updateData, useRoute().params.id as string),
   onError(error) {
     toast.error('Ocurrió un error al actualizar el salario.', {
-      description: error
+      description: error.message
     })
   },
   onSuccess() {
@@ -314,7 +314,7 @@ const { mutate } = useMutation({
   mutation: (employeeData: EmployeePayload) => createEmployee(employeeData),
   onError(error) {
     toast.error('Ocurrió un error al crear el empleado', {
-      description: error
+      description: error.message
     })
   },
   onSuccess() {

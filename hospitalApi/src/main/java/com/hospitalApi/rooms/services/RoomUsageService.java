@@ -41,7 +41,7 @@ public class RoomUsageService implements ForRoomUsagePort {
             throw new DuplicatedEntryException("La habitación ya está asignada a la consulta.");
         }
         forRoomPort.markOccupied(roomId);
-        RoomUsage roomUsage = new RoomUsage(consult, room, 1, room.getDailyPrice());
+        RoomUsage roomUsage = new RoomUsage(consult, room, 1, room.getDailyPrice(), room.getDailyMaintenanceCost());
         forRoomHistoryPort.saveHistory(consult.getPatient(), room);
         return roomUsageRepository.save(roomUsage);
     }

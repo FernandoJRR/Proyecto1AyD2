@@ -69,3 +69,21 @@ export async function getDoctorAssignmentReport(
     params,
   });
 }
+
+export async function getFinancialReport(
+  reportType: string,
+  area: string,
+  startDate?: Date | null,
+  endDate?: Date | null
+) {
+  const params = {
+    reportType: reportType,
+    area: area,
+    startDate: startDate ? startDate.toISOString().split("T")[0] : null,
+    endDate: endDate ? endDate.toISOString().split("T")[0] : null,
+  };
+
+  return await $api<any>(`${CURRENT_REPORTS_URI}/getFinancialReport`, {
+    params,
+  });
+}

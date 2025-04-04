@@ -168,7 +168,7 @@ const { mutate, asyncStatus } = useMutation({
   onError(error) {
     console.error(error)
     toast.error('Ocurrió un error al actualizar el paciente', {
-      description: error
+      description: error.message
     })
   },
   onSuccess() {

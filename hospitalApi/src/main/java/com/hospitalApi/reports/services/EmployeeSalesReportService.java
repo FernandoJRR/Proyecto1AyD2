@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class EmployeeSalesReportService implements ReportService<EmployeeProfitSummary, EmployeeProfitFilter> {
 
     private final ForSaleMedicinePort forSaleMedicinePort;
-    private final FinancialCalculator<FinancialSummaryDTO, List<SaleMedicine>> financialCalculator;
+    private final FinancialCalculator<FinancialSummaryDTO, SaleMedicine> financialCalculator;
     private final SaleMedicineMapper saleMedicineMapper;
 
     /**
@@ -50,7 +50,7 @@ public class EmployeeSalesReportService implements ReportService<EmployeeProfitS
         List<SalesPerEmployeeDTO> salesPerMedication = buildSalesPerEmployeeReport(groupedSalesByEmployeeId);
 
         // mandamos a traer los totales de todas las ventas
-        FinancialSummaryDTO globalFinancialSummary = financialCalculator.calculateFinancialTotals(salesMedicines);
+        FinancialSummaryDTO globalFinancialSummary = financialCalculator.calculateFinancialTotalsOfList(salesMedicines);
         // construimos nuestra respuesta final
 
         return new EmployeeProfitSummary(globalFinancialSummary, salesPerMedication);
@@ -74,7 +74,7 @@ public class EmployeeSalesReportService implements ReportService<EmployeeProfitS
             // comparten el mismo)
             Employee employee = sales.get(0).getEmployee();
             // mandamos a calcular el total en ventas que hizo este empleado
-            FinancialSummaryDTO financialSummary = financialCalculator.calculateFinancialTotals(sales);
+            FinancialSummaryDTO financialSummary = financialCalculator.calculateFinancialTotalsOfList(sales);
             // mandamos a convertir las ventas a dtos
             List<SaleMedicineResponseDTO> salesDTO = saleMedicineMapper
                     .fromSaleMedicineListToSaleMedicineDTOList(sales);

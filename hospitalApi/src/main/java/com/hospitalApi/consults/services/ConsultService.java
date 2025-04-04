@@ -1,6 +1,7 @@
 package com.hospitalApi.consults.services;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import com.hospitalApi.consults.port.ForEmployeeConsultPort;
@@ -45,6 +46,20 @@ public class ConsultService implements ForConsultPort {
                 .orElseThrow(() -> new NotFoundException("Consulta con id " + id + " no encontrada"));
     }
 
+    /**
+     * Manda a traer todas las consultas pagadas dentro del rango de fechas
+     * indicado.
+     * Si una fecha es nula, no se aplica ese límite (el repo se encarga).
+     *
+     * @param startDate fecha de inicio del rango, puede ser nula.
+     * @param endDate   fecha de fin del rangoF, puede ser nula.
+     * @return lista de consultas pagadas en el rango de fechas.
+     */
+    @Override
+    public List<Consult> findPaidConsultsBetweenDates(LocalDate startDate, LocalDate endDate) {
+        return consultRepository.findPaidConsultsByCreatedAtBetween(startDate, endDate);
+    }
+
     @Override
     public Consult findConsultAndIsNotPaid(String id) throws NotFoundException, IllegalStateException {
         Consult consult = findById(id);
@@ -56,7 +71,8 @@ public class ConsultService implements ForConsultPort {
     }
 
     @Override
-    public Consult createConsult(String patientId, String employeeId, Double costoConsulta) throws NotFoundException {
+    public Consult createConsult(String patientId, String employeeId, BigDecimal costoConsulta)
+            throws NotFoundException {
         // Creamos la consulta con el paciente
         Patient patient = forPatientPort.getPatient(patientId);
         Consult consult = new Consult(patient, costoConsulta);
@@ -79,16 +95,17 @@ public class ConsultService implements ForConsultPort {
     }
 
     @Override
-    public Double obtenerTotalConsulta(String id) throws NotFoundException, IllegalStateException {
+    public BigDecimal obtenerTotalConsulta(String id) throws NotFoundException, IllegalStateException {
         Consult consult = findById(id);
         Double totalCirugias = forSurgeryCalculationService.totalSurgerisByConsult(id);
         Double totalHabitacion = 0.00;
         if (consult.getIsInternado()) {
             RoomUsage roomUsage = forRoomUsagePort.calcRoomUsage(consult);
-            totalHabitacion = roomUsage.getPrice().multiply(BigDecimal.valueOf(roomUsage.getUsageDays())).doubleValue();
+            totalHabitacion = roomUsage.getDailyRoomPrice().multiply(BigDecimal.valueOf(roomUsage.getUsageDays())).doubleValue();
         }
         Double totalMedicamentos = forSaleMedicineCalculationPort.totalSalesMedicinesByConsult(id);
-        Double newTotalCost = consult.getCostoConsulta() + totalCirugias + totalHabitacion + totalMedicamentos;
+        BigDecimal newTotalCost = consult.getCostoConsulta()
+                .add(BigDecimal.valueOf(totalCirugias + totalHabitacion + totalMedicamentos));
         consult.setCostoTotal(newTotalCost);
         consultRepository.save(consult);
         return consult.getCostoTotal();

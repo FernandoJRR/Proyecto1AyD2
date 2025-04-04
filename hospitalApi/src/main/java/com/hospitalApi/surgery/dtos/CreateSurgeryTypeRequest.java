@@ -1,5 +1,7 @@
 package com.hospitalApi.surgery.dtos;
 
+import java.math.BigDecimal;
+
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -19,13 +21,13 @@ public class CreateSurgeryTypeRequest {
 
     @NotNull(message = "El pago al especialista es requerido")
     @DecimalMin(value = "0.01", message = "El pago al especialista debe ser mayor a 0")
-    private Double specialistPayment;
+    private BigDecimal specialistPayment;
 
     @NotNull(message = "El costo del hospital es requerido")
     @DecimalMin(value = "0.01", message = "El costo del hospital debe ser mayor a 0")
-    private Double hospitalCost;
+    private BigDecimal hospitalCost;
 
     @NotNull(message = "El costo de la cirugía es requerido")
     @DecimalMin(value = "0.01", message = "El costo de la cirugía debe ser mayor a 0")
-    private Double surgeryCost;
+    private BigDecimal surgeryCost;
 }

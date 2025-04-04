@@ -50,14 +50,14 @@ public class MedicationProfitReportServiceTest {
     private static final LocalDate START_DATE = LocalDate.of(2024, 1, 1);
     private static final LocalDate END_DATE = LocalDate.of(2024, 12, 31);
 
-    private static final BigDecimal EXPECTED_TOTAL_SALES = new BigDecimal("100.00");
-    private static final BigDecimal EXPECTED_TOTAL_COST = new BigDecimal("40.00");
-    private static final BigDecimal EXPECTED_TOTAL_PROFIT = new BigDecimal("60.00");
+    private static final BigDecimal EXPECTED_TOTAL_SALES = new BigDecimal(100);
+    private static final BigDecimal EXPECTED_TOTAL_COST = new BigDecimal(40);
+    private static final BigDecimal EXPECTED_TOTAL_PROFIT = new BigDecimal(60);
 
-    private static final BigDecimal SALE_PRICE = new BigDecimal("10.00");
-    private static final BigDecimal SALE_TOTAL = new BigDecimal("10.00");
-    private static final BigDecimal SALE_COST = new BigDecimal("4.00");
-    private static final BigDecimal SALE_PROFIT = new BigDecimal("6.00");
+    private static final BigDecimal SALE_PRICE = new BigDecimal(10);
+    private static final BigDecimal SALE_TOTAL = new BigDecimal(10);
+    private static final BigDecimal SALE_COST = new BigDecimal(4);
+    private static final BigDecimal SALE_PROFIT = new BigDecimal(6);
 
     private SaleMedicine saleMedicine;
     private Medicine medicine;
@@ -94,7 +94,7 @@ public class MedicationProfitReportServiceTest {
         when(forSaleMedicinePort.getSalesMedicineBetweenDatesAndMedicineName(
                 any(), any(), anyString())).thenReturn(salesList);
 
-        when(financialCalculator.calculateFinancialTotals(any())).thenReturn(expectedGlobalSummary);
+        when(financialCalculator.calculateFinancialTotalsOfList(any())).thenReturn(expectedGlobalSummary);
 
         when(saleMedicineMapper.fromSaleMedicineListToSaleMedicineDTOList(any())).thenReturn(expectedSaleDtoList);
 

@@ -1,6 +1,7 @@
 package com.hospitalApi.shared.utils;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
@@ -9,14 +10,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import org.springframework.security.access.AccessDeniedException;
-
 import com.hospitalApi.shared.dtos.ErrorResponseDTO;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 
 /**
@@ -50,7 +48,7 @@ public class GlobalExceptionHandler {
         String menssage = "";
         // recorre los errores de validación y agregarlos al mensaje de respuesta
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-            menssage = menssage + String.format("- %s \n", error.getDefaultMessage());
+            menssage = menssage + String.format("-%s ", error.getDefaultMessage());
         }
 
         return new ErrorResponseDTO(menssage);
@@ -65,9 +63,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ErrorResponseDTO handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
+    public ErrorResponseDTO handleAccessDeniedException(AccessDeniedException ex) {
         return new ErrorResponseDTO("Acceso denegado, no tienes permisos suficientes para realizar esta acción.");
-
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)

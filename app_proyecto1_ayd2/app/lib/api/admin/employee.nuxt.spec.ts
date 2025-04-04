@@ -76,18 +76,18 @@ describe('Employee API Utilities', () => {
       createUserRequestDTO: { username: 'bobw', password: 'secret123' }
     }
     const mockEmployee = {
-      ...employeePayload,
+      ...payload,
       employeeType: { name: 'Support' }
     }
     mockApi.mockResolvedValueOnce(mockEmployee)
 
-    const result = await createEmployee(employeePayload)
+    const result = await createEmployee(payload)
 
     expect(mockApi).toHaveBeenCalledWith('/v1/employees', {
       method: 'POST',
       body: payload
     });
-    expect(result).toEqual(response);
+    expect(result).toEqual(mockEmployee);
   });
 
   it('updateEmployee llama a $api con método PATCH y datos correctos', async () => {

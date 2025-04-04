@@ -1,5 +1,7 @@
 package com.hospitalApi.surgery.models;
 
+import java.math.BigDecimal;
+
 import com.hospitalApi.employees.models.Employee;
 import com.hospitalApi.employees.models.SpecialistEmployee;
 import com.hospitalApi.shared.models.Auditor;
@@ -32,5 +34,5 @@ public class SurgeryEmployee extends Auditor {
     private SpecialistEmployee specialistEmployee;
     
     @Column(nullable = false)
-    private Double specialistPayment;
+    private BigDecimal specialistPayment;
 }
