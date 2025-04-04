@@ -43,6 +43,7 @@ import com.hospitalApi.shared.exceptions.NotFoundException;
 import com.hospitalApi.users.models.User;
 import com.hospitalApi.users.ports.ForUsersPort;
 import com.hospitalApi.users.repositories.UserRepository;
+import com.hospitalApi.vacations.ports.ForVacationsPort;
 
 @ExtendWith(MockitoExtension.class)
 public class EmployeesServiceTest {
@@ -56,6 +57,9 @@ public class EmployeesServiceTest {
 
         @Mock
         private ForUsersPort forUsersPort;
+
+        @Mock
+        private ForVacationsPort forVacationsPort;
 
         @Mock
         private ForEmployeeHistoryPort forEmployeeHistoryPort;
@@ -203,6 +207,7 @@ public class EmployeesServiceTest {
                 when(forEmployeeHistoryPort.createEmployeeHistoryHiring(any(Employee.class), any(LocalDate.class)))
                                 .thenReturn(employeeHistory);
                 when(employeeRepository.save(any(Employee.class))).thenReturn(employee);
+                when(forVacationsPort.createRandomVacationsForEmployee(anyString())).thenReturn(null);
                 // ACT
                 Employee result = employeeService.createEmployee(employee, employeeType, user, employeeHistory);
 
@@ -230,6 +235,7 @@ public class EmployeesServiceTest {
                 verify(forEmployeeHistoryPort, times(1)).createEmployeeHistoryHiring(any(Employee.class),
                                 any(LocalDate.class));
                 verify(employeeRepository, times(1)).save(any(Employee.class));
+                verify(forVacationsPort, times(1)).createRandomVacationsForEmployee(eq(capturedEmployee.getId()));
         }
 
         @Test

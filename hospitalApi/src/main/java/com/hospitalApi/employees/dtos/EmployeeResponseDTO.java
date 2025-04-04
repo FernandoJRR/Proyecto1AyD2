@@ -10,6 +10,8 @@ public class EmployeeResponseDTO {
 
     String id;
 
+    String cui;
+    
     String firstName;
 
     String lastName;

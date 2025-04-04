@@ -13,6 +13,7 @@ import org.springframework.security.access.AccessDeniedException;
 
 import com.hospitalApi.shared.dtos.ErrorResponseDTO;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
+import com.hospitalApi.shared.exceptions.InvalidPeriodException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -80,6 +81,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponseDTO handleNotFoundException(NotFoundException ex) {
+        return new ErrorResponseDTO(ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidPeriodException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponseDTO handleInvalidPeriodException(InvalidPeriodException ex) {
         return new ErrorResponseDTO(ex.getMessage());
     }
 

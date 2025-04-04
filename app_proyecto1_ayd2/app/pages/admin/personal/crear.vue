@@ -33,8 +33,8 @@
             <label>CUI</label>
             <InputText name="cui" type="text" fluid />
           </FloatLabel>
-          <Message v-if="$form.lastName?.invalid" severity="error" size="small" variant="simple">{{
-            $form.lastName.error?.message }}</Message>
+          <Message v-if="$form.cui?.invalid" severity="error" size="small" variant="simple">{{
+            $form.cui.error?.message }}</Message>
         </div>
         <div class="flex flex-row mt-8">
           <div>

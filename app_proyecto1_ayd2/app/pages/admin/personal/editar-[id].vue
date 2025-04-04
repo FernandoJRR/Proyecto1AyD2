@@ -7,8 +7,9 @@
     <div>
       <div class="flex flex-col gap-1">
         <h1 class="text-2xl font-semibold">Datos del Empleado</h1>
-        <div class="flex flex-col gap-2">
-          <Form v-slot="$employeeForm" :initialValues :employeeResolver @submit="onEmployeeFormSubmit" class="mt-8 flex justify-center">
+        <div v-if="foundUser.data" class="flex flex-col gap-2">
+          <Form :key="foundUser.data.id" v-slot="$employeeForm" :initialValues :employeeResolver
+            @submit="onEmployeeFormSubmit" class="mt-8 flex justify-center">
             <div class="flex flex-col w-full gap-4">
               <div class="flex flex-row gap-4">
                 <div class="w-full">
@@ -27,6 +28,14 @@
                   <Message v-if="$employeeForm.lastName?.invalid" severity="error" size="small" variant="simple">{{
                     $employeeForm.lastName.error?.message }}</Message>
                 </div>
+                <div class="w-full">
+                  <FloatLabel>
+                    <label>CUI</label>
+                    <InputText name="cui" type="text" fluid />
+                  </FloatLabel>
+                  <Message v-if="$employeeForm.cui?.invalid" severity="error" size="small" variant="simple">{{
+                    $employeeForm.cui.error?.message }}</Message>
+                </div>
               </div>
               <Button class="w-full" type="submit" severity="secondary" label="Actualizar Datos" />
             </div>
@@ -34,7 +43,8 @@
         </div>
         <h1 class="text-2xl font-semibold mt-2">Datos de Planilla</h1>
         <div class="flex flex-row gap-x-8 mt-2 gap-2 justify-center">
-          <Form v-slot="$salaryForm" :initialValues :salaryResolver @submit="onSalaryFormSubmit" class="mt-8 flex justify-center">
+          <Form v-slot="$salaryForm" :initialValues :salaryResolver @submit="onSalaryFormSubmit"
+            class="mt-8 flex justify-center">
             <div class="flex flex-col gap-2">
               <FloatLabel>
                 <label>Salario</label>
@@ -44,12 +54,13 @@
               <Message v-if="$salaryForm.salary?.invalid" severity="error" size="small" variant="simple">{{
                 $salaryForm.salary.error?.message }}</Message>
               <InputGroup>
-                <DatePicker name="salaryDate" :maxDate="new Date()"/>
+                <DatePicker name="salaryDate" :maxDate="new Date()" />
                 <Button class="w-full" type="submit" severity="secondary" label="Actualizar Salario" />
               </InputGroup>
             </div>
           </Form>
-          <Form v-slot="$benefitsForm" :initialValues :benefitsResolver @submit="onBenefitsFormSubmit" class="mt-8 flex justify-center">
+          <Form v-slot="$benefitsForm" :initialValues :benefitsResolver @submit="onBenefitsFormSubmit"
+            class="mt-8 flex justify-center">
             <div class="flex flex-col gap-2">
               <div class="flex flex-row">
                 <div>
@@ -84,7 +95,8 @@
           </Form>
         </div>
         <h1 class="text-2xl font-semibold mt-2">Area del Empleado</h1>
-        <Form v-slot="$areaForm" :initialValues :areaResolver @submit="onAreaFormSubmit" class="mt-8 flex justify-center">
+        <Form v-slot="$areaForm" :initialValues :areaResolver @submit="onAreaFormSubmit"
+          class="mt-8 flex justify-center">
           <div class="flex flex-col mt-2 w-full">
             <div>
               <template v-if="userTypes.status === 'success'">
@@ -120,6 +132,7 @@ const { state: foundUser } = useCustomQuery({
 const initialValues = reactive({
   firstName: foundUser.value.data?.firstName ?? '',
   lastName: foundUser.value.data?.lastName ?? '',
+  cui: foundUser.value.data?.cui ?? '',
   salary: foundUser.value.data?.salary ?? 0,
   salaryDate: new Date(),
 
@@ -163,6 +176,7 @@ const employeeResolver = ref(zodResolver(
   z.object({
     firstName: z.string().min(1, 'Los nombres son obligatorios.'),
     lastName: z.string().min(1, 'Los apellidos son obligatorios.'),
+    cui: z.string().regex(/^\d{13}$/, "El CUI es obligatorio y debe tener 13 digitos"),
   })
 ))
 
@@ -191,7 +205,7 @@ const benefitsResolver = ref(zodResolver(
     if (data.has_porcentaje_irtra && (data.irtraPercentage === null || data.irtraPercentage === undefined || data.irtraPercentage === 0)) {
       ctx.addIssue({
         path: ["irtraPercentage"],
-        message: "Debe ingresar un porcentaje válido para IRTRA.",
+        message: "Debe ingresar uns porcentaje válido para IRTRA.",
         code: z.ZodIssueCode.custom,
       });
     }
@@ -217,6 +231,7 @@ const onEmployeeFormSubmit = (e: any) => {
     const payload: EmployeeUpdatePayload = {
       firstName: e.values.firstName,
       lastName: e.values.lastName,
+      cui: e.values.cui,
       salary: foundUser.value.data?.salary ?? 0,
       igssPercentage: foundUser.value.data?.igssPercentage ?? 0,
       irtraPercentage: foundUser.value.data?.irtraPercentage ?? 0,
@@ -232,6 +247,7 @@ const onAreaFormSubmit = (e: any) => {
     const payload: EmployeeUpdatePayload = {
       firstName: foundUser.value.data?.firstName ?? '',
       lastName: foundUser.value.data?.lastName ?? '',
+      cui: foundUser.value.data?.cui ?? '',
       salary: foundUser.value.data?.salary ?? 0,
       igssPercentage: foundUser.value.data?.igssPercentage ?? 0,
       irtraPercentage: foundUser.value.data?.irtraPercentage ?? 0,
@@ -253,6 +269,7 @@ const onBenefitsFormSubmit = (e: any) => {
     const payload: EmployeeUpdatePayload = {
       firstName: foundUser.value.data?.firstName ?? '',
       lastName: foundUser.value.data?.lastName ?? '',
+      cui: foundUser.value.data?.cui ?? '',
       salary: foundUser.value.data?.salary ?? 0,
       igssPercentage: e.values.has_porcentaje_igss ? e.values.igssPercentage : null,
       irtraPercentage: e.values.has_porcentaje_igss ? e.values.irtraPercentage : null,
@@ -271,7 +288,7 @@ const { mutate: updateEmployeeMutation } = useMutation({
   mutation: (updateData: EmployeeUpdatePayload) => updateEmployee(updateData, useRoute().params.id as string),
   onError(error) {
     toast.error('Ocurrió un error al actualizar al empleado.', {
-      description: error
+      description: error.message
     })
   },
   onSuccess() {

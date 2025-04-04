@@ -1,28 +1,37 @@
-// employee.nuxt.spec.ts
-import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest'
+import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 
-// Create our mock function.
-const mockApi = vi.fn()
+const mockApi = vi.fn();
 
-// Use doMock to override the plainFetch module with our mock.
 vi.doMock('~/utils/plainFetch', () => ({
-  $api: mockApi,
-}))
+  $api: mockApi
+}));
 
-// Declare variables to hold our dynamically imported modules.
-let getAllEmployees: any, getEmployeeById: any, createEmployee: any
+let getAllEmployees: any;
+let getEmployeeById: any;
+let createEmployee: any;
+let updateEmployee: any;
+let updateEmployeeSalary: any;
+let deactivateEmployee: any;
+let reactivateEmployee: any;
+let getDoctors: any;
+let getEnfermeros: any;
 
-// Dynamically import the employee module (and the plainFetch module is now mocked).
 beforeAll(async () => {
-  const employeeModule = await import('~/lib/api/admin/employee')
-  getAllEmployees = employeeModule.getAllEmployees
-  getEmployeeById = employeeModule.getEmployeeById
-  createEmployee = employeeModule.createEmployee
-})
+  const module = await import('~/lib/api/admin/employee');
+  getAllEmployees = module.getAllEmployees;
+  getEmployeeById = module.getEmployeeById;
+  createEmployee = module.createEmployee;
+  updateEmployee = module.updateEmployee;
+  updateEmployeeSalary = module.updateEmployeeSalary;
+  deactivateEmployee = module.deactivateEmployee;
+  reactivateEmployee = module.reactivateEmployee;
+  getDoctors = module.getDoctors;
+  getEnfermeros = module.getEnfermeros;
+});
 
 beforeEach(() => {
-  vi.clearAllMocks()
-})
+  vi.clearAllMocks();
+});
 
 describe('Employee API Utilities', () => {
   it('getAllEmployees calls $api with the correct URL and params, and returns employee array', async () => {
@@ -56,11 +65,10 @@ describe('Employee API Utilities', () => {
     expect(result).toEqual(mockEmployees)
   })
 
-  it('getEmployeeById calls $api with the correct URL and returns employee data', async () => {
-    const employeeId = '123'
-    const mockEmployee = {
-      firstName: 'Alice',
-      lastName: 'Johnson',
+  it('createEmployee llama a $api con método POST', async () => {
+    const payload = {
+      firstName: 'Ana',
+      lastName: 'Perez',
       salary: 5000,
       igssPercentage: 5,
       irtraPercentage: 2,

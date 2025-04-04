@@ -85,7 +85,7 @@
               <p class="font-semibold">
                 Todas las Vacaciones Usadas
               </p>
-              <Button label="Imprimir Finiquito" size="small" variant="outlined" 
+              <Button label="Imprimir Finiquito" size="small" variant="outlined"
                 icon="pi pi-print" severity="warn" @click="printInvoice" />
             </div>
           </template>

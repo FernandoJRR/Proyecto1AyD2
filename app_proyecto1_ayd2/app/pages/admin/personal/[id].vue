@@ -12,7 +12,8 @@
     <div v-else class="grid grid-cols-2 mt-4">
       <div class="flex flex-col gap-4">
         <div class="flex flex-row gap-4">
-          <h1 class="text-3xl font-semibold">{{ `${state.data.employee.firstName} ${state.data.employee.lastName}` }}</h1>
+          <h1 class="text-3xl font-semibold">{{ `${state.data.employee.firstName} ${state.data.employee.lastName}` }}
+          </h1>
           <Tag :value="state.data.employee.employeeType.name" />
         </div>
         <div class="flex flex-row gap-x-2 text-lg">
@@ -33,6 +34,42 @@
             </Tag>
           </div>
         </div>
+        <DataTable :value="filteredVacations">
+          <template #header>
+            <div class="flex justify-start">
+              <p class="text-3xl font-medium mb-4">Vacaciones</p>
+              <div class="mb-4">
+                <Select v-model="selectedYear" :options="availableYears"
+                  placeholder="Elige un periodo" class="ml-4">
+                  <template #option="slotProps">
+                    <div class="flex items-center gap-2">
+                      <span>{{ slotProps.option }}</span>
+                    </div>
+                  </template>
+                </Select>
+              </div>
+            </div>
+          </template>
+          <template #loading>
+            Cargando vacaciones del empleado.
+          </template>
+          <Column field="beginDate" header="Fecha Inicio" style="min-width: 12rem">
+          </Column>
+          <Column field="endDate" header="Fecha Fin" style="min-width: 12rem">
+          </Column>
+          <Column field="wasUsed" header="Se Uso" style="min-width: 12rem">
+            <template #body="{ data }">
+              <div class="flex items-center gap-2">
+                <Tag v-if="data.wasUsed" rounded>
+                  Si
+                </Tag>
+                <Tag v-else severity="danger" rounded>
+                  No
+                </Tag>
+              </div>
+            </template>
+          </Column>
+        </DataTable>
       </div>
       <div>
         <div class="flex flex-row">
@@ -42,7 +79,7 @@
                 <p class="text-3xl font-medium mb-4">Historial</p>
               </div>
             </template>
-            <template #loading> Loading customers data. Please wait. </template>
+            <template #loading> Cargando historial del empleado. </template>
             <Column field="commentary" header="Tipo" style="min-width: 12rem">
               <template #body="{ data }">
                 <Tag severity="secondary">
@@ -76,14 +113,42 @@
   </div>
 </template>
 <script setup lang="ts">
-import { useQuery } from '@pinia/colada';
+import { Select } from 'primevue';
 import { getEmployeeById } from '~/lib/api/admin/employee';
 
 const { state } = useCustomQuery({
   key: ['usuario', useRoute().params.id as string],
-  query: () => getEmployeeById(useRoute().params.id as string).then((res) => { return {
-    employee: res.employeeResponseDTO,
-    histories: res.employeeHistories
-  }})
+  query: () => getEmployeeById(useRoute().params.id as string).then((res) => {
+    return {
+      employee: res.employeeResponseDTO,
+      histories: res.employeeHistories,
+      vacations: res.vacations
+    }
+  })
 })
+
+const selectedYear = ref<number | null>(null);
+
+const availableYears = computed(() => {
+  return state.value.data?.vacations
+    ? Object.keys(state.value.data.vacations).map((key) => Number(key))
+    : [];
+});
+
+const filteredVacations = computed(() => {
+  if (selectedYear.value && state.value.data?.vacations && state.value.data.vacations[selectedYear.value]) {
+    return state.value.data.vacations[selectedYear.value];
+  }
+  return [];
+});
+
+watch(
+  availableYears,
+  (newYears) => {
+    if (!selectedYear.value && newYears.length > 0) {
+      selectedYear.value = newYears[0];
+    }
+  },
+  { immediate: true }
+);
 </script>

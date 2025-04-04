@@ -19,6 +19,9 @@ import com.hospitalApi.employees.ports.ForEmployeesPort;
 import com.hospitalApi.employees.repositories.EmployeeRepository;
 import com.hospitalApi.employees.repositories.EmployeeTypeRepository;
 import com.hospitalApi.employees.repositories.HistoryTypeRepository;
+import com.hospitalApi.parameters.enums.ParameterEnum;
+import com.hospitalApi.parameters.models.Parameter;
+import com.hospitalApi.parameters.repositories.ParameterRepository;
 import com.hospitalApi.permissions.enums.SystemPermissionEnum;
 import com.hospitalApi.permissions.models.Permission;
 import com.hospitalApi.permissions.ports.ForPermissionsPort;
@@ -42,6 +45,7 @@ public class SeedersConfig implements CommandLineRunner {
 
 	private final PermissionRepository permissionRepository;
 	private final UserRepository userRepository;
+	private final ParameterRepository parameterRepository;
 	private final EmployeeTypeRepository employeeTypeRepository;
 	private final EmployeeRepository employeeRepository;
 	private final HistoryTypeRepository historyTypeRepository;
@@ -140,6 +144,11 @@ public class SeedersConfig implements CommandLineRunner {
 		historyTypeRepository.save(historyTypeAumentoSalarial);
 		historyTypeRepository.save(historyTypeDisminucionSalarial);
 
+        for (ParameterEnum parameterEnum : ParameterEnum.values()) {
+            Parameter currentParameter = new Parameter(parameterEnum.getKey(), parameterEnum.getDefaultValue(), parameterEnum.getName());
+            parameterRepository.save(currentParameter);
+        }
+
 		EmployeeHistory employeeHistoryAdmin = new EmployeeHistory("Creacion");
 		employeeHistoryAdmin.setHistoryDate(LocalDate.now());
 		employeeHistoryAdmin.setHistoryType(historyTypeContratacion);
@@ -149,7 +158,13 @@ public class SeedersConfig implements CommandLineRunner {
 
 	private boolean validPermissionDoctor(SystemPermissionEnum permissionEnum) {
 		return permissionEnum.name() == SystemPermissionEnum.CREATE_PATIENT.name() ||
-				permissionEnum.name() == SystemPermissionEnum.CREATE_SALE_MEDICINE_CONSULT.name();
+				permissionEnum.name() == SystemPermissionEnum.CREATE_SALE_MEDICINE_CONSULT.name() ||
+				permissionEnum.name() == SystemPermissionEnum.CREATE_CONSULT.name() ||
+				permissionEnum.name() == SystemPermissionEnum.EDIT_CONSULT.name() ||
+				permissionEnum.name() == SystemPermissionEnum.PAGO_CONSULT.name() ||
+				permissionEnum.name() == SystemPermissionEnum.CREATE_SURGERY.name() ||
+				permissionEnum.name() == SystemPermissionEnum.EDIT_SURGERY.name() ||
+				permissionEnum.name() == SystemPermissionEnum.DELETE_SURGERY.name();
 	}
 
 	private boolean validPermissionEnfermero(SystemPermissionEnum permissionEnum) {

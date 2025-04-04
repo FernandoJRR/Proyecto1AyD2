@@ -2,6 +2,7 @@ package com.hospitalApi.reports.services;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -16,12 +17,17 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.hospitalApi.medicines.dtos.MedicineResponseDTO;
+import com.hospitalApi.medicines.mappers.MedicineMapper;
 import com.hospitalApi.medicines.models.Medicine;
 import com.hospitalApi.medicines.ports.ForMedicinePort;
 import com.hospitalApi.reports.dtos.request.MedicationReportFilter;
 
 @ExtendWith(MockitoExtension.class)
 public class MedicationReportServiceTest {
+
+    @Mock
+    private MedicineMapper medicineMapper;
 
     @Mock
     private ForMedicinePort forMedicinePort;
@@ -34,6 +40,9 @@ public class MedicationReportServiceTest {
 
     private Medicine medicine1;
     private Medicine medicine2;
+
+    private MedicineResponseDTO medicineResponseDTO1;
+    private MedicineResponseDTO medicineResponseDTO2;
     private MedicationReportFilter medicationFilter;
 
     @BeforeEach
@@ -43,6 +52,9 @@ public class MedicationReportServiceTest {
         medicine2 = new Medicine();
         medicine2.setName(MEDICINE_NAME_2);
         medicationFilter = new MedicationReportFilter(MEDICINE_NAME);
+
+        medicineResponseDTO1 = new MedicineResponseDTO(null, MEDICINE_NAME, null, null, null, null, null);
+        medicineResponseDTO2 = new MedicineResponseDTO(null, MEDICINE_NAME_2, null, null, null, null, null);
     }
 
     /**
@@ -53,11 +65,14 @@ public class MedicationReportServiceTest {
     @Test
     void testGenerateReport() {
         List<Medicine> mockMedicines = List.of(medicine1, medicine2);
+        List<MedicineResponseDTO> expectedList = List.of(medicineResponseDTO1, medicineResponseDTO2);
         // Arrange
         when(forMedicinePort.getAllMedicines(anyString())).thenReturn(mockMedicines);
+        when(medicineMapper.fromMedicineListToMedicineResponseDTOList(anyList())).thenReturn(
+                expectedList);
 
         // Act
-        List<Medicine> result = medicationReportService.generateReport(medicationFilter);
+        List<MedicineResponseDTO> result = medicationReportService.generateReport(medicationFilter);
 
         // Assert
         assertAll(
