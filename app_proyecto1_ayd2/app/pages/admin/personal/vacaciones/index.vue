@@ -5,9 +5,9 @@
       <h1 class="text-3xl font-medium mb-6 max-h-4">Dias de Vacaciones</h1>
       <FloatLabel>
         <label for="number">Dias</label>
-        <InputNumber v-model="currentVacationDays"/>
+        <InputNumber v-model="currentVacationDays" />
       </FloatLabel>
-      <Button label="Cambiar Dias" icon="pi pi-refresh" @click="changeVacationDays"/>
+      <Button label="Cambiar Dias" icon="pi pi-refresh" @click="changeVacationDays" />
     </div>
     <Divider />
     <DataTable :value="employeesWithInvoice.data">
@@ -106,7 +106,7 @@ const { mutate } = useMutation({
 })
 
 function changeVacationDays() {
-  mutate({newVacationDays: currentVacationDays.value})
+  mutate({ newVacationDays: currentVacationDays.value })
 }
 
 watch(
