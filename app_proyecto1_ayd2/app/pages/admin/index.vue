@@ -28,12 +28,7 @@ const menus = [
     title: 'Roles',
     description: 'Administracion de roles y permisos',
     route: '/admin/tipos-de-empleado',
-  },
-  {
-    title: 'Tarifas',
-    description: 'Administracion de Tarifas',
-    route: '/admin/tarifas',
-  },
+  }
 ]
 
 defineExpose({ menus })
