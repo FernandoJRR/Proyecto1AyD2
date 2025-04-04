@@ -47,7 +47,7 @@
                   </template>
                 </Select>
               </div>
-              <RouterLink :to="`/perfil/editar-periodo-${selectedYear}`">
+              <RouterLink :to="`/perfil/editar-periodo-${selectedYear}`" v-if="!filteredVacations.every(vacation => vacation.wasUsed)">
                 <Button severity="info" label="Editar periodo" icon="pi pi-pencil"></Button>
               </RouterLink>
               <RouterLink to="/perfil/agregar-periodo">
@@ -191,6 +191,14 @@ watch(
 );
 
 function printInvoice() {
-  alert("por implementar")
+  if (!employee.value) {
+    toast.error("Ha ocurrido un error al generar el finiquito")
+    return
+  }
+  if (!selectedYear.value) {
+    toast.error("Ha ocurrido un error al generar el finiquito")
+    return
+  }
+  generateEmployeePeriodInvoicePDF(employee.value, selectedYear.value)
 }
 </script>
