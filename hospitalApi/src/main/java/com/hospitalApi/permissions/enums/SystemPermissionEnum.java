@@ -14,6 +14,7 @@ public enum SystemPermissionEnum {
         EDIT_EMPLOYEE(new Permission("Editar empleado", "EDIT_EMPLOYEE")),
         DESACTIVATE_EMPLOYEE(new Permission("Desactivar empleado", "DESACTIVATE_EMPLOYEE")),
         RESACTIVATE_EMPLOYEE(new Permission("Reactivar empleado", "RESACTIVATE_EMPLOYEE")),
+        UPDATE_EMPLOYEE_SALARY(new Permission("Actualiza el sueldo de un empleado", "UPDATE_EMPLOYEE_SALARY")),
 
         // PERMISOS DE PACIENTE
         CREATE_PATIENT(new Permission("Crear paciente", "CREATE_PATIENT")),
@@ -38,7 +39,7 @@ public enum SystemPermissionEnum {
 
         // PERMISOS PARA SALAS
         CREATE_SALE_MEDICINE_FARMACIA(
-                        new Permission("Registrar venta de medicamento en farmacia", 
+                        new Permission("Registrar venta de medicamento en farmacia",
                         "CREATE_SALE_MEDICINE_FARMACIA")),
         CREATE_SALE_MEDICINE_CONSULT(
                         new Permission("Registrar venta de medicamento en consultorio",
@@ -54,7 +55,13 @@ public enum SystemPermissionEnum {
         CREATE_ROOM(new Permission("Crear habitacion", "CREATE_ROOM")),
         EDIT_ROOM(new Permission("Editar habitacion", "EDIT_ROOM")),
         TOGGLE_ROOM_AVAILABILITY(
-                        new Permission("Alternar disponibilidad de la habitación", "TOGGLE_ROOM_AVAILABILITY"));
+                        new Permission("Alternar disponibilidad de la habitación", "TOGGLE_ROOM_AVAILABILITY")),
+
+        // para las vacaciones
+        CHANGE_VACATION_DAYS(new Permission("Cambiar dias de vacaciones", "CHANGE_VACATION_DAYS")),
+        GET_ALL_INVOICES(new Permission("Obtener a todos los empleados que pueden sacar finiquito", "GET_ALL_INVOICES")),
+
+        ;
 
         private final Permission permission;
 }
