@@ -23,9 +23,9 @@
         <h1 class="text-xl font-semibold">Descuentos</h1>
         <div class="flex flex-row gap-6">
           <div class="flex flex-row h-6 gap-4">
-            <p class="font-medium">IGGS</p>
-            <Tag :severity="state.data.employee.iggsPercentage ? 'success' : 'danger'">
-              {{ state.data.employee.iggsPercentage ? `${state.data.employee.iggsPercentage}%` : 'No Aplica' }}</Tag>
+            <p class="font-medium">IGSS</p>
+            <Tag :severity="state.data.employee.igssPercentage ? 'success' : 'danger'">
+              {{ state.data.employee.igssPercentage ? `${state.data.employee.igssPercentage}%` : 'No Aplica' }}</Tag>
           </div>
           <div class="flex flex-row h-6 gap-4">
             <p class="font-medium">IRTRA</p>
@@ -130,8 +130,8 @@ const { state } = useCustomQuery({
 const selectedYear = ref<number | null>(null);
 
 const availableYears = computed(() => {
-  return state.value.data?.vacations 
-    ? Object.keys(state.value.data.vacations).map((key) => Number(key)) 
+  return state.value.data?.vacations
+    ? Object.keys(state.value.data.vacations).map((key) => Number(key))
     : [];
 });
 

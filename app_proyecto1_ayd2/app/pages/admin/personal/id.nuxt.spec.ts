@@ -88,7 +88,7 @@ describe('EmployeeDetail [id].vue', () => {
           firstName: 'Alice',
           lastName: 'Smith',
           salary: 5000,
-          iggsPercentage: 10,
+          igssPercentage: 10,
           irtraPercentage: 0,
           employeeType: { name: 'Manager' }
         },

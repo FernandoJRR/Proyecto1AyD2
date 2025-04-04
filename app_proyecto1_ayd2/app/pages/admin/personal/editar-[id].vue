@@ -65,16 +65,16 @@
               <div class="flex flex-row">
                 <div>
                   <div class="flex flex-row items-center gap-4 ml-4">
-                    <ToggleSwitch name="has_porcentaje_iggs" class="min-w-10" />
+                    <ToggleSwitch name="has_porcentaje_igss" class="min-w-10" />
                     <FloatLabel>
-                      <label>Porcentaje IGGS</label>
-                      <InputNumber name="iggsPercentage" :min="1" :max="100" suffix="%" placeholder="Porcentaje IGGS"
-                        fluid :disabled="!$benefitsForm.has_porcentaje_iggs?.value" />
+                      <label>Porcentaje IGSS</label>
+                      <InputNumber name="igssPercentage" :min="1" :max="100" suffix="%" placeholder="Porcentaje IGSS"
+                        fluid :disabled="!$benefitsForm.has_porcentaje_igss?.value" />
                     </FloatLabel>
                   </div>
-                  <Message v-if="$benefitsForm.iggsPercentage?.invalid" severity="error" size="small" variant="simple">
+                  <Message v-if="$benefitsForm.igssPercentage?.invalid" severity="error" size="small" variant="simple">
                     {{
-                      $benefitsForm.iggsPercentage.error?.message }}</Message>
+                      $benefitsForm.igssPercentage.error?.message }}</Message>
                 </div>
                 <div>
                   <div class="flex flex-row items-center gap-4 ml-4">
@@ -136,8 +136,8 @@ const initialValues = reactive({
   salary: foundUser.value.data?.salary ?? 0,
   salaryDate: new Date(),
 
-  has_porcentaje_iggs: foundUser.value.data?.iggsPercentage != null,
-  iggsPercentage: foundUser.value.data?.iggsPercentage ?? 0,
+  has_porcentaje_igss: foundUser.value.data?.igssPercentage != null,
+  igssPercentage: foundUser.value.data?.igssPercentage ?? 0,
   has_porcentaje_irtra: foundUser.value.data?.irtraPercentage != null,
   irtraPercentage: foundUser.value.data?.irtraPercentage ?? 0,
 
@@ -158,8 +158,8 @@ watch(
       initialValues.lastName = data.lastName;
       initialValues.salary = data.salary;
       // update the rest accordingly…
-      initialValues.has_porcentaje_iggs = data.iggsPercentage != null;
-      initialValues.iggsPercentage = data.iggsPercentage ?? 0;
+      initialValues.has_porcentaje_igss = data.igssPercentage != null;
+      initialValues.igssPercentage = data.igssPercentage ?? 0;
       initialValues.has_porcentaje_irtra = data.irtraPercentage != null;
       initialValues.irtraPercentage = data.irtraPercentage ?? 0;
       initialValues.type = data.employeeType?.id ?? '';
@@ -182,8 +182,8 @@ const employeeResolver = ref(zodResolver(
 
 const benefitsResolver = ref(zodResolver(
   z.object({
-    has_porcentaje_iggs: z.boolean(),
-    iggsPercentage: z.union([
+    has_porcentaje_igss: z.boolean(),
+    igssPercentage: z.union([
       z.number().min(1, "El porcentaje debe ser mayor a 0.").max(100, "El porcentaje no puede ser mayor a 100"),
       z.literal(null)
     ]).optional(),
@@ -195,10 +195,10 @@ const benefitsResolver = ref(zodResolver(
     ]).optional(),
 
   }).superRefine((data, ctx) => {
-    if (data.has_porcentaje_iggs && (data.iggsPercentage === null || data.iggsPercentage === undefined || data.iggsPercentage === 0)) {
+    if (data.has_porcentaje_igss && (data.igssPercentage === null || data.igssPercentage === undefined || data.igssPercentage === 0)) {
       ctx.addIssue({
-        path: ["iggsPercentage"],
-        message: "Debe ingresar un porcentaje válido para IGGS.",
+        path: ["igssPercentage"],
+        message: "Debe ingresar un porcentaje válido para IGSS.",
         code: z.ZodIssueCode.custom,
       });
     }
@@ -233,7 +233,7 @@ const onEmployeeFormSubmit = (e: any) => {
       lastName: e.values.lastName,
       cui: e.values.cui,
       salary: foundUser.value.data?.salary ?? 0,
-      iggsPercentage: foundUser.value.data?.iggsPercentage ?? 0,
+      igssPercentage: foundUser.value.data?.igssPercentage ?? 0,
       irtraPercentage: foundUser.value.data?.irtraPercentage ?? 0,
       employeeTypeId: { id: foundUser.value.data?.employeeType.id ?? '' },
     }
@@ -249,7 +249,7 @@ const onAreaFormSubmit = (e: any) => {
       lastName: foundUser.value.data?.lastName ?? '',
       cui: foundUser.value.data?.cui ?? '',
       salary: foundUser.value.data?.salary ?? 0,
-      iggsPercentage: foundUser.value.data?.iggsPercentage ?? 0,
+      igssPercentage: foundUser.value.data?.igssPercentage ?? 0,
       irtraPercentage: foundUser.value.data?.irtraPercentage ?? 0,
       employeeTypeId: { id: e.values.type },
     }
@@ -271,8 +271,8 @@ const onBenefitsFormSubmit = (e: any) => {
       lastName: foundUser.value.data?.lastName ?? '',
       cui: foundUser.value.data?.cui ?? '',
       salary: foundUser.value.data?.salary ?? 0,
-      iggsPercentage: e.values.has_porcentaje_iggs ? e.values.iggsPercentage : null,
-      irtraPercentage: e.values.has_porcentaje_iggs ? e.values.irtraPercentage : null,
+      igssPercentage: e.values.has_porcentaje_igss ? e.values.igssPercentage : null,
+      irtraPercentage: e.values.has_porcentaje_igss ? e.values.irtraPercentage : null,
       employeeTypeId: { id: foundUser.value.data?.employeeType.id ?? '' },
     }
     updateEmployeeMutation(payload)
