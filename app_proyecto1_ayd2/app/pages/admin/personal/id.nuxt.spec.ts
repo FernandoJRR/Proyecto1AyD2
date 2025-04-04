@@ -3,7 +3,6 @@ import { ref } from 'vue'
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import EmployeeDetail from '~/pages/admin/personal/[id].vue'
 
-// Estado mutable para simular el resultado de useQuery
 let mockUseQueryReturn: any = {}
 
 vi.mock('@pinia/colada', () => ({
@@ -13,6 +12,10 @@ vi.mock('@pinia/colada', () => ({
 vi.mock('vue-router', () => ({
   useRoute: () => ({ params: { id: '1' } })
 }))
+
+const InputTextStub = {
+  template: '<input class="inputtext" />'
+}
 
 const RouterLinkStub = {
   template: '<a class="router-link"><slot /></a>',
@@ -27,6 +30,11 @@ const ButtonStub = {
 const TagStub = {
   props: ['value', 'severity', 'rounded'],
   template: `<span class="tag">{{ value }}<slot /></span>`
+}
+
+const SelectStub = {
+  props: ['modelValue', 'options', 'placeholder'],
+  template: `<select class="select-stub"><slot /></select>`
 }
 
 const DataTableStub = {
@@ -109,10 +117,12 @@ describe('EmployeeDetail [id].vue', () => {
           Button: ButtonStub,
           Tag: TagStub,
           DataTable: DataTableStub,
-          Column: ColumnStub
+          Column: ColumnStub,
+          InputText: InputTextStub,
+          Select: SelectStub
         }
       }
-    })
+    });
 
     expect(wrapper.find('h1.text-3xl').text()).toContain('Alice Smith')
     expect(wrapper.text()).toContain('Q.5000')

@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { mount } from "@vue/test-utils";
 import { ref } from "vue";
 
-// Mocks de funciones
 const refetchMedicinesMock = vi.fn();
 const ventaVariosFarmaciaMutateMock = vi.fn();
 
@@ -164,7 +163,6 @@ describe("VentaFarmacia Page", () => {
   it("agrega un medicamento al carrito", async () => {
     const wrapper = mount(VentaFarmacia, { global: { stubs } });
 
-    // Llama directamente al método agregarAlCarrito
     wrapper.vm.agregarAlCarrito({
       id: "1",
       name: "Ibuprofeno",
