@@ -2,20 +2,20 @@ import { mount } from '@vue/test-utils'
 import { describe, it, expect } from 'vitest'
 import App from '~/app.vue'
 
-// Stub for NuxtLoadingIndicator
+// Stub para NuxtLoadingIndicator
 const NuxtLoadingIndicatorStub = {
   name: 'NuxtLoadingIndicatorStub',
   props: ['throttle', 'height', 'color'],
   template: `<div class="nuxt-loading-indicator"></div>`
 }
 
-// Stub for NuxtLayout
+// Stub para NuxtLayout
 const NuxtLayoutStub = {
   name: 'NuxtLayoutStub',
   template: `<div class="nuxt-layout">Layout Content</div>`
 }
 
-// Stub for Toaster that renders its named slots.
+// Stub para el  toaster
 const ToasterStub = {
   name: 'ToasterStub',
   props: ['position', 'closeButton', 'toastOptions'],
@@ -41,23 +41,22 @@ describe('App.vue', () => {
       }
     })
 
-    // Verify NuxtLoadingIndicator
+    // se verifica NuxtLoadingIndicator
     const loadingIndicator = wrapper.findComponent(NuxtLoadingIndicatorStub)
     expect(loadingIndicator.exists()).toBe(true)
     expect(loadingIndicator.props('throttle')).toBe(130)
     expect(loadingIndicator.props('height')).toBe(4)
     expect(loadingIndicator.props('color')).toBe('var(--p-primary-400)')
 
-    // Verify NuxtLayout
+    // se verifica NuxtLayout
     const layout = wrapper.findComponent(NuxtLayoutStub)
     expect(layout.exists()).toBe(true)
     expect(layout.text()).toContain('Layout Content')
 
-    // Verify Toaster props
+    // se verifica Toaster props
     const toaster = wrapper.findComponent(ToasterStub)
     expect(toaster.exists()).toBe(true)
     expect(toaster.props('position')).toBe('top-center')
-    // Note: Although the template uses :close-button, the prop will be camelCased.
     expect(toaster.props('closeButton')).toBe(false)
     expect(toaster.props('toastOptions')).toEqual({
       unstyled: true,
@@ -75,7 +74,7 @@ describe('App.vue', () => {
       }
     })
 
-    // Verify the slot content for the icons.
+    // se verifica el slot con los contenidos
     const errorIcon = toaster.find('.error-icon i')
     expect(errorIcon.exists()).toBe(true)
     expect(errorIcon.classes()).toContain('pi')

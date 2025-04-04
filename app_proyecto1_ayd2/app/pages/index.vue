@@ -46,7 +46,7 @@ const menus = [
   },
   {
     title: "Reportes",
-    description: "Generación de Repotes",
+    description: "Generación de Reportes",
     route: "/reportes",
   },
 ];

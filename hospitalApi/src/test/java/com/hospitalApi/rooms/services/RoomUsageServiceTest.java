@@ -1,11 +1,21 @@
 package com.hospitalApi.rooms.services;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import com.hospitalApi.consults.models.Consult;
 import com.hospitalApi.patients.models.Patient;
@@ -19,18 +29,13 @@ import com.hospitalApi.rooms.repositories.RoomUsageRepository;
 import com.hospitalApi.shared.exceptions.DuplicatedEntryException;
 import com.hospitalApi.shared.exceptions.NotFoundException;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 public class RoomUsageServiceTest {
 
     private static final String ROOM_ID = "ROOM-001";
     private static final String CONSULT_ID = "CONSULT-001";
     private static final String PATIENT_ID = "PATIENT-001";
-    private static final BigDecimal DAILY_PRICE = new BigDecimal("150.00");
+    private static final BigDecimal DAILY_PRICE = new BigDecimal(150);
+    private static final BigDecimal DAILY_COST = new BigDecimal(450);
 
     @Mock
     private ForRoomPort forRoomPort;
@@ -68,7 +73,7 @@ public class RoomUsageServiceTest {
         room.setStatus(RoomStatus.AVAILABLE);
         room.setDailyPrice(DAILY_PRICE);
 
-        roomUsage = new RoomUsage(consult, room, 1, DAILY_PRICE);
+        roomUsage = new RoomUsage(consult, room, 1, DAILY_PRICE, DAILY_COST);
         roomUsage.setCreatedAt(LocalDate.now().minusDays(1));
     }
 

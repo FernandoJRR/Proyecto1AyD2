@@ -11,6 +11,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,9 +41,9 @@ public class SurgeryTypeServiceTest {
     private static final String SURGERY_TYPE_ID = "SURGERY-TYPE-123";
     private static final String TYPE = "Cirugía Cardiaca";
     private static final String DESCRIPTION = "Intervención en el corazón";
-    private static final Double SPECIALIST_PAYMENT = 1500.00;
-    private static final Double HOSPITAL_COST = 5000.00;
-    private static final Double SURGERY_COST = 7000.00;
+    private static final BigDecimal SPECIALIST_PAYMENT = new BigDecimal(1500);
+    private static final BigDecimal HOSPITAL_COST = new BigDecimal(5000);
+    private static final BigDecimal SURGERY_COST = new BigDecimal(7000);
 
     private SurgeryType surgeryType;
 
@@ -159,9 +160,9 @@ public class SurgeryTypeServiceTest {
         // Arrange
         String newType = "Cirugía Neurológica";
         String newDescription = "Intervención en el cerebro";
-        Double newSpecialistPayment = 2000.00;
-        Double newHospitalCost = 6000.00;
-        Double newSurgeryCost = 8000.00;
+        BigDecimal newSpecialistPayment = new BigDecimal(2000);
+        BigDecimal newHospitalCost = new BigDecimal(6000);
+        BigDecimal newSurgeryCost = new BigDecimal(8000);
 
         UpdateSurgeryTypeRequestDTO updateDTO = new UpdateSurgeryTypeRequestDTO();
         updateDTO.setType(newType);

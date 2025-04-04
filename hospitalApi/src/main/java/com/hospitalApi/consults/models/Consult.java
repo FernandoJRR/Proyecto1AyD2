@@ -1,5 +1,6 @@
 package com.hospitalApi.consults.models;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.hospitalApi.consults.dtos.UpdateConsultRequestDTO;
@@ -7,6 +8,7 @@ import com.hospitalApi.medicines.models.SaleMedicine;
 import com.hospitalApi.patients.models.Patient;
 import com.hospitalApi.rooms.models.RoomUsage;
 import com.hospitalApi.shared.models.Auditor;
+import com.hospitalApi.surgery.models.Surgery;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -38,11 +40,11 @@ public class Consult extends Auditor {
 
     @Column(nullable = false)
     @DecimalMin(value = "0.01", inclusive = true, message = "El costo de la consulta debe ser mayor a 0")
-    private Double costoConsulta;
+    private BigDecimal costoConsulta;
 
     @Column(nullable = false)
     @DecimalMin(value = "0.01", inclusive = true, message = "El costo de la medicina debe ser mayor a 0")
-    private Double costoTotal;
+    private BigDecimal costoTotal;
 
     @NotNull(message = "El estado de la consulta es requerido")
     private Boolean isPaid = false;
@@ -53,11 +55,14 @@ public class Consult extends Auditor {
     @OneToMany(mappedBy = "consult", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EmployeeConsult> employeeConsults;
 
+    @OneToMany(mappedBy = "consult", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Surgery> surgeries;
+
     @OneToOne(mappedBy = "consult", cascade = CascadeType.ALL, optional = true, orphanRemoval = true)
     @JoinColumn(nullable = true)
     private RoomUsage roomUsage;
 
-    public Consult(String id, Patient patient, Boolean isInternado, Double costoConsulta, Double costoTotal) {
+    public Consult(String id, Patient patient, Boolean isInternado, BigDecimal costoConsulta, BigDecimal costoTotal) {
         super(id);
         this.patient = patient;
         this.isInternado = isInternado;
@@ -65,7 +70,7 @@ public class Consult extends Auditor {
         this.costoTotal = costoTotal;
     }
 
-    public Consult(Patient patient, Double costoConsulta) {
+    public Consult(Patient patient, BigDecimal costoConsulta) {
         this.patient = patient;
         this.costoConsulta = costoConsulta;
         this.costoTotal = costoConsulta;

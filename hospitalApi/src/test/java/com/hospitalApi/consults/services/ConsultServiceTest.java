@@ -73,8 +73,8 @@ public class ConsultServiceTest {
 
     // Constantes para la consulta
     private static final String CONSULT_ID = "CONSULT-001";
-    private static final Double CONSULT_COST = 300.00;
-    private static final Double UPDATED_CONSULT_COST = 500.00;
+    private static final BigDecimal CONSULT_COST = BigDecimal.valueOf(300.00);
+    private static final BigDecimal UPDATED_CONSULT_COST = BigDecimal.valueOf(500.00);
     private static final Double SURGERY_TOTAL_COST = 700.00;
 
     // Constantes para el empleado
@@ -272,10 +272,11 @@ public class ConsultServiceTest {
         when(forSaleMedicineCalculationPort.totalSalesMedicinesByConsult(CONSULT_ID)).thenReturn(300.0);
         when(consultRepository.save(any(Consult.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Double expectedTotal = CONSULT_COST + SURGERY_TOTAL_COST + 0.0 + 300.0;
+        BigDecimal expectedTotal = CONSULT_COST.add(BigDecimal.valueOf(SURGERY_TOTAL_COST))
+                .add(BigDecimal.valueOf(0.0 + 300.0));
 
         // Act
-        Double result = consultService.obtenerTotalConsulta(CONSULT_ID);
+        BigDecimal result = consultService.obtenerTotalConsulta(CONSULT_ID);
 
         // Assert
         assertNotNull(result);
@@ -293,7 +294,7 @@ public class ConsultServiceTest {
         // RoomUsage roomUsage = new RoomUsage(5, new BigDecimal("100.0"));
         RoomUsage roomUsage = new RoomUsage();
         roomUsage.setUsageDays(5);
-        roomUsage.setPrice(new BigDecimal("100.0"));
+        roomUsage.setDailyRoomPrice(new BigDecimal(100));
         when(consultRepository.findById(CONSULT_ID)).thenReturn(Optional.of(consult));
         when(forSurgeryCalculationService.totalSurgerisByConsult(CONSULT_ID)).thenReturn(SURGERY_TOTAL_COST);
         when(forSaleMedicineCalculationPort.totalSalesMedicinesByConsult(CONSULT_ID)).thenReturn(200.0);
@@ -301,10 +302,11 @@ public class ConsultServiceTest {
         when(consultRepository.save(any(Consult.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         double expectedRoom = 5 * 100.0;
-        double expectedTotal = CONSULT_COST + SURGERY_TOTAL_COST + expectedRoom + 200.0;
+        BigDecimal expectedTotal = CONSULT_COST.add(BigDecimal.valueOf(SURGERY_TOTAL_COST))
+                .add(BigDecimal.valueOf(expectedRoom + 200.0));
 
         // Act
-        Double result = consultService.obtenerTotalConsulta(CONSULT_ID);
+        BigDecimal result = consultService.obtenerTotalConsulta(CONSULT_ID);
 
         // Assert
         assertNotNull(result);
@@ -420,8 +422,10 @@ public class ConsultServiceTest {
     @Test
     public void shouldReturnAllConsultsSuccessfully() {
         // Arrange
-        Consult consult1 = new Consult("CONSULT-002", patient, false, 200.00, 200.00);
-        Consult consult2 = new Consult("CONSULT-003", patient, true, 400.00, 450.00);
+        Consult consult1 = new Consult("CONSULT-002", patient, false,
+                BigDecimal.valueOf(200.00), BigDecimal.valueOf(200.00));
+        Consult consult2 = new Consult("CONSULT-003", patient, true,
+                BigDecimal.valueOf(400.00), BigDecimal.valueOf(450.00));
         List<Consult> consultList = List.of(consult, consult1, consult2);
 
         when(consultRepository.findAll()).thenReturn(consultList);
@@ -539,11 +543,16 @@ public class ConsultServiceTest {
         filterDTO.setIsPaid(false);
         filterDTO.setIsInternado(false);
 
-        Consult consult1 = new Consult("CONSULT-001", patient, false, 200.0, 200.0);
-        Consult consult2 = new Consult("CONSULT-002", patient, false, 300.0, 300.0);
+        Consult consult1 = new Consult("CONSULT-001", patient, false,
+                new BigDecimal(200),
+                new BigDecimal(200));
+        Consult consult2 = new Consult("CONSULT-002", patient, false,
+                new BigDecimal(300),
+                new BigDecimal(300));
         List<Consult> filteredList = List.of(consult1, consult2);
 
-        when(consultRepository.findAll(any(Specification.class), ArgumentMatchers.<Sort>any())).thenReturn(filteredList);
+        when(consultRepository.findAll(any(Specification.class), ArgumentMatchers.<Sort>any()))
+                .thenReturn(filteredList);
 
         // Act
         List<Consult> result = consultService.getConsults(filterDTO);

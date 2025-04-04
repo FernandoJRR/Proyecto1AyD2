@@ -43,8 +43,8 @@ public class DoctorAssignmentReportServiceTest {
     private static final String DOCTOR_CUI = "1234567890101";
     private static final String DOCTOR_FIRST_NAME = "Juan";
     private static final String DOCTOR_LAST_NAME = "Pérez";
-    private static final BigDecimal DOCTOR_SALARY = new BigDecimal("8000.00");
-    private static final double DOCTOR_SPECIALIST_PAYMENT = 200.00;
+    private static final BigDecimal DOCTOR_SALARY = new BigDecimal(8000);
+    private static final BigDecimal DOCTOR_SPECIALIST_PAYMENT = new BigDecimal(200);
 
     private Employee doctor;
     private Consult consult;

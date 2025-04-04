@@ -204,7 +204,7 @@ const {
   onError: (error) => {
     console.error(error);
     toast.error("Ocurrió un error al crear la venta", {
-      description: error,
+      description: error.message,
     });
   },
   onSuccess: () => {

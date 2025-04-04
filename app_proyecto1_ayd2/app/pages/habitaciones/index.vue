@@ -117,11 +117,11 @@ const toggleAvailability = (id: string, number: string) => {
 
 const { mutate } = useMutation({
     mutation: (id: string) => toggleRoomAvailability(id),
-    onError(error: any) {
+    onError(error) {
         console.log(error)
         console.log(error.cause)
         toast.error('Ocurrió un error al cambiar el estado de disponibilidad de la habitación.', {
-            description: `${(error.response.message)}`
+            description: `${(error.message)}`
         })
     },
     onSuccess() {
